@@ -18,7 +18,9 @@ namespace ecommerce.Models
         public string Email { get; set; }
 
         [Column("password_hash")]
-        public string PasswordHash { get; set; }
+        public byte[] PasswordHash { get; set; }
+        [Column("password_salt")]
+        public byte[] PasswordSalt { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -29,6 +31,6 @@ namespace ecommerce.Models
         public virtual ICollection<Order> Orders { get; set; }
         public virtual ICollection<Wishlist> Wishlists { get; set; }
         public virtual ICollection<ProductReview> ProductReviews { get; set; }
-        public virtual Cart ShoppingCart { get; set; }
+        public virtual Cart Carts { get; set; }
     }
 }

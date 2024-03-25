@@ -1,6 +1,15 @@
-﻿namespace ecommerce.Services.Interface
+﻿using ecommerce.DTO;
+using ecommerce.Enums;
+using ecommerce.Models;
+
+namespace ecommerce.Services.Interface
 {
     public interface IAccountService
     {
+        Task<ApiResponse<RegisterDto>> RegisterAsync(string username, string email, string password, AdminRole? adminRole = null, bool isAdmin = false);
+        Task<ApiResponse<LoginResponse>> LoginAsync(LoginDto loginDto, AdminRole? adminRole = null, bool isAdmin = false);
+        Task<ApiResponse<string>> LogoutAsync();
+        string GenerateJwtToken(AdminDto user);
+        string GenerateJwtToken(UserDto user);
     }
 }

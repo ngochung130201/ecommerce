@@ -2,12 +2,17 @@
 
 namespace ecommerce.Repository.Interface
 {
-    public interface IAccountRepository
+    public interface IAccountRepository<T>
     {
-        Task<IEnumerable<Admin>> GetAllAdminsAsync();
-        Task<Admin> GetAdminByIdAsync(int id);
-        Task AddAdminAsync(Admin admin);
-        Task DeleteAdminAsync(int id);
-        Task UpdateAdminAsync(int id, Admin admin);
+        Task<IEnumerable<User>> GetAllUser();
+        Task<IEnumerable<Admin>> GetAllAdmin();
+        Task<Admin> GetByIdAdmin(int id);
+        Task<User> GetByIdForUser(int id);
+        // email
+        Task<User> GetByEmailForUser(string email);
+        Task<Admin> GetByEmailForAdmin(string email);
+        void Add(T admin);
+        void Delete(T? admin);
+        void Update(T admin);
     }
 }
