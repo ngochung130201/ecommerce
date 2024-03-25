@@ -20,8 +20,8 @@
 
   <ItemGroup>
     <Folder Include="Helpers\" />
-    <Folder Include="Enums\" />
     <Folder Include="Configuration\" />
+    <Folder Include="UnitOfWork\" />
   </ItemGroup>
 
 </Project>

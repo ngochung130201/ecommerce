@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ecommerce.Models
 {
+    [Table("wishlist")]
     public class Wishlist
     {
         [Key]
@@ -18,7 +19,9 @@ namespace ecommerce.Models
         public int ProductId { get; set; }
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Column("updated_at")]
+        public DateTime? UpdatedAt { get; set; } = null;
 
         // Navigation properties
         public virtual User User { get; set; }

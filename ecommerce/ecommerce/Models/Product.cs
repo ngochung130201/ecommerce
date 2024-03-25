@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ecommerce.Models
 {
+    [Table("product")]
     public class Product
     {
         [Key]
@@ -27,7 +28,9 @@ namespace ecommerce.Models
         public int InventoryCount { get; set; }
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Column("updated_at")]
+        public DateTime? UpdatedAt { get; set; } = null;
 
         // Navigation properties
         public virtual Category Category { get; set; }

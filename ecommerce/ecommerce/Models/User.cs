@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ecommerce.Models
 {
+    [Table("user")]
     public class User
     {
         [Key]
@@ -20,7 +21,9 @@ namespace ecommerce.Models
         public string PasswordHash { get; set; }
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Column("updated_at")]
+        public DateTime? UpdatedAt { get; set; } = null;
 
         // Navigation properties
         public virtual ICollection<Order> Orders { get; set; }

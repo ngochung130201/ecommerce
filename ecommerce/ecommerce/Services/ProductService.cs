@@ -37,7 +37,7 @@ namespace ecommerce.Services
                     Price = product.Price,
                     CategoryId = product.CategoryId
                 };
-                await _productRepository.AddProductAsync(newProduct);
+                _productRepository.AddProduct(newProduct);
                 return new ApiResponse<int> { Message = "Product added successfully", Data = newProduct.ProductId, Status = true };
             }
             catch (Exception ex)
@@ -61,7 +61,7 @@ namespace ecommerce.Services
                 {
                     return new ApiResponse<int> { Message = "Product not found", Status = false };
                 }
-                await _productRepository.DeleteProductAsync(id);
+                _productRepository.DeleteProduct(product);
                 return new ApiResponse<int> { Message = "Product deleted successfully", Status = true };
             }
             catch (Exception ex)
@@ -157,7 +157,7 @@ namespace ecommerce.Services
             return new ApiResponse<IEnumerable<ProductDto>> { Data = productDtos, Status = true };
         }
 
-        public async Task<ApiResponse<int>> UpdateProductAsync(int id, ProductDto product, ProductDto productExist)
+        public async Task<ApiResponse<int>> UpdateProductAsync(int id, ProductDto product)
         {
             // validation
             if (id <= 0)
@@ -179,7 +179,7 @@ namespace ecommerce.Services
                     Price = product.Price,
                     CategoryId = product.CategoryId
                 };
-                await _productRepository.UpdateProductAsync(id, productUpdate, productItem);
+                _productRepository.UpdateProduct(productUpdate, productItem);
                 return new ApiResponse<int> { Message = "Product updated successfully", Status = true };
             }
             catch (Exception ex)

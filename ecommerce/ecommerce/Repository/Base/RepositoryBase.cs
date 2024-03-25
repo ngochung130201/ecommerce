@@ -44,9 +44,23 @@ namespace ecommerce.Repository.Base
             _repositoryContext.Set<T>().Remove(entity);
         }
 
-        public async Task SaveAsync()
+        public void CreateRange(IEnumerable<T> entities)
         {
-            await _repositoryContext.SaveChangesAsync();
+            var list = entities.ToList();
+            _repositoryContext.Set<T>().AddRange(list);
         }
+
+        public void UpdateRange(IEnumerable<T> entities)
+        {
+            var list = entities.ToList();
+            _repositoryContext.Set<T>().UpdateRange(list);
+        }
+
+        public void DeleteRange(IEnumerable<T> entities)
+        {
+            var list = entities.ToList();
+            _repositoryContext.Set<T>().RemoveRange(list);
+        }
+
     }
 }

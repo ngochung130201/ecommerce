@@ -11,11 +11,11 @@ namespace ecommerce.Repository.Interface
         // Search for products by name, price, category, etc.
         Task<IEnumerable<Product>> SearchProductsAsync(ProductSearchDto searchDTO);
         // Add a new product
-        Task AddProductAsync(Product product);
+        void AddProduct(Product product);
         // Update a product by id
-        Task UpdateProductAsync(int id, Product product, Product productExist);
+        void UpdateProduct(Product product, Product productExist);
         // Delete a product by id
-        Task DeleteProductAsync(int id);
-        
+        void DeleteProduct(Product? product);
+
     }
 }

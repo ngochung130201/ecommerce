@@ -1,7 +1,6 @@
-﻿using ecommerce.Context;
-using ecommerce.DTO;
+﻿using ecommerce.DTO;
+using ecommerce.Middleware;
 using ecommerce.Models;
-using ecommerce.Repository.Base;
 using ecommerce.Repository.Interface;
 
 namespace ecommerce.Repository
@@ -14,7 +13,7 @@ namespace ecommerce.Repository
             _repositoryBase = repositoryBase;
         }
 
-        public Task AddProductAsync(Product product)
+        public void AddProduct(Product product)
         {
             var newProduct = new Product
             {
@@ -24,29 +23,46 @@ namespace ecommerce.Repository
                 CategoryId = product.CategoryId
             };
             _repositoryBase.Create(newProduct);
-            return _repositoryBase.SaveAsync();
         }
 
-        public async Task DeleteProductAsync(int id)
+        public void DeleteProduct(Product? product)
+        {
+            if (product == null)
+            {
+                throw new CustomException("No Product found", 404);
+            }
+            _repositoryBase.Delete(product);
+
+        }
+
+        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        {
+            var products = await _repositoryBase.FindAllAsync();
+            if (products == null)
+            {
+                throw new CustomException("No Product found", 404);
+            }
+            return products;
+        }
+
+        public async Task<Product> GetProductByIdAsync(int id)
         {
             var product = await _repositoryBase.FindByIdAsync(id);
-            _repositoryBase.Delete(product);
-            await _repositoryBase.SaveAsync();
-        }
-
-        public Task<IEnumerable<Product>> GetAllProductsAsync()
-        {
-            return _repositoryBase.FindAllAsync();
-        }
-
-        public Task<Product> GetProductByIdAsync(int id)
-        {
-            return _repositoryBase.FindByIdAsync(id);
+            if (product == null)
+            {
+                throw new CustomException("Product not found", 404);
+            }
+            return product;
         }
 
         public Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
         {
-            return _repositoryBase.FindByConditionAsync(p => p.CategoryId == categoryId);
+            var products = _repositoryBase.FindByConditionAsync(p => p.CategoryId == categoryId);
+            if (products == null)
+            {
+                throw new CustomException("No Product found", 404);
+            }
+            return products;
         }
 
         public Task<IEnumerable<Product>> SearchProductsAsync(ProductSearchDto searchDTO)
@@ -57,17 +73,22 @@ namespace ecommerce.Repository
                 (!searchDTO.MaxPrice.HasValue || p.Price <= searchDTO.MaxPrice) &&
                 (!searchDTO.CategoryId.HasValue || p.CategoryId == searchDTO.CategoryId)
             );
+            if (products == null)
+            {
+                throw new CustomException("No Product found", 404);
+            }
             return products;
         }
 
-        public async Task UpdateProductAsync(int id, Product product, Product productExist)
+        public void UpdateProduct(Product product, Product productExist)
         {
             productExist.Name = product.Name;
             productExist.Description = product.Description;
             productExist.Price = product.Price;
             productExist.CategoryId = product.CategoryId;
+            productExist.UpdatedAt = DateTime.UtcNow;
             _repositoryBase.Update(productExist);
-            await _repositoryBase.SaveAsync();
+
         }
     }
 }

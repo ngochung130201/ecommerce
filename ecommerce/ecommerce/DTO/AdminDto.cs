@@ -6,6 +6,7 @@
         public string Username { get; set; }
         public string Email { get; set; }
         // Password is usually not included in a DTO
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; } = null;
     }
 }

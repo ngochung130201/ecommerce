@@ -1,4 +1,5 @@
-﻿using ecommerce.Models;
+﻿using ecommerce.Middleware;
+using ecommerce.Models;
 using ecommerce.Repository.Interface;
 
 namespace ecommerce.Repository
@@ -10,7 +11,7 @@ namespace ecommerce.Repository
         {
             _repositoryBase = repositoryBase;
         }
-        public async Task AddCartAsync(Cart cart)
+        public void AddCart(Cart cart)
         {
             var newCart = new Cart
             {
@@ -18,18 +19,21 @@ namespace ecommerce.Repository
                 CreatedAt = DateTime.Now,
             };
             _repositoryBase.Create(newCart);
-            await _repositoryBase.SaveAsync();
+
         }
 
-        public async Task DeleteCartAsync(int id)
+        public void DeleteCart(Cart? cart)
         {
-            var cart = await _repositoryBase.FindByIdAsync(id);
+            if (cart == null)
+            {
+                throw new CustomException("No Cart found", 404);
+            }
             _repositoryBase.Delete(cart);
         }
 
-        public Task<IEnumerable<Cart>> GetAllCartsAsync()
+        public async Task<IEnumerable<Cart>> GetAllCartsAsync()
         {
-            return _repositoryBase.FindAllAsync();
+            return await _repositoryBase.FindAllAsync();
         }
 
         public Task<Cart> GetCartByIdAsync(int id)
@@ -44,12 +48,11 @@ namespace ecommerce.Repository
             return carts;
         }
 
-        public Task UpdateCartAsync(int id, Cart cart, Cart cartExist)
+        public void UpdateCart(Cart cart, Cart cartExist)
         {
             cartExist.UserId = cart.UserId;
-            cartExist.CreatedAt = cart.CreatedAt;
+            cartExist.UpdatedAt = cart.UpdatedAt;
             _repositoryBase.Update(cartExist);
-            return _repositoryBase.SaveAsync();
         }
     }
 }

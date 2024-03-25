@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ecommerce.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
+    [Table("payment")]
     public class Payment
     {
         [Key]
@@ -17,18 +19,33 @@ namespace ecommerce.Models
         public decimal Amount { get; set; }
 
         [Column("payment_status")]
-        public string PaymentStatus { get; set; }
+        public PaymentStatus PaymentStatus { get; set; }
+        [Column("payment_status_text")]
+        public string? PaymentStatusText { get; set; } = null;
 
         [Column("payment_method")]
-        public string PaymentMethod { get; set; }
+        public PaymentMethod PaymentMethod { get; set; }
+        [Column("payment_method_text")]
+        public string? PaymentMethodText { get; set; } = null;
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [Column("updated_at")]
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = null;
 
         // Navigation property
         public virtual Order Order { get; set; }
+        public Payment(PaymentStatus PaymentStatus, PaymentMethod PaymentMethod)
+        {
+            this.PaymentStatusText = nameof(PaymentStatus);
+            this.PaymentStatus = PaymentStatus;
+            this.PaymentMethodText = nameof(PaymentMethod);
+            this.PaymentMethod = PaymentMethod;
+        }
+        public Payment()
+        {
+
+        }
     }
 }

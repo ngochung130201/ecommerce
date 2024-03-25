@@ -21,6 +21,7 @@ namespace ecommerce.Context
         public virtual DbSet<RevenueReport> RevenueReports { get; set; }
         public virtual DbSet<Wishlist> Wishlists { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
+        public virtual DbSet<History> Histories { get; set; }
 
     }
 }

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ecommerce.Models
 {
+    [Table("product_review")]
     public class ProductReview
     {
         [Key]
@@ -24,7 +25,9 @@ namespace ecommerce.Models
         public string Comment { get; set; }
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Column("updated_at")]
+        public DateTime? UpdatedAt { get; set; } = null;
 
         // Navigation properties
         public virtual User User { get; set; }

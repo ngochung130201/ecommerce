@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ecommerce.Models
 {
+    [Table("order_item")]
     public class OrderItem
     {
         [Key]

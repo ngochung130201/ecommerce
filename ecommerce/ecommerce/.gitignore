@@ -8,6 +8,10 @@
 *.userosscache
 *.sln.docstates
 *.vs/
+*./.vs
+*.vsidx/
+/ecommerce/.vs/ecommerce/FileContentIndex/*
+/ecommerce/.vs/*
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
