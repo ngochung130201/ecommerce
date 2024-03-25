@@ -19,7 +19,9 @@ namespace ecommerce.Models
         public string Email { get; set; }
 
         [Column("password_hash")]
-        public string PasswordHash { get; set; }
+        public byte[] PasswordHash { get; set; }
+        [Column("password_salt")]
+        public byte[] PasswordSalt { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -34,6 +36,10 @@ namespace ecommerce.Models
         {
             this.RoleText = nameof(Role);
             this.Role = Role;
+        }
+        public Admin()
+        {
+            
         }
     }
 }

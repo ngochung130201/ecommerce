@@ -1,4 +1,6 @@
-﻿namespace ecommerce.DTO
+﻿using ecommerce.Enums;
+
+namespace ecommerce.DTO
 {
     public class AdminDto
     {
@@ -8,5 +10,6 @@
         // Password is usually not included in a DTO
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
+        public AdminRole AdminRole { get; set; }
     }
 }
