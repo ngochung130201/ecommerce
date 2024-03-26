@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using ecommerce.Enums;
 using System.ComponentModel.DataAnnotations;
-using ecommerce.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
@@ -11,7 +11,7 @@ namespace ecommerce.Models
         [Column("admin_id")]
         public int AdminId { get; set; }
 
-        [Column("username")]
+        [Column("username", TypeName = "nvarchar(255)")]
         public string Username { get; set; }
 
         [Column("email")]
@@ -30,6 +30,7 @@ namespace ecommerce.Models
         // role
         [Column("role")]
         public AdminRole Role { get; set; }
+        [Column("role_text", TypeName = "nvarchar(255)")]
         // role text
         public string? RoleText { get; set; } = null;
         public Admin(AdminRole Role)
@@ -39,7 +40,7 @@ namespace ecommerce.Models
         }
         public Admin()
         {
-            
+
         }
     }
 }

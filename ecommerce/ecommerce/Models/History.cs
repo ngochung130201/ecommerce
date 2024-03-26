@@ -12,17 +12,17 @@ namespace ecommerce.Models
         public int HistoryId { get; set; }
         [Column("payment_id")]
         public int PaymentId { get; set; }
-        [Column("user_id")]
-        public int UserId { get; set; }
         [Column("status")]
         public HistoryStatus Status { get; set; }
+        [Column("status_message", TypeName = "nvarchar(255)")]
         public string? StatusMessage { get; set; } = null;
-        [Column("message")]
+        [Column("message", TypeName = "nvarchar(255)")]
         public string? Message { get; set; } = null;
+        [Column("created_at")]
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
+        [Column("updated_at")]
         public DateTime? UpdateAt { get; set; } = null;
         public virtual Payment? Payment { get; set; }
-        public virtual User? User { get; set; }
         public History(HistoryStatus Status)
         {
             this.StatusMessage = nameof(Status);

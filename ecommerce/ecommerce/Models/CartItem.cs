@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
@@ -16,6 +16,8 @@ namespace ecommerce.Models
 
         [Column("quantity")]
         public int Quantity { get; set; }
+        [Column("total_price", TypeName = "DECIMAL(20,7)")]
+        public decimal TotalPrice { get; set; }
 
         // Navigation properties
         public virtual Cart Cart { get; set; }

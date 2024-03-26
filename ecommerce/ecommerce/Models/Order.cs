@@ -16,20 +16,17 @@ namespace ecommerce.Models
 
         [Column("order_status")]
         public OrderStatus OrderStatus { get; set; }
-        [Column("order_status_message")]
+        [Column("order_status_message", TypeName = "nvarchar(255)")]
         public string? OrderStatusMessage { get; set; } = null;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; } = null;
-        [Column("cart_id")]
-        public int CartId { get; set; }
-        public virtual Cart Cart { get; set; }
-
         // Navigation properties
         public virtual User User { get; set; }
         public virtual ICollection<OrderItem> OrderItems { get; set; }
+        [Column("total_price", TypeName = "DECIMAL(20,7)")]
         public decimal TotalPrice { get; set; } = 0;
         public Order(OrderStatus OrderStatus)
         {

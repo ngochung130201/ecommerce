@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
@@ -9,23 +9,26 @@ namespace ecommerce.Models
         [Key]
         [Column("product_id")]
         public int ProductId { get; set; }
-
-        [ForeignKey("Category")]
         [Column("category_id")]
         public int CategoryId { get; set; }
 
-        [Column("name")]
+        [Column("name", TypeName = "nvarchar(255)")]
         public string Name { get; set; }
+        [Column("slug", TypeName = "nvarchar(255)")]
+        public string Slug { get; set; }
 
-        [Column("description")]
+        [Column("description", TypeName = "nvarchar(255)")]
         public string Description { get; set; }
 
-        [Column("price")]
-        [DataType(DataType.Currency)]
+        [Column("price", TypeName = "DECIMAL(20,7)")]
         public decimal Price { get; set; }
 
         [Column("inventory_count")]
         public int InventoryCount { get; set; }
+        [Column("image")]
+        public string Image { get; set; }
+        [Column("gallery")]
+        public string Gallery { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
@@ -10,10 +10,12 @@ namespace ecommerce.Models
         [Column("category_id")]
         public int CategoryId { get; set; }
 
-        [Column("name")]
+        [Column("name", TypeName = "nvarchar(255)")]
         public string Name { get; set; }
+        [Column("slug", TypeName = "nvarchar(255)")]
+        public string Slug { get; set; }
 
-        [Column("description")]
+        [Column("description", TypeName = "nvarchar(255)")]
         public string Description { get; set; }
 
         [Column("created_at")]

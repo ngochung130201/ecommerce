@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
@@ -19,7 +19,7 @@ namespace ecommerce.Models
         [Column("day")]
         public int Day { get; set; }
 
-        [Column("total_revenue")]
+        [Column("total_revenue", TypeName = "DECIMAL(20,7)")]
         public decimal TotalRevenue { get; set; }
 
         [Column("created_at")]

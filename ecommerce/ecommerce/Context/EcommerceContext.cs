@@ -22,6 +22,16 @@ namespace ecommerce.Context
         public virtual DbSet<Wishlist> Wishlists { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
         public virtual DbSet<History> Histories { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Order>().Property(p => p.TotalPrice).HasColumnType("decimal(20,7)");
+            modelBuilder.Entity<Product>().Property(p => p.Price).HasColumnType("decimal(20,7)");
+            modelBuilder.Entity<CartItem>().Property(p => p.TotalPrice).HasColumnType("decimal(20,7)");
+            modelBuilder.Entity<Order>().Property(p => p.TotalPrice).HasColumnType("decimal(20,7)");
+            modelBuilder.Entity<RevenueReport>().Property(p => p.TotalRevenue).HasColumnType("decimal(20,7)");
+            modelBuilder.Entity<Payment>().Property(p => p.Amount).HasColumnType("decimal(20,7)");
+            modelBuilder.Entity<OrderItem>().Property(p => p.PriceAtTimeOfOrder).HasColumnType("decimal(20,7)");
+        }
 
     }
 }

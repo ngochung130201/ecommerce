@@ -11,5 +11,7 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<string>> LogoutAsync();
         string GenerateJwtToken(AdminDto user);
         string GenerateJwtToken(UserDto user);
+        Task<bool> ResetPasswordAsync(string email, string token, string newPassword, AdminRole? adminRole = null, bool isAdmin = false);
+        Task<ApiResponse<string>> ForgotPasswordAsync(string email, AdminRole? adminRole = null, bool isAdmin = false);
     }
 }

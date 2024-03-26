@@ -67,7 +67,7 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<History>> GetHistoriesByUserIdAsync(int userId)
         {
-            var histories = await _repositoryBase.FindByConditionAsync(x => x.UserId == userId);
+            var histories = await _repositoryBase.FindByConditionAsync(x => x.Payment.Order.UserId == userId);
             if (histories == null)
             {
                 throw new CustomException("No History found", 404);

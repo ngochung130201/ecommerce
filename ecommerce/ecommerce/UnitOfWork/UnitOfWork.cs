@@ -1,6 +1,4 @@
 ﻿using ecommerce.Context;
-using ecommerce.Repository;
-using ecommerce.Repository.Interface;
 
 namespace ecommerce.UnitOfWork
 {
@@ -13,13 +11,13 @@ namespace ecommerce.UnitOfWork
             _context = context;
         }
 
-        public int Commit()
+        public int SaveChanges()
         {
             var result = _context.SaveChanges();
             return result;
         }
 
-        public async Task<int> CommitAsync()
+        public async Task<int> SaveChangesAsync()
         {
             var result = await _context.SaveChangesAsync();
             return result;
@@ -27,7 +25,7 @@ namespace ecommerce.UnitOfWork
 
         public void Dispose()
         {
-           _context.Dispose();
+            _context.Dispose();
         }
     }
 }

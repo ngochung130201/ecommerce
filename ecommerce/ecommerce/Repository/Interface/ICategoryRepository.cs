@@ -6,8 +6,9 @@ namespace ecommerce.Repository.Interface
     {
         Task<IEnumerable<Category>> GetAllCategoriesAsync();
         Task<Category> GetCategoryByIdAsync(int id);
-        Task AddCategoryAsync(Category category);
-        Task DeleteCategoryAsync(int id);
+        Task<Category> GetCategoryBySlugAsync(string slug);
+        void AddCategory(Category category);
+        void DeleteCategory(Category category);
         Task UpdateCategoryAsync(int id, Category category);
     }
 }

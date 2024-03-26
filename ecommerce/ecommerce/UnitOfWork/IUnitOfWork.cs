@@ -5,7 +5,7 @@ namespace ecommerce.UnitOfWork
 {
     public interface IUnitOfWork : IDisposable
     {
-        int Commit();
-        Task<int> CommitAsync();
+        int SaveChanges();
+        Task<int> SaveChangesAsync();
     }
 }

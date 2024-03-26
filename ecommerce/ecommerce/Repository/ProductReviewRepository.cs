@@ -62,6 +62,19 @@ namespace ecommerce.Repository
             return productReview;
         }
 
+        public async Task<IEnumerable<ProductReview>> GetProductReviewsByProductAsync(int productId)
+        {
+            var productReviews = await _repositoryBase.FindByConditionAsync(p => p.ProductId == productId);
+            return productReviews;
+        }
+
+        public Task<IEnumerable<ProductReview>> GetProductReviewsByUserAsync(int userId)
+        {
+            var productReviews = _repositoryBase.FindByConditionAsync(p => p.UserId == userId);
+            return productReviews;
+        }
+
+
         public async Task UpdateProductReviewAsync(int id, ProductReview productReview)
         {
             var productReviewToUpdate = await _repositoryBase.FindByIdAsync(id);
@@ -71,7 +84,7 @@ namespace ecommerce.Repository
             }
             productReviewToUpdate.Rating = productReview.Rating;
             productReviewToUpdate.Comment = productReview.Comment;
-            productReview.UpdatedAt = DateTime.UtcNow;
+            productReviewToUpdate.UpdatedAt = productReview.UpdatedAt;
         }
     }
 }

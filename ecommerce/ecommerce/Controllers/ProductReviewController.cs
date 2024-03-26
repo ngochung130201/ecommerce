@@ -1,6 +1,5 @@
 ﻿using ecommerce.DTO;
 using ecommerce.Services.Interface;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ecommerce.Controllers
@@ -55,7 +54,7 @@ namespace ecommerce.Controllers
             return BadRequest(result);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProductReviewAsync(int id, ProductReviewDto productReview)
+        public async Task<IActionResult> UpdateProductReviewAsync(int id, ProductReviewUpdateDto productReview)
         {
             var result = await _productReviewService.UpdateProductReviewAsync(id, productReview);
             if (result.Status)
@@ -63,6 +62,28 @@ namespace ecommerce.Controllers
                 return Ok(result);
             }
             return BadRequest(result);
+        }
+        // GET: api/product-review/product/1
+        [HttpGet("product/{productId}")]
+        public async Task<IActionResult> GetProductReviewsByProductAsync(int productId)
+        {
+            var productReviews = await _productReviewService.GetProductReviewsByProductAsync(productId);
+            if (productReviews.Status)
+            {
+                return Ok(productReviews);
+            }
+            return BadRequest(productReviews);
+        }
+        // GET: api/product-review/user/1
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetProductReviewsByUserAsync(int userId)
+        {
+            var productReviews = await _productReviewService.GetProductReviewsByUserAsync(userId);
+            if (productReviews.Status)
+            {
+                return Ok(productReviews);
+            }
+            return BadRequest(productReviews);
         }
     }
 }
