@@ -176,5 +176,12 @@
 - `PUT /api/history/{id}`: Update a history record by ID
 - `DELETE /api/history/{id}`: Delete a history record by ID
 
+#### Authentication Endpoints
+
+- `POST /api/auth/login`: Authenticate user and generate access token
+- `POST /api/auth/register`: Register a new user
+- `POST /api/auth/logout`: Logout user and invalidate access token
+
+
 ### Cart and Order 
 ![alt text](image-3.png)

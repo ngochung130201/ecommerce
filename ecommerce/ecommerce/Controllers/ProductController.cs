@@ -1,6 +1,5 @@
 ﻿using ecommerce.DTO;
 using ecommerce.Services.Interface;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ecommerce.Controllers
@@ -28,6 +27,16 @@ namespace ecommerce.Controllers
         public async Task<IActionResult> GetProductByIdAsync(int id)
         {
             var response = await _productService.GetProductByIdAsync(id);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        [HttpGet("slug/{slug}")]
+        public async Task<IActionResult> GetProductBySlugAsync(string slug)
+        {
+            var response = await _productService.GetProductBySlugAsync(slug);
             if (response.Status)
             {
                 return Ok(response);
@@ -65,7 +74,7 @@ namespace ecommerce.Controllers
             return BadRequest(response);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProductAsync(int id, ProductDto product)
+        public async Task<IActionResult> UpdateProductAsync(int id, ProductUpdateDto product)
         {
             var response = await _productService.UpdateProductAsync(id, product);
             if (response.Status)

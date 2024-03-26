@@ -16,7 +16,6 @@ namespace ecommerce.Services
         {
             var historyModel = new History
             {
-                UserId = history.UserId,
                 Message = history.Message,
                 PaymentId = history.PaymentId,
                 Status = history.Status,
@@ -92,7 +91,6 @@ namespace ecommerce.Services
             {
                 Data = new List<HistoryDto>(histories.Select(x => new HistoryDto
                 {
-                    UserId = x.UserId,
                     Message = x.Message,
                     PaymentId = x.PaymentId,
                     Status = x.Status,
@@ -119,7 +117,6 @@ namespace ecommerce.Services
             {
                 Data = new HistoryDto
                 {
-                    UserId = history.UserId,
                     Message = history.Message,
                     PaymentId = history.PaymentId,
                     Status = history.Status,
@@ -134,7 +131,6 @@ namespace ecommerce.Services
         {
             var historyModel = new History
             {
-                UserId = history.UserId,
                 Message = history.Message,
                 PaymentId = history.PaymentId,
                 Status = history.Status,

@@ -7,6 +7,7 @@ namespace ecommerce.Repository.Interface
     {
         Task<IEnumerable<Product>> GetAllProductsAsync();
         Task<Product> GetProductByIdAsync(int id);
+        Task<Product> GetProductBySlugAsync(string slug);
         Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId);
         // Search for products by name, price, category, etc.
         Task<IEnumerable<Product>> SearchProductsAsync(ProductSearchDto searchDTO);

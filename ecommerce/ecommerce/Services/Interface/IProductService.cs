@@ -4,12 +4,13 @@ namespace ecommerce.Services.Interface
 {
     public interface IProductService
     {
-        Task<ApiResponse<IEnumerable<ProductDto>>> GetAllProductsAsync();
-        Task<ApiResponse<ProductDto>> GetProductByIdAsync(int id);
-        Task<ApiResponse<IEnumerable<ProductDto>>> GetProductsByCategoryAsync(int categoryId);
-        Task<ApiResponse<IEnumerable<ProductDto>>> SearchProductsAsync(ProductSearchDto searchDTO);
+        Task<ApiResponse<IEnumerable<ProductAllDto>>> GetAllProductsAsync();
+        Task<ApiResponse<ProductAllDto>> GetProductByIdAsync(int id);
+        Task<ApiResponse<ProductAllDto>> GetProductBySlugAsync(string slug);
+        Task<ApiResponse<IEnumerable<ProductAllDto>>> GetProductsByCategoryAsync(int categoryId);
+        Task<ApiResponse<IEnumerable<ProductAllDto>>> SearchProductsAsync(ProductSearchDto searchDTO);
         Task<ApiResponse<int>> AddProductAsync(ProductDto product);
-        Task<ApiResponse<int>> UpdateProductAsync(int id, ProductDto product);
+        Task<ApiResponse<int>> UpdateProductAsync(int id, ProductUpdateDto product);
         Task<ApiResponse<int>> DeleteProductAsync(int id);
     }
 }

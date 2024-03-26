@@ -20,7 +20,8 @@ namespace ecommerce.Repository
                 Name = product.Name,
                 Description = product.Description,
                 Price = product.Price,
-                CategoryId = product.CategoryId
+                CategoryId = product.CategoryId,
+                Slug = product.Slug,
             };
             _repositoryBase.Create(newProduct);
         }
@@ -55,6 +56,17 @@ namespace ecommerce.Repository
             return product;
         }
 
+        public async Task<Product> GetProductBySlugAsync(string slug)
+        {
+            var product = await _repositoryBase.FindByConditionAsync(p => p.Slug == slug);
+            if (product == null)
+            {
+                throw new CustomException("Product not found", 404);
+            }
+            return product.FirstOrDefault();
+
+        }
+
         public Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
         {
             var products = _repositoryBase.FindByConditionAsync(p => p.CategoryId == categoryId);
@@ -65,18 +77,19 @@ namespace ecommerce.Repository
             return products;
         }
 
-        public Task<IEnumerable<Product>> SearchProductsAsync(ProductSearchDto searchDTO)
+        public async Task<IEnumerable<Product>> SearchProductsAsync(ProductSearchDto searchDTO)
         {
-            var products = _repositoryBase.FindByConditionAsync(p =>
+            var products = await _repositoryBase.FindByConditionAsync(p =>
                 (string.IsNullOrEmpty(searchDTO.Name) || p.Name.Contains(searchDTO.Name)) &&
-                (!searchDTO.MinPrice.HasValue || p.Price >= searchDTO.MinPrice) &&
-                (!searchDTO.MaxPrice.HasValue || p.Price <= searchDTO.MaxPrice) &&
-                (!searchDTO.CategoryId.HasValue || p.CategoryId == searchDTO.CategoryId)
-            );
+                (searchDTO.MinPrice == 0 || p.Price >= searchDTO.MinPrice) &&
+                (searchDTO.MaxPrice == 0 || p.Price <= searchDTO.MaxPrice) &&
+                (searchDTO.CategoryId == 0 || p.CategoryId == searchDTO.CategoryId));
+
             if (products == null)
             {
                 throw new CustomException("No Product found", 404);
             }
+
             return products;
         }
 
@@ -85,8 +98,8 @@ namespace ecommerce.Repository
             productExist.Name = product.Name;
             productExist.Description = product.Description;
             productExist.Price = product.Price;
-            productExist.CategoryId = product.CategoryId;
             productExist.UpdatedAt = DateTime.UtcNow;
+            productExist.Slug = product.Slug;
             _repositoryBase.Update(productExist);
 
         }

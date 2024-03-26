@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
@@ -9,19 +9,15 @@ namespace ecommerce.Models
         [Key]
         [Column("review_id")]
         public int ReviewId { get; set; }
-
-        [ForeignKey("User")]
         [Column("user_id")]
         public int UserId { get; set; }
-
-        [ForeignKey("Product")]
         [Column("product_id")]
         public int ProductId { get; set; }
 
         [Column("rating")]
         public int Rating { get; set; }
 
-        [Column("comment")]
+        [Column("comment", TypeName = "nvarchar(255)")]
         public string Comment { get; set; }
 
         [Column("created_at")]

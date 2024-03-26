@@ -11,21 +11,20 @@ namespace ecommerce.Models
         [Column("payment_id")]
         public int PaymentId { get; set; }
 
-        [ForeignKey("Order")]
         [Column("order_id")]
         public int OrderId { get; set; }
 
-        [Column("amount")]
+        [Column("amount", TypeName = "DECIMAL(20,7)")]
         public decimal Amount { get; set; }
 
         [Column("payment_status")]
         public PaymentStatus PaymentStatus { get; set; }
-        [Column("payment_status_text")]
+        [Column("payment_status_text", TypeName = "nvarchar(255)")]
         public string? PaymentStatusText { get; set; } = null;
 
         [Column("payment_method")]
         public PaymentMethod PaymentMethod { get; set; }
-        [Column("payment_method_text")]
+        [Column("payment_method_text", TypeName = "nvarchar(255)")]
         public string? PaymentMethodText { get; set; } = null;
 
         [Column("created_at")]

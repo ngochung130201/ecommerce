@@ -1,13 +1,16 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
+﻿
+
 using ecommerce.DTO;
 using ecommerce.Enums;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
+using ecommerce.UnitOfWork;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ecommerce.Services
 {
@@ -16,11 +19,17 @@ namespace ecommerce.Services
         private readonly IConfiguration _configuration;
         private readonly IAccountRepository<Admin> _accountAdminRepository;
         private readonly IAccountRepository<User> _accountUserRepository;
-        public AccountService(IConfiguration configuration, IAccountRepository<Admin> accountAdminRepository, IAccountRepository<User> accountUserRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailService _emailService;
+        public AccountService(IConfiguration configuration, IAccountRepository<Admin> accountAdminRepository,
+            IAccountRepository<User> accountUserRepository, IUnitOfWork unitOfWork, IEmailService emailService)
         {
             _configuration = configuration;
             _accountAdminRepository = accountAdminRepository;
             _accountUserRepository = accountUserRepository;
+            _unitOfWork = unitOfWork;
+            _emailService = emailService;
+
         }
         public string GenerateJwtToken(AdminDto admin)
         {
@@ -32,7 +41,7 @@ namespace ecommerce.Services
                 {
                     new Claim(ClaimTypes.NameIdentifier, admin.AdminId.ToString()),
                     new Claim(ClaimTypes.Email, admin.Email),
-                    new Claim(ClaimTypes.Role, admin.AdminRole.ToString())
+                    new Claim(ClaimTypes.Role, admin.AdminRole.ToString()),
                 }),
                 Expires = DateTime.Now.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -51,7 +60,7 @@ namespace ecommerce.Services
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email)
+                    new Claim(ClaimTypes.Email, user.Email),
                 }),
                 Expires = DateTime.Now.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -181,6 +190,7 @@ namespace ecommerce.Services
                 };
                 _accountAdminRepository.Add(admin);
             }
+            await _unitOfWork.SaveChangesAsync();
             return new ApiResponse<RegisterDto>
             {
                 Data = new RegisterDto
@@ -191,8 +201,163 @@ namespace ecommerce.Services
                 Status = true
             };
         }
+        public async Task<ApiResponse<string>> ForgotPasswordAsync(string email, AdminRole? adminRole = null, bool isAdmin = false)
+        {
+            var adminModel = new Admin();
+            var userModel = new User();
+            var token = string.Empty;
+            var name = string.Empty;
 
-        // Generate a constructor for the AccountService class
+            if (isAdmin)
+            {
+                adminModel = await _accountAdminRepository.GetByEmailForAdmin(email);
+                token = GeneratePasswordResetToken(adminModel.AdminId, adminModel.Email, adminRole, isAdmin);
+                name = adminModel.Username;
+            }
+            else
+            {
+                userModel = await _accountUserRepository.GetByEmailForUser(email);
+                token = GeneratePasswordResetToken(userModel.UserId, userModel.Email);
+                name = userModel.Username;
+            }
+
+            if (adminModel == null || userModel == null)
+            {
+                return new ApiResponse<string>
+                {
+                    Data = null,
+                    Message = isAdmin ? "Admin not found" : "User not found",
+                    Status = false
+                };
+            }
+
+            var emailDto = new EmailDto
+            {
+                Body = "",
+                Name = name,
+                Subject = "Reset your password",
+                To = email,
+                Url = $"https://yourapplication.com/reset-password?token={token}&email={email}"
+            };
+            // test
+            emailDto.Url = "https://www.facebook.com/";
+            try
+            {
+
+                await _emailService.SendEmailAsync(emailDto);
+                return new ApiResponse<string>
+                {
+                    Data = token,
+                    Message = "Password reset email sent",
+                    Status = true // Assuming status should be true when email is successfully sent
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResponse<string>
+                {
+                    Data = token,
+                    Message = "Failed to send email",
+                    Status = false
+                };
+            }
+
+        }
+
+        public bool ValidateToken(string token, string email, bool isAdmin = false)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["JwtKey"])),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+            };
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+                if (isAdmin)
+                {
+                    var adminIdClaim = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                    if (adminIdClaim != null && adminIdClaim == email)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    var userIdClaim = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                    if (userIdClaim != null && userIdClaim == email)
+                    {
+                        return true;
+                    }
+                }
+
+            }
+            catch
+            {
+                // Token validation failed
+                return false;
+            }
+
+            return false;
+        }
+
+        private string GeneratePasswordResetToken(int id, string email, AdminRole? adminRole = null, bool isAdmin = false)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["JwtKey"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                    new Claim(ClaimTypes.Email, email),
+                    new Claim(ClaimTypes.Role, adminRole?.ToString() ?? (isAdmin ? nameof(adminRole) : "User"))
+                }),
+                Expires = DateTime.UtcNow.AddHours(1), // Token expires in 1 hour
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+        public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword, AdminRole? adminRole = null, bool isAdmin = false)
+        {
+            CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            if (isAdmin)
+            {
+                var admin = await _accountAdminRepository.GetByEmailForAdmin(email);
+                if (admin == null) return false;
+
+                if (!ValidateToken(token, email, isAdmin))
+                {
+                    return false;
+                }
+                admin.PasswordHash = passwordHash;
+                admin.PasswordSalt = passwordSalt;
+                _accountAdminRepository.Update(admin);
+
+            }
+            else
+            {
+                var user = await _accountUserRepository.GetByEmailForUser(email);
+                if (user == null) return false;
+
+                if (!ValidateToken(token, email))
+                {
+                    return false;
+                }
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordSalt;
+                _accountUserRepository.Update(user);
+            }
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+
+        }
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new HMACSHA512())

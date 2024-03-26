@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
@@ -9,12 +9,8 @@ namespace ecommerce.Models
         [Key]
         [Column("wishlist_id")]
         public int WishlistId { get; set; }
-
-        [ForeignKey("User")]
         [Column("user_id")]
         public int UserId { get; set; }
-
-        [ForeignKey("Product")]
         [Column("product_id")]
         public int ProductId { get; set; }
 

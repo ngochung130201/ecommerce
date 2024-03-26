@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
@@ -9,8 +9,6 @@ namespace ecommerce.Models
         [Key]
         [Column("order_item_id")]
         public int OrderItemId { get; set; }
-
-        [ForeignKey("Order")]
         [Column("order_id")]
         public int OrderId { get; set; }
 
@@ -21,7 +19,7 @@ namespace ecommerce.Models
         [Column("quantity")]
         public int Quantity { get; set; }
 
-        [Column("price_at_time_of_order")]
+        [Column("price_at_time_of_order", TypeName = "DECIMAL(20,7)")]
         public decimal PriceAtTimeOfOrder { get; set; }
 
         // Navigation properties

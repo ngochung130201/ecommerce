@@ -5,15 +5,16 @@ using ecommerce.Repository.Base;
 using ecommerce.Repository.Interface;
 using ecommerce.Services;
 using ecommerce.Services.Interface;
+using ecommerce.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddDbContext<EcommerceContext>(
-    );
+builder.Services.AddDbContext<EcommerceContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("Ecommerce_SQLServer")));
 
 var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtKey"]);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -24,12 +25,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
         };
     });
 // Register repositories
 builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
-
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IRepositoryBase<OrderItem>, RepositoryBase<OrderItem>>();
 builder.Services.AddScoped<IRepositoryBase<Product>, RepositoryBase<Product>>();
 builder.Services.AddScoped<IRepositoryBase<Order>, RepositoryBase<Order>>();
@@ -72,6 +75,7 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IRevenueReportService, RevenueReportService>();
 builder.Services.AddScoped<IHistoryService, HistoryService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -12,11 +12,13 @@ namespace ecommerce.Repository
             _repositoryBase = repositoryBase;
         }
 
-        public async Task AddCategoryAsync(Category category)
+        public void AddCategory(Category category)
         {
             var newCategory = new Category
             {
-                Name = category.Name
+                Name = category.Name,
+                Description = category.Description,
+                Slug = category.Slug
             };
             try
             {
@@ -28,21 +30,15 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task DeleteCategoryAsync(int id)
+        public void DeleteCategory(Category category)
         {
             try
             {
-                var category = await _repositoryBase.FindByIdAsync(id);
-                if (category == null)
-                {
-                    throw new CustomException("No Category found", 404);
-                }
                 _repositoryBase.Delete(category);
-                throw new CustomException("Category deleted", 200, isSuccess: true);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                throw new CustomException(ex.Message, 500);
+                throw new CustomException("Category not deleted", 500);
             }
         }
 
@@ -66,6 +62,16 @@ namespace ecommerce.Repository
             return category;
         }
 
+        public async Task<Category> GetCategoryBySlugAsync(string slug)
+        {
+            var category = await _repositoryBase.FindByConditionAsync(c => c.Slug == slug);
+            if (category == null)
+            {
+                throw new CustomException("Category not found", 404);
+            }
+            return category.FirstOrDefault() ?? new Category();
+        }
+
         public async Task UpdateCategoryAsync(int id, Category category)
         {
             var categoryToUpdate = await _repositoryBase.FindByIdAsync(id);
@@ -74,6 +80,7 @@ namespace ecommerce.Repository
                 throw new CustomException("Category not found", 404);
             }
             categoryToUpdate.Name = category.Name;
+            categoryToUpdate.Slug = category.Slug;
             categoryToUpdate.Description = category.Description;
             categoryToUpdate.UpdatedAt = category.UpdatedAt;
             _repositoryBase.Update(categoryToUpdate);

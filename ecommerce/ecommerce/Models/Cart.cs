@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
 {
@@ -9,8 +9,6 @@ namespace ecommerce.Models
         [Key]
         [Column("cart_id")]
         public int CartId { get; set; }
-
-        [ForeignKey("User")]
         [Column("user_id")]
         public int UserId { get; set; }
 
@@ -18,6 +16,8 @@ namespace ecommerce.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; } = null;
+        [Column("total_price", TypeName = "DECIMAL(20,7)")]
+        public decimal TotalPrice { get; set; } = 0;
 
         // Navigation properties
         public virtual User User { get; set; }
