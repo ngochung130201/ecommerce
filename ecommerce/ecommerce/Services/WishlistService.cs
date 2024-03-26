@@ -124,6 +124,53 @@ namespace ecommerce.Services
             };
         }
 
+        public async Task<ApiResponse<IEnumerable<WishlistDto>>> GetWishlistByProductIdAsync(int productId)
+        {
+            var  wishlist = await _wishlistRepository.GetWishListByProductIdAsync(productId);
+            if (wishlist == null)
+            {
+                return new ApiResponse<IEnumerable<WishlistDto>>
+                {
+                    Data = null,
+                    Message = "Wishlist not found",
+                    Status = false
+                };
+            }
+            return new ApiResponse<IEnumerable<WishlistDto>>
+            {
+                Data = wishlist.Select(x => new WishlistDto
+                {
+                    UserId = x.UserId,
+                    ProductId = x.ProductId
+                }),
+                Message = "Wishlist found",
+                Status = true
+            };
+        }
+        public async Task<ApiResponse<IEnumerable<WishlistDto>>> GetWishListByUserIdAsync(int userId)
+        {
+        var wishlist = await _wishlistRepository.GetWishListsByUserIdAsync(userId);
+            if (wishlist == null)
+            {
+                return new ApiResponse<IEnumerable<WishlistDto>>
+                {
+                    Data = null,
+                    Message = "Wishlist not found",
+                    Status = false
+                };
+            }
+            return new ApiResponse<IEnumerable<WishlistDto>>
+            {
+                Data = wishlist.Select(x => new WishlistDto
+                {
+                    UserId = x.UserId,
+                    ProductId = x.ProductId
+                }),
+                Message = "Wishlist found",
+                Status = true
+            };
+        }
+
         public async Task<ApiResponse<int>> UpdateWishlistAsync(int id, WishlistDto wishlist)
         {
             var newWishlist = new Wishlist
@@ -151,5 +198,6 @@ namespace ecommerce.Services
                 };
             }
         }
+
     }
 }

@@ -53,6 +53,16 @@ namespace ecommerce.Repository
             return wishList;
         }
 
+        public async Task<IEnumerable<Wishlist>> GetWishListByProductIdAsync(int productId)
+        {
+            var wishList = await _repositoryBase.FindByConditionAsync(x => x.ProductId == productId);
+            if (wishList == null)
+            {
+                throw new CustomException("No WishList found", 404);
+            }
+            return wishList;
+        }
+
         public async Task<IEnumerable<Wishlist>> GetWishListsByUserIdAsync(int userId)
         {
             var wishLists = await _repositoryBase.FindByConditionAsync(x => x.UserId == userId);
