@@ -64,5 +64,27 @@ namespace ecommerce.Controllers
             }
             return BadRequest(result);
         }
+        // wishlist by user id
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetWishlistByUserIdAsync(int userId)
+        {
+            var wishlist = await _wishlistService.GetWishListByUserIdAsync(userId);
+            if (wishlist.Status)
+            {
+                return Ok(wishlist);
+            }
+            return BadRequest(wishlist);
+        }
+        // wishlist by product id
+        [HttpGet("product/{productId}")]
+        public async Task<IActionResult> GetWishlistByProductIdAsync(int productId)
+        {
+            var wishlist = await _wishlistService.GetWishlistByProductIdAsync(productId);
+            if (wishlist.Status)
+            {
+                return Ok(wishlist);
+            }
+            return BadRequest(wishlist);
+        }
     }
 }

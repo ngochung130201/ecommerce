@@ -10,5 +10,7 @@ namespace ecommerce.Repository.Interface
         Task AddWishListAsync(Wishlist wishList);
         Task UpdateWishListAsync(int id, Wishlist wishList);
         Task DeleteWishListAsync(int id);
+        Task<IEnumerable<Wishlist>> GetWishListByProductIdAsync(int productId);
+
     }
 }
