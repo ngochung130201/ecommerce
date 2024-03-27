@@ -9,5 +9,7 @@ namespace ecommerce.Services.Interface
         // remove file
         Task<ApiResponse<string>> RemoveFileAsync(string fileName, string nameFolder);
         Task<ApiResponse<List<string>>> RemoveFilesAsync(List<string> fileNames, string nameFolder);
+        // Get file path 
+        string GetFilePath(string fileName, string nameFolder);
     }
 }

@@ -148,9 +148,25 @@ namespace ecommerce.Services
                 UpdatedAt = p.UpdatedAt,
                 Slug = p.Slug,
                 Image = p.Image,
-                Gallery = p.Gallery
+                Gallery = p.Gallery,
             });
-            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = productDtos, Status = true };
+            var newProductDtos = new List<ProductAllDto>();
+            // get file path
+            foreach (var product in productDtos)
+            {
+                if (!string.IsNullOrEmpty(product.Image))
+                {
+                    product.Image = _uploadFilesService.GetFilePath(product.Image, "products");
+                }
+                if (!string.IsNullOrEmpty(product.Gallery))
+                {
+                    var gallery = product.Gallery.Split(",").ToList();
+                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "products"));
+                    product.Gallery = string.Join(",", galleryUrls);
+                }
+                newProductDtos.Add(product);
+            }
+            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = newProductDtos, Status = true };
         }
 
         public async Task<ApiResponse<ProductAllDto>> GetProductByIdAsync(int id)
@@ -165,6 +181,7 @@ namespace ecommerce.Services
             {
                 return new ApiResponse<ProductAllDto> { Message = "Product not found", Status = false };
             }
+            // get image in forder wwwroot and return url to client 
             var productDto = new ProductAllDto
             {
                 ProductId = product.ProductId,
@@ -176,9 +193,18 @@ namespace ecommerce.Services
                 InventoryCount = product.InventoryCount,
                 CreatedAt = product.CreatedAt,
                 UpdatedAt = product.UpdatedAt,
-                Gallery = product.Gallery,
-                Image = product.Image
             };
+            // get file path
+            if (!string.IsNullOrEmpty(product.Image))
+            {
+                productDto.Image = _uploadFilesService.GetFilePath(product.Image, "products");
+            }
+            if (!string.IsNullOrEmpty(product.Gallery))
+            {
+                var gallery = product.Gallery.Split(",").ToList();
+                var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "products"));
+                productDto.Gallery = string.Join(",", galleryUrls);
+            }
             return new ApiResponse<ProductAllDto> { Data = productDto, Status = true };
         }
 
@@ -200,9 +226,18 @@ namespace ecommerce.Services
                 InventoryCount = product.InventoryCount,
                 CreatedAt = product.CreatedAt,
                 UpdatedAt = product.UpdatedAt,
-                Image = product.Image,
-                Gallery = product.Gallery
             };
+            // get file path
+            if (!string.IsNullOrEmpty(product.Image))
+            {
+                productDto.Image = _uploadFilesService.GetFilePath(product.Image, "products");
+            }
+            if (!string.IsNullOrEmpty(product.Gallery))
+            {
+                var gallery = product.Gallery.Split(",").ToList();
+                var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "products"));
+                productDto.Gallery = string.Join(",", galleryUrls);
+            }
             return new ApiResponse<ProductAllDto> { Data = productDto, Status = true };
         }
 
@@ -229,9 +264,23 @@ namespace ecommerce.Services
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
                 Slug = p.Slug,
+                Image = p.Image,
                 Gallery = p.Gallery,
-                Image = p.Image
             });
+            // get file path
+            foreach (var product in productDtos)
+            {
+                if (!string.IsNullOrEmpty(product.Image))
+                {
+                    product.Image = _uploadFilesService.GetFilePath(product.Image, "products");
+                }
+                if (!string.IsNullOrEmpty(product.Gallery))
+                {
+                    var gallery = product.Gallery.Split(",").ToList();
+                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "products"));
+                    product.Gallery = string.Join(",", galleryUrls);
+                }
+            }
             return new ApiResponse<IEnumerable<ProductAllDto>> { Data = productDtos, Status = true };
         }
 
@@ -258,10 +307,26 @@ namespace ecommerce.Services
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
                 Slug = p.Slug,
+                Image = p.Image,
                 Gallery = p.Gallery,
-                Image = p.Image
             });
-            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = productDtos, Status = true };
+            var newProductDtos = new List<ProductAllDto>();
+            // get file path
+            foreach (var product in productDtos)
+            {
+                if (!string.IsNullOrEmpty(product.Image))
+                {
+                    product.Image = _uploadFilesService.GetFilePath(product.Image, "products");
+                }
+                if (!string.IsNullOrEmpty(product.Gallery))
+                {
+                    var gallery = product.Gallery.Split(",").ToList();
+                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "products"));
+                    product.Gallery = string.Join(",", galleryUrls);
+                }
+                newProductDtos.Add(product);
+            }
+            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = newProductDtos, Status = true };
         }
 
         public async Task<ApiResponse<int>> UpdateProductAsync(int id, ProductUpdateDto product, IFormFile? image = null, List<IFormFile>? gallery = null)
