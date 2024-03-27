@@ -9,8 +9,8 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<ProductAllDto>> GetProductBySlugAsync(string slug);
         Task<ApiResponse<IEnumerable<ProductAllDto>>> GetProductsByCategoryAsync(int categoryId);
         Task<ApiResponse<IEnumerable<ProductAllDto>>> SearchProductsAsync(ProductSearchDto searchDTO);
-        Task<ApiResponse<int>> AddProductAsync(ProductDto product);
-        Task<ApiResponse<int>> UpdateProductAsync(int id, ProductUpdateDto product);
+        Task<ApiResponse<int>> AddProductAsync(ProductDto product,IFormFile image, List<IFormFile> gallery);
+        Task<ApiResponse<int>> UpdateProductAsync(int id, ProductUpdateDto product, IFormFile? image = null, List<IFormFile>? gallery = null);
         Task<ApiResponse<int>> DeleteProductAsync(int id);
     }
 }

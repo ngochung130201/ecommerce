@@ -7,7 +7,7 @@ namespace ecommerce.Services.Interface
     public interface IAccountService
     {
         Task<ApiResponse<RegisterDto>> RegisterAsync(string username, string email, string password, AdminRole? adminRole = null, bool isAdmin = false);
-        Task<ApiResponse<LoginResponse>> LoginAsync(LoginDto loginDto, AdminRole? adminRole = null, bool isAdmin = false);
+        Task<ApiResponse<LoginResponse>> LoginAsync(LoginDto loginDto);
         Task<ApiResponse<string>> LogoutAsync();
         string GenerateJwtToken(AdminDto user);
         string GenerateJwtToken(UserDto user);

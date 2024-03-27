@@ -22,6 +22,9 @@ namespace ecommerce.Repository
                 Price = product.Price,
                 CategoryId = product.CategoryId,
                 Slug = product.Slug,
+                CreatedAt = DateTime.UtcNow,
+                Image = product.Image,
+                Gallery = product.Gallery
             };
             _repositoryBase.Create(newProduct);
         }
@@ -100,6 +103,8 @@ namespace ecommerce.Repository
             productExist.Price = product.Price;
             productExist.UpdatedAt = DateTime.UtcNow;
             productExist.Slug = product.Slug;
+            productExist.Image = product.Image;
+            productExist.Gallery = product.Gallery;
             _repositoryBase.Update(productExist);
 
         }

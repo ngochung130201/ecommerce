@@ -70,14 +70,17 @@ namespace ecommerce.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task<ApiResponse<LoginResponse>> LoginAsync(LoginDto loginDto, AdminRole? adminRole = null, bool isAdmin = false)
+        public async Task<ApiResponse<LoginResponse>> LoginAsync(LoginDto loginDto)
         {
-            if (isAdmin == false)
+            var passwordHash = new byte[64];
+            var passwordSalt = new byte[128];
+            var isAdmin = false;
+            var user = await _accountUserRepository.GetByEmailForUser(loginDto.Email);
+            if (user != null)
             {
-                var user = await _accountUserRepository.GetByEmailForUser(loginDto.Email);
-                if (user == null) return null;
-
-                if (!VerifyPasswordHash(loginDto.Password, user.PasswordHash, user.PasswordSalt))
+                passwordHash = user.PasswordHash;
+                passwordSalt = user.PasswordSalt;
+                if (!VerifyPasswordHash(loginDto.Password, passwordHash, passwordSalt))
                 {
                     return new ApiResponse<LoginResponse>
                     {
@@ -108,18 +111,20 @@ namespace ecommerce.Services
             }
             else
             {
+                // Admin login
                 var admin = await _accountAdminRepository.GetByEmailForAdmin(loginDto.Email);
                 if (admin == null)
                 {
                     return new ApiResponse<LoginResponse>
                     {
                         Data = null,
-                        Message = "Admin not found",
+                        Message = "User not found",
                         Status = false
                     };
                 }
-
-                if (!VerifyPasswordHash(loginDto.Password, admin.PasswordHash, admin.PasswordSalt))
+                passwordHash = admin.PasswordHash;
+                passwordSalt = admin.PasswordSalt;
+                if (!VerifyPasswordHash(loginDto.Password, passwordHash, passwordSalt))
                 {
                     return new ApiResponse<LoginResponse>
                     {
@@ -128,26 +133,29 @@ namespace ecommerce.Services
                         Status = false
                     };
                 }
-                var adminDto = new AdminDto
-                {
-                    AdminId = admin.AdminId,
-                    Username = admin.Username,
-                    Email = admin.Email,
-                    AdminRole = admin.Role
-                };
-                var token = GenerateJwtToken(adminDto);
                 return new ApiResponse<LoginResponse>
                 {
                     Data = new LoginResponse
                     {
-                        Token = token,
-                        User = null,
-                        Admin = adminDto,
-                        IsAdmin = true,
+                        Token = GenerateJwtToken(new AdminDto
+                        {
+                            AdminId = admin.AdminId,
+                            Username = admin.Username,
+                            Email = admin.Email,
+                            AdminRole = admin.Role
+                        }),
+                        User = new UserDto
+                        {
+                            UserId = admin.AdminId,
+                            Username = admin.Username,
+                            Email = admin.Email
+                        },
+                        IsAdmin = true
                     },
                     Message = "Admin logged in successfully",
                     Status = true
                 };
+               
             }
 
         }
@@ -176,6 +184,16 @@ namespace ecommerce.Services
                     PasswordHash = passwordHash,
                     PasswordSalt = passwordSalt
                 };
+                var existingUser = await _accountUserRepository.GetByEmailForUser(email);
+                if (existingUser != null)
+                {
+                    return new ApiResponse<RegisterDto>
+                    {
+                        Data = null,
+                        Message = "User already exists",
+                        Status = false
+                    };
+                }
                 _accountUserRepository.Add(user);
             }
             else
@@ -189,6 +207,16 @@ namespace ecommerce.Services
                     Role = adminRole ?? AdminRole.Admin
                 };
                 _accountAdminRepository.Add(admin);
+                var existingAdmin = await _accountAdminRepository.GetByEmailForAdmin(email);
+                if (existingAdmin != null)
+                {
+                    return new ApiResponse<RegisterDto>
+                    {
+                        Data = null,
+                        Message = "Admin already exists",
+                        Status = false
+                    };
+                }
             }
             await _unitOfWork.SaveChangesAsync();
             return new ApiResponse<RegisterDto>
