@@ -45,7 +45,7 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<Product>> GetAllProductsAsync()
         {
-            var products = await _repositoryBase.FindAllAsync();
+            var products = await _context.Products.Include(u => u.Category).ToListAsync();
             if (products == null)
             {
                 throw new CustomException("No Product found", 404);
@@ -55,7 +55,7 @@ namespace ecommerce.Repository
 
         public async Task<Product> GetProductByIdAsync(int id)
         {
-            var product = await _repositoryBase.FindByIdAsync(id);
+            var product = await _context.Products.Include(u => u.Category).FirstOrDefaultAsync(p => p.ProductId == id);
             if (product == null)
             {
                 throw new CustomException("Product not found", 404);
@@ -65,18 +65,18 @@ namespace ecommerce.Repository
 
         public async Task<Product> GetProductBySlugAsync(string slug)
         {
-            var product = await _repositoryBase.FindByConditionAsync(p => p.Slug == slug);
+            var product = await _context.Products.Include(u => u.Category).FirstOrDefaultAsync(p => p.Slug == slug);
             if (product == null)
             {
                 throw new CustomException("Product not found", 404);
             }
-            return product.FirstOrDefault();
+            return product;
 
         }
 
-        public Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
+        public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
         {
-            var products = _repositoryBase.FindByConditionAsync(p => p.CategoryId == categoryId);
+            var products = await _context.Products.Include(u=>u.Category).Where(p => p.CategoryId == categoryId).ToListAsync();
             if (products == null)
             {
                 throw new CustomException("No Product found", 404);
@@ -86,18 +86,18 @@ namespace ecommerce.Repository
 
         public async Task DeleteProducts(List<int> ids)
         {
-            var products = await _context.Products.Where(x=>ids.Contains(x.ProductId)).ToListAsync();
+            var products = await _context.Products.Where(x => ids.Contains(x.ProductId)).ToListAsync();
             _context.Products.RemoveRange(products);
         }
 
 
         public async Task<IEnumerable<Product>> SearchProductsAsync(ProductSearchDto searchDTO)
         {
-            var products = await _repositoryBase.FindByConditionAsync(p =>
+            var products = await _context.Products.Include(u=>u.Category).Where(p =>
                 (string.IsNullOrEmpty(searchDTO.Name) || p.Name.Contains(searchDTO.Name)) &&
                 (searchDTO.MinPrice == 0 || p.Price >= searchDTO.MinPrice) &&
                 (searchDTO.MaxPrice == 0 || p.Price <= searchDTO.MaxPrice) &&
-                (searchDTO.CategoryId == 0 || p.CategoryId == searchDTO.CategoryId));
+                (searchDTO.CategoryId == 0 || p.CategoryId == searchDTO.CategoryId)).ToListAsync();
 
             if (products == null)
             {

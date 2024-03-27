@@ -28,6 +28,7 @@ namespace ecommerce.DTO
         public int InventoryCount { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
+        public string CategoryName { get; set; }
     }
     public class ProductUpdateDto
     {
