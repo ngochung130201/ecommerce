@@ -76,6 +76,7 @@ namespace ecommerce.Controllers
                 Image = product.Image,
                 Gallery = product.Gallery,
                 Popular = (Popular)popular,
+                Sale = product.Sale,
             };
 
             var response = await _productService.AddProductAsync(productModel, product.Image, product.Gallery);

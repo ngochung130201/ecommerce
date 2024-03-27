@@ -68,6 +68,7 @@ namespace ecommerce.Services
                     Image = imageResponse.Data,
                     CreatedAt = DateTime.UtcNow,
                     Popular = product.Popular,
+                    Sale = product.Sale,
                     PopularText = nameof(product.Popular)
                 };
                 if (galleryString.Count > 0)
@@ -170,6 +171,7 @@ namespace ecommerce.Services
                 Popular = p.Popular,
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
+                Sale = p.Sale,
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
@@ -212,7 +214,8 @@ namespace ecommerce.Services
                 Gallery = p.Gallery,
                 Popular = p.Popular,
                 PopularText = p.PopularText,
-                CategoryName = p.Category.Name
+                CategoryName = p.Category.Name,
+                Sale = p.Sale,
             }).ToList();
             return new ApiResponse<List<ProductAllDto>> { Data = productDtos, Status = true };
         }
@@ -244,7 +247,8 @@ namespace ecommerce.Services
                 UpdatedAt = product.UpdatedAt,
                 Popular = product.Popular,
                 PopularText = product.PopularText,
-                CategoryName = product.Category.Name
+                CategoryName = product.Category.Name,
+                Sale = p.Sale
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -280,7 +284,8 @@ namespace ecommerce.Services
                 UpdatedAt = product.UpdatedAt,
                 Popular = product.Popular,
                 PopularText = product.PopularText,
-                CategoryName = product.Category.Name
+                CategoryName = product.Category.Name,
+                Sale = p.Sale
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -323,7 +328,8 @@ namespace ecommerce.Services
                 Gallery = p.Gallery,
                 Popular = p.Popular,
                 PopularText = p.PopularText,
-                CategoryName = p.Category.Name
+                CategoryName = p.Category.Name,
+                Sale = p.Sale,
             });
             // get file path
             foreach (var product in productDtos)
@@ -369,7 +375,8 @@ namespace ecommerce.Services
                 Gallery = p.Gallery,
                 Popular = p.Popular,
                 PopularText = p.PopularText,
-                CategoryName = p.Category.Name
+                CategoryName = p.Category.Name,
+                Sale = p.Sale,
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
@@ -414,7 +421,8 @@ namespace ecommerce.Services
                     Slug = product.Name.GenerateSlug(),
                     UpdatedAt = DateTime.UtcNow,
                     Popular = product.Popular,
-                    PopularText = nameof(product.Popular)
+                    PopularText = nameof(product.Popular),
+                    Sale = product.Sale,
                 };
                 if (image != null)
                 {

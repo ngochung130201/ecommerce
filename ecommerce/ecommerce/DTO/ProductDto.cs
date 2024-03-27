@@ -10,7 +10,8 @@ namespace ecommerce.DTO
         public decimal Price { get; set; }
         public int InventoryCount { get; set; }
         public Popular? Popular { get; set; } = null;
-        public IFormFile Image { get; set; } 
+        public IFormFile Image { get; set; }
+        public decimal? Sale { get; set; } = null;
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
     }
      public class ProductRequestDto
@@ -21,7 +22,8 @@ namespace ecommerce.DTO
         public string Price { get; set; }
         public string InventoryCount { get; set; }
         public string? Popular { get; set; } = null;
-        public IFormFile Image { get; set; } 
+        public IFormFile Image { get; set; }
+        public decimal? Sale { get; set; } = null;
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
     }
     public class ProductAllDto
@@ -40,6 +42,7 @@ namespace ecommerce.DTO
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
         public string CategoryName { get; set; }
+        public decimal? Sale { get; set; } = null;
     }
     public class ProductUpdateDto
     {
@@ -50,6 +53,7 @@ namespace ecommerce.DTO
         public int InventoryCount { get; set; }
         public IFormFile Image { get; set; } 
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
+        public decimal? Sale { get; set; } = null;
     }
     public class ProductUpdateRequestDto
     {
@@ -58,7 +62,8 @@ namespace ecommerce.DTO
         public string Price { get; set; }
         public int? Popular { get; set; } = null;
         public string InventoryCount { get; set; }
-        public IFormFile Image { get; set; } 
+        public IFormFile Image { get; set; }
+        public decimal? Sale { get; set; } = null;
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
     }
 }
