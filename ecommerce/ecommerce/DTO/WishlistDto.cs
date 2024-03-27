@@ -8,4 +8,9 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
     }
+    public class WishlistRequestDto
+    {
+        public int UserId { get; set; }
+        public int ProductId { get; set; }
+    }
 }
