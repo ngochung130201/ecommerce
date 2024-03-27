@@ -168,7 +168,8 @@ namespace ecommerce.Services
                 Image = p.Image,
                 Gallery = p.Gallery,
                 Popular = p.Popular,
-                PopularText = p.PopularText
+                PopularText = p.PopularText,
+                CategoryName = p.Category.Name,
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
@@ -214,7 +215,8 @@ namespace ecommerce.Services
                 CreatedAt = product.CreatedAt,
                 UpdatedAt = product.UpdatedAt,
                 Popular = product.Popular,
-                PopularText = product.PopularText
+                PopularText = product.PopularText,
+                CategoryName = product.Category.Name
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -249,7 +251,8 @@ namespace ecommerce.Services
                 CreatedAt = product.CreatedAt,
                 UpdatedAt = product.UpdatedAt,
                 Popular = product.Popular,
-                PopularText = product.PopularText
+                PopularText = product.PopularText,
+                CategoryName = product.Category.Name
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -291,7 +294,8 @@ namespace ecommerce.Services
                 Image = p.Image,
                 Gallery = p.Gallery,
                 Popular = p.Popular,
-                PopularText = p.PopularText
+                PopularText = p.PopularText,
+                CategoryName = p.Category.Name
             });
             // get file path
             foreach (var product in productDtos)
@@ -336,7 +340,8 @@ namespace ecommerce.Services
                 Image = p.Image,
                 Gallery = p.Gallery,
                 Popular = p.Popular,
-                PopularText = p.PopularText
+                PopularText = p.PopularText,
+                CategoryName = p.Category.Name
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path

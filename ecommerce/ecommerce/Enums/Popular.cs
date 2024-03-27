@@ -2,9 +2,9 @@
 {
     public enum Popular
     {
-        Trending = 0,
+        None,
+        Trending,
         BestSellers,
         TopProduct
-
     }
 }
