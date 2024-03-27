@@ -14,5 +14,6 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<int>> DeleteProductAsync(int id);
         // delete products
         Task<ApiResponse<int>> DeleteProductsAsync(List<int> ids);
+        Task<ApiResponse<List<ProductAllDto>>> GetProductsByFilterAsync(ProductFilterDto popularDto);
     }
 }

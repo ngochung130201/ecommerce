@@ -20,5 +20,8 @@ namespace ecommerce.Repository.Interface
         // remove products
         Task DeleteProducts(List<int> ids);
 
+        // Get All Product by Filter
+        Task<List<Product>> GetProductsByFilterAsync(ProductFilterDto filterDto);
+
     }
 }
