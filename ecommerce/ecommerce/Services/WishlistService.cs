@@ -2,15 +2,18 @@
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
+using ecommerce.UnitOfWork;
 
 namespace ecommerce.Services
 {
     public class WishlistService : IWishlistService
     {
         private readonly IWishListRepository _wishlistRepository;
-        public WishlistService(IWishListRepository wishlistRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public WishlistService(IWishListRepository wishlistRepository, IUnitOfWork unitOfWork)
         {
             _wishlistRepository = wishlistRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ApiResponse<int>> AddWishlistAsync(WishlistDto wishlist)
@@ -23,6 +26,7 @@ namespace ecommerce.Services
             try
             {
                 await _wishlistRepository.AddWishListAsync(newWishlist);
+                await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int>
                 {
                     Data = 0,
@@ -57,6 +61,7 @@ namespace ecommerce.Services
             try
             {
                 await _wishlistRepository.DeleteWishListAsync(id);
+                await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int>
                 {
                     Data = id,
@@ -117,7 +122,10 @@ namespace ecommerce.Services
                 Data = new WishlistDto
                 {
                     UserId = wishlist.UserId,
-                    ProductId = wishlist.ProductId
+                    ProductId = wishlist.ProductId,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    WishlistId = wishlist.WishlistId
                 },
                 Message = "Wishlist found",
                 Status = true
@@ -141,7 +149,10 @@ namespace ecommerce.Services
                 Data = wishlist.Select(x => new WishlistDto
                 {
                     UserId = x.UserId,
-                    ProductId = x.ProductId
+                    ProductId = x.ProductId,
+                    UpdatedAt = x.UpdatedAt,
+                    CreatedAt = x.CreatedAt,
+
                 }),
                 Message = "Wishlist found",
                 Status = true
@@ -164,7 +175,10 @@ namespace ecommerce.Services
                 Data = wishlist.Select(x => new WishlistDto
                 {
                     UserId = x.UserId,
-                    ProductId = x.ProductId
+                    ProductId = x.ProductId,
+                    WishlistId = x.WishlistId,
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt,
                 }),
                 Message = "Wishlist found",
                 Status = true
@@ -177,6 +191,7 @@ namespace ecommerce.Services
             {
                 UserId = wishlist.UserId,
                 ProductId = wishlist.ProductId,
+                UpdatedAt = DateTime.UtcNow,
             };
             try
             {

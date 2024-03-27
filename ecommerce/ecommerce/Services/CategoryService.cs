@@ -115,6 +115,8 @@ namespace ecommerce.Services
                     Description = x.Description,
                     UpdatedAt = x.UpdatedAt,
                     CreatedAt = x.CreatedAt,
+                    Slug = x.Slug
+                    
                 }),
                 Message = "Categories found",
                 Status = true
@@ -141,7 +143,8 @@ namespace ecommerce.Services
                     Name = category.Name,
                     Description = category.Description,
                     CreatedAt = category.CreatedAt,
-                    UpdatedAt = category.UpdatedAt
+                    UpdatedAt = category.UpdatedAt,
+                    Slug = category.Slug
 
                 },
                 Message = "Category found",
@@ -169,7 +172,8 @@ namespace ecommerce.Services
                     Name = category.Name,
                     Description = category.Description,
                     CreatedAt = category.CreatedAt,
-                    UpdatedAt = category.UpdatedAt
+                    UpdatedAt = category.UpdatedAt,
+                    Slug = category.Slug
                 },
                 Message = "Category found",
                 Status = true

@@ -82,6 +82,7 @@ namespace ecommerce.Repository
             }
             wishListToUpdate.ProductId = wishList.ProductId;
             wishListToUpdate.UserId = wishList.UserId;
+            wishListToUpdate.UpdatedAt = wishList.UpdatedAt;
             _repositoryBase.Update(wishListToUpdate);
 
         }

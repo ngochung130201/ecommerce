@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ecommerce.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.Models
@@ -34,6 +35,11 @@ namespace ecommerce.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; } = null;
+        [Column("popular")]
+
+        public Popular? Popular { get; set; } = null;
+        [Column("popular_text")]
+        public string? PopularText { get; set; } = null;
 
         // Navigation properties
         public virtual Category Category { get; set; }
