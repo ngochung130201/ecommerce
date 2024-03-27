@@ -79,7 +79,7 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId)
         {
-            var products = await _context.Products.Include(u=>u.Category).Where(p => p.CategoryId == categoryId).ToListAsync();
+            var products = await _context.Products.Include(u => u.Category).Where(p => p.CategoryId == categoryId).ToListAsync();
             if (products == null)
             {
                 throw new CustomException("No Product found", 404);
@@ -96,7 +96,7 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<Product>> SearchProductsAsync(ProductSearchDto searchDTO)
         {
-            var products = await _context.Products.Include(u=>u.Category).Where(p =>
+            var products = await _context.Products.Include(u => u.Category).Where(p =>
                 (string.IsNullOrEmpty(searchDTO.Name) || p.Name.Contains(searchDTO.Name)) &&
                 (searchDTO.MinPrice == 0 || p.Price >= searchDTO.MinPrice) &&
                 (searchDTO.MaxPrice == 0 || p.Price <= searchDTO.MaxPrice) &&
@@ -125,5 +125,40 @@ namespace ecommerce.Repository
             _repositoryBase.Update(productExist);
 
         }
+
+        public async Task<List<Product>> GetProductsByFilterAsync(ProductFilterDto filterDto)
+        {
+            int itemsToSkip = (filterDto.Page - 1) * filterDto.PageSize;
+            var products = await _context.Products.Include(u => u.Category).Where(p =>
+                (string.IsNullOrEmpty(filterDto.Name) || p.Name.Contains(filterDto.Name)) &&
+                (filterDto.MinPrice == 0 || p.Price >= filterDto.MinPrice) &&
+                (filterDto.MaxPrice == 0 || p.Price <= filterDto.MaxPrice) &&
+                (filterDto.CategoryId == 0 || p.CategoryId == filterDto.CategoryId) &&
+                (filterDto.Popular == 0 || p.Popular == filterDto.Popular) &&
+                (filterDto.InventoryCount == 0 || p.InventoryCount >= filterDto.InventoryCount)
+                ).Skip(itemsToSkip)
+                .Take(filterDto.PageSize).OrderByDescending(u => u.CreatedAt).ToListAsync();
+            if (products == null || products.Count == 0)
+            {
+                return null;
+            }
+            if (filterDto.IsSortPrice)
+            {
+                if (filterDto.SortPrice == "asc")
+                {
+                    products = products.OrderBy(p => p.Price).ThenBy(u => u.CreatedAt).ToList();
+                }
+                else
+                {
+                    products = products.OrderByDescending(p => p.Price).ThenBy(u => u.CreatedAt).ToList();
+                }
+            }
+            else if (filterDto.SortByDate)
+            {
+                products = products.OrderBy(u => u.CreatedAt).ToList();
+            }
+            return products;
+        }
+
     }
 }

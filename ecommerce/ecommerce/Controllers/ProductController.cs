@@ -54,16 +54,6 @@ namespace ecommerce.Controllers
             }
             return BadRequest(response);
         }
-        [HttpPost("search")]
-        public async Task<IActionResult> SearchProductsAsync(ProductSearchDto searchDTO)
-        {
-            var response = await _productService.SearchProductsAsync(searchDTO);
-            if (response.Status)
-            {
-                return Ok(response);
-            }
-            return BadRequest(response);
-        }
         [HttpPost]
         public async Task<IActionResult> AddProductAsync([FromForm] ProductRequestDto product)
         {
@@ -143,6 +133,16 @@ namespace ecommerce.Controllers
             }
             return BadRequest(response);
         }
-
+        // filter products
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetProductsByFilterAsync(ProductFilterDto popularDto)
+        {
+            var response = await _productService.GetProductsByFilterAsync(popularDto);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }
