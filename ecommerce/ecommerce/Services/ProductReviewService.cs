@@ -70,6 +70,31 @@ namespace ecommerce.Services
             }
         }
 
+        public async Task<ApiResponse<int>> DeleteProductReviewsAsync(List<int> ids)
+        {
+            try
+            {
+                var productReviews = _productReviewRepository.DeleteProductReviewsAsync(ids);
+                await _unitOfWork.SaveChangesAsync();
+                return new ApiResponse<int>
+                {
+                    Data = 0,
+                    Message = "Product Reviews deleted",
+                    Status = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int>
+                {
+                    Data = 0,
+                    Message = ex.Message,
+                    Status = false
+                };
+            }
+        }
+
+
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync()
         {
             var productReviews = await _productReviewRepository.GetAllProductReviewsAsync();

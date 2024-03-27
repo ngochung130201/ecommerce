@@ -17,6 +17,8 @@ namespace ecommerce.Repository.Interface
         void UpdateProduct(Product product, Product productExist);
         // Delete a product by id
         void DeleteProduct(Product? product);
+        // remove products
+        Task DeleteProducts(List<int> ids);
 
     }
 }

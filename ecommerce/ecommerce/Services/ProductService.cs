@@ -37,7 +37,8 @@ namespace ecommerce.Services
                 {
                     return new ApiResponse<int> { Message = "Category is required", Status = false };
                 }
-                if(image == null){
+                if (image == null)
+                {
                     return new ApiResponse<int> { Message = "Product image is required", Status = false };
                 }
                 var imageResponse = await _uploadFilesService.UploadFileAsync(image, "products");
@@ -48,13 +49,13 @@ namespace ecommerce.Services
                 List<string> galleryString = new List<string>();
                 if (gallery != null && gallery.Count > 0)
                 {
-                    var galleryRes  = await _uploadFilesService.UploadFilesAsync(gallery, "products");
+                    var galleryRes = await _uploadFilesService.UploadFilesAsync(gallery, "products");
                     if (!galleryRes.Status)
                     {
                         return new ApiResponse<int> { Message = galleryRes.Message, Status = false };
                     }
-                    galleryString = galleryRes.Data ?? new List<string>();
-                 
+                    galleryString = galleryRes.Data;
+
                 }
                 var newProduct = new Product
                 {
@@ -129,6 +130,21 @@ namespace ecommerce.Services
             }
         }
 
+        public async Task<ApiResponse<int>> DeleteProductsAsync(List<int> ids)
+        {
+            try
+            {
+                await _productRepository.DeleteProducts(ids);
+                await _unitOfWork.SaveChangesAsync();
+                return new ApiResponse<int> { Message = "Products deleted successfully", Status = true };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int> { Message = ex.Message, Status = false };
+            }
+        }
+
+
         public async Task<ApiResponse<IEnumerable<ProductAllDto>>> GetAllProductsAsync()
         {
             var products = await _productRepository.GetAllProductsAsync();
@@ -152,7 +168,7 @@ namespace ecommerce.Services
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
-            foreach (var product in productDtos)
+            foreach (var product in productDtos.ToList())
             {
                 if (!string.IsNullOrEmpty(product.Image))
                 {
@@ -161,7 +177,7 @@ namespace ecommerce.Services
                 if (!string.IsNullOrEmpty(product.Gallery))
                 {
                     var gallery = product.Gallery.Split(",").ToList();
-                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "products"));
+                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "gallery-products"));
                     product.Gallery = string.Join(",", galleryUrls);
                 }
                 newProductDtos.Add(product);
@@ -202,7 +218,7 @@ namespace ecommerce.Services
             if (!string.IsNullOrEmpty(product.Gallery))
             {
                 var gallery = product.Gallery.Split(",").ToList();
-                var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "products"));
+                var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "gallery-products"));
                 productDto.Gallery = string.Join(",", galleryUrls);
             }
             return new ApiResponse<ProductAllDto> { Data = productDto, Status = true };
@@ -277,7 +293,7 @@ namespace ecommerce.Services
                 if (!string.IsNullOrEmpty(product.Gallery))
                 {
                     var gallery = product.Gallery.Split(",").ToList();
-                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "products"));
+                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "gallery-products"));
                     product.Gallery = string.Join(",", galleryUrls);
                 }
             }
@@ -321,7 +337,7 @@ namespace ecommerce.Services
                 if (!string.IsNullOrEmpty(product.Gallery))
                 {
                     var gallery = product.Gallery.Split(",").ToList();
-                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "products"));
+                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, "gallery-products"));
                     product.Gallery = string.Join(",", galleryUrls);
                 }
                 newProductDtos.Add(product);
@@ -336,7 +352,7 @@ namespace ecommerce.Services
             {
                 return new ApiResponse<int> { Message = "Product id is required", Status = false };
             }
-            
+
             var productItem = await _productRepository.GetProductByIdAsync(id);
             if (productItem == null)
             {
@@ -360,7 +376,7 @@ namespace ecommerce.Services
                     {
                         await _uploadFilesService.RemoveFileAsync(productItem.Image, "products");
                     }
-                    var imageResponse = await _uploadFilesService.UploadFileAsync(image, "products");
+                    var imageResponse = await _uploadFilesService.UploadFileAsync(image, "gallery-products");
                     if (!imageResponse.Status)
                     {
                         return new ApiResponse<int> { Message = imageResponse.Message, Status = false };

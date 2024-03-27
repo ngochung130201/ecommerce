@@ -105,8 +105,8 @@ namespace ecommerce.Services
                         }
 
                         // Do something with the uploaded gallery file paths if needed
+                        fileNames.Add(uniqueFileName);
                     }
-                    fileNames.Add(file.FileName);
                 }
                 return new ApiResponse<List<string>> { Data = fileNames.ToList(), Message = "Files uploaded successfully", Status = true };
             }

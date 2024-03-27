@@ -85,5 +85,16 @@ namespace ecommerce.Controllers
             }
             return BadRequest(productReviews);
         }
+        // DELETE: api/product-review/delete
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteProductReviewsAsync(List<int> ids)
+        {
+            var result = await _productReviewService.DeleteProductReviewsAsync(ids);
+            if (result.Status)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

@@ -11,5 +11,7 @@ namespace ecommerce.Repository.Interface
         Task UpdateProductReviewAsync(int id, ProductReview productReview);
         Task<IEnumerable<ProductReview>> GetProductReviewsByProductAsync(int productId);
         Task<IEnumerable<ProductReview>> GetProductReviewsByUserAsync(int userId);
+        // delete product reviews
+        Task DeleteProductReviewsAsync(List<int> ids);
     }
 }

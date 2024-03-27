@@ -12,5 +12,7 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<int>> AddProductAsync(ProductDto product,IFormFile image, List<IFormFile> gallery);
         Task<ApiResponse<int>> UpdateProductAsync(int id, ProductUpdateDto product, IFormFile? image = null, List<IFormFile>? gallery = null);
         Task<ApiResponse<int>> DeleteProductAsync(int id);
+        // delete products
+        Task<ApiResponse<int>> DeleteProductsAsync(List<int> ids);
     }
 }
