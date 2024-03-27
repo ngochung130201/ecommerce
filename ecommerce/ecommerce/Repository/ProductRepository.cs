@@ -32,6 +32,7 @@ namespace ecommerce.Repository
                 Popular = product.Popular,
                 InventoryCount = product.InventoryCount,
                 PopularText = product.PopularText,
+                Sale = product.Sale
             };
             _repositoryBase.Create(newProduct);
         }
@@ -122,6 +123,7 @@ namespace ecommerce.Repository
             productExist.Popular = product.Popular;
             productExist.InventoryCount = product.InventoryCount;
             productExist.PopularText = product.PopularText;
+            productExist.Sale = product.Sale;
             _repositoryBase.Update(productExist);
 
         }
