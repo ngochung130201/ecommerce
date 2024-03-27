@@ -6,7 +6,6 @@ namespace ecommerce.DTO
     {
         public Popular Popular { get; set; } = 0;
         public bool SortByDate { get; set; } = false; // sap xep theo ngay cu nhat hoac moi nhat
-        public int Rating { get; set; } = 0;
         // Sort min or max
         public decimal MinPrice { get; set; } = 0;
         public decimal MaxPrice { get; set; } = 0;
