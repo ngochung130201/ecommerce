@@ -144,12 +144,14 @@ namespace ecommerce.Services
                             Email = admin.Email,
                             AdminRole = admin.Role
                         }),
-                        User = new UserDto
+                        Admin = new AdminDto
                         {
-                            UserId = admin.AdminId,
+                            AdminId = admin.AdminId,
                             Username = admin.Username,
-                            Email = admin.Email
+                            Email = admin.Email,
+                            AdminRole= admin.Role,
                         },
+                        AdminRole = admin.Role,
                         IsAdmin = true
                     },
                     Message = "Admin logged in successfully",
