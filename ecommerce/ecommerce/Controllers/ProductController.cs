@@ -64,9 +64,9 @@ namespace ecommerce.Controllers
             return BadRequest(response);
         }
         [HttpPost]
-        public async Task<IActionResult> AddProductAsync(ProductDto product)
+        public async Task<IActionResult> AddProductAsync([FromForm] ProductDto product)
         {
-            var response = await _productService.AddProductAsync(product);
+            var response = await _productService.AddProductAsync(product, product.Image, product.Gallery);
             if (response.Status)
             {
                 return Ok(response);

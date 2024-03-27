@@ -76,6 +76,16 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IRevenueReportService, RevenueReportService>();
 builder.Services.AddScoped<IHistoryService, HistoryService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IUploadFilesService, UploadFilesService>();
+
+builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+{
+    builder.WithOrigins("*")
+           .AllowAnyMethod()
+           .AllowAnyHeader();
+
+// U Can Filter Here
+}));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -83,7 +93,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
+app.UseCors("MyPolicy");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

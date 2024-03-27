@@ -18,7 +18,7 @@ namespace ecommerce.Models
         public string Slug { get; set; }
 
         [Column("description", TypeName = "nvarchar(255)")]
-        public string Description { get; set; }
+        public string? Description { get; set; } = null;
 
         [Column("price", TypeName = "DECIMAL(20,7)")]
         public decimal Price { get; set; }
@@ -26,9 +26,9 @@ namespace ecommerce.Models
         [Column("inventory_count")]
         public int InventoryCount { get; set; }
         [Column("image")]
-        public string Image { get; set; }
+        public string? Image { get; set; } = null;
         [Column("gallery")]
-        public string Gallery { get; set; }
+        public string? Gallery { get; set; } = null;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

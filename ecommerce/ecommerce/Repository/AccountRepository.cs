@@ -148,9 +148,9 @@ namespace ecommerce.Repository
             var user = await _repositoryBaseUser.FindByConditionAsync(u => u.Email == email);
             if (user == null)
             {
-                throw new CustomException("User not found", 404);
+                return null;
             }
-            return user.FirstOrDefault() ?? throw new CustomException("User not found", 404);
+            return user.FirstOrDefault();
         }
 
         public async Task<Admin> GetByEmailForAdmin(string email)
@@ -158,9 +158,9 @@ namespace ecommerce.Repository
             var admin = await _repositoryBaseAdmin.FindByConditionAsync(a => a.Email == email);
             if (admin == null)
             {
-                throw new CustomException("Admin not found", 404);
+                return null;
             }
-            return admin.FirstOrDefault() ?? throw new CustomException("Admin not found", 404);
+            return admin.FirstOrDefault();
         }
     }
 }

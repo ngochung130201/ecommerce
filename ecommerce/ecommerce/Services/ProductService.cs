@@ -11,13 +11,17 @@ namespace ecommerce.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork)
+        private readonly IUploadFilesService _uploadFilesService;
+        public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork, IUploadFilesService uploadFilesService)
         {
             _productRepository = productRepository;
             _unitOfWork = unitOfWork;
+            _uploadFilesService = uploadFilesService;
         }
-        public async Task<ApiResponse<int>> AddProductAsync(ProductDto product)
+        public async Task<ApiResponse<int>> AddProductAsync(ProductDto product, IFormFile image, List<IFormFile> gallery)
         {
+            var imageString = string.Empty;
+            var galleryStrings = new List<string>();
             try
             {
                 // validation
@@ -33,7 +37,25 @@ namespace ecommerce.Services
                 {
                     return new ApiResponse<int> { Message = "Category is required", Status = false };
                 }
-
+                if(image == null){
+                    return new ApiResponse<int> { Message = "Product image is required", Status = false };
+                }
+                var imageResponse = await _uploadFilesService.UploadFileAsync(image, "products");
+                if (!imageResponse.Status)
+                {
+                    return new ApiResponse<int> { Message = imageResponse.Message, Status = false };
+                }
+                List<string> galleryString = new List<string>();
+                if (gallery != null && gallery.Count > 0)
+                {
+                    var galleryRes  = await _uploadFilesService.UploadFilesAsync(gallery, "products");
+                    if (!galleryRes.Status)
+                    {
+                        return new ApiResponse<int> { Message = galleryRes.Message, Status = false };
+                    }
+                    galleryString = galleryRes.Data ?? new List<string>();
+                 
+                }
                 var newProduct = new Product
                 {
                     Name = product.Name,
@@ -41,18 +63,37 @@ namespace ecommerce.Services
                     Price = product.Price,
                     CategoryId = product.CategoryId,
                     InventoryCount = product.InventoryCount,
-                    Slug = product.Name.GenerateSlug()
+                    Slug = product.Name.GenerateSlug(),
+                    Image = imageResponse.Data,
+                    CreatedAt = DateTime.UtcNow,
                 };
+                if (galleryString.Count > 0)
+                {
+                    // galleryString add "," to separate each image
+                    newProduct.Gallery = string.Join(",", galleryString);
+                }
+                galleryStrings = galleryString;
+                imageString = imageResponse.Data;
                 _productRepository.AddProduct(newProduct);
                 await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int> { Message = "Product added successfully", Data = newProduct.ProductId, Status = true };
             }
             catch (Exception ex)
             {
+                // remove image and gallery if error
+                if (image != null && !string.IsNullOrEmpty(imageString))
+                {
+                    await _uploadFilesService.RemoveFileAsync(imageString, "products");
+                }
+                if (gallery != null && gallery.Count > 0)
+                {
+                    await _uploadFilesService.RemoveFilesAsync(galleryStrings, "products");
+                }
                 return new ApiResponse<int> { Message = ex.Message, Status = false };
             }
 
         }
+
 
         public async Task<ApiResponse<int>> DeleteProductAsync(int id)
         {
@@ -67,6 +108,16 @@ namespace ecommerce.Services
                 if (product == null)
                 {
                     return new ApiResponse<int> { Message = "Product not found", Status = false };
+                }
+                // remove image and gallery if error
+                if (product != null && !string.IsNullOrEmpty(product.Image))
+                {
+                    await _uploadFilesService.RemoveFileAsync(product.Image, "products");
+                }
+                if (product.Gallery != null && string.IsNullOrEmpty(product.Gallery))
+                {
+                    var galleryStrings = product.Gallery.Split(",").ToList();
+                    await _uploadFilesService.RemoveFilesAsync(galleryStrings, "products");
                 }
                 _productRepository.DeleteProduct(product);
                 await _unitOfWork.SaveChangesAsync();
@@ -95,7 +146,9 @@ namespace ecommerce.Services
                 InventoryCount = p.InventoryCount,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
-                Slug = p.Slug
+                Slug = p.Slug,
+                Image = p.Image,
+                Gallery = p.Gallery
             });
             return new ApiResponse<IEnumerable<ProductAllDto>> { Data = productDtos, Status = true };
         }
@@ -122,7 +175,9 @@ namespace ecommerce.Services
                 CategoryId = product.CategoryId,
                 InventoryCount = product.InventoryCount,
                 CreatedAt = product.CreatedAt,
-                UpdatedAt = product.UpdatedAt
+                UpdatedAt = product.UpdatedAt,
+                Gallery = product.Gallery,
+                Image = product.Image
             };
             return new ApiResponse<ProductAllDto> { Data = productDto, Status = true };
         }
@@ -144,7 +199,9 @@ namespace ecommerce.Services
                 CategoryId = product.CategoryId,
                 InventoryCount = product.InventoryCount,
                 CreatedAt = product.CreatedAt,
-                UpdatedAt = product.UpdatedAt
+                UpdatedAt = product.UpdatedAt,
+                Image = product.Image,
+                Gallery = product.Gallery
             };
             return new ApiResponse<ProductAllDto> { Data = productDto, Status = true };
         }
@@ -167,7 +224,13 @@ namespace ecommerce.Services
                 Name = p.Name,
                 Description = p.Description,
                 Price = p.Price,
-                CategoryId = p.CategoryId
+                CategoryId = p.CategoryId,
+                InventoryCount = p.InventoryCount,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                Slug = p.Slug,
+                Gallery = p.Gallery,
+                Image = p.Image
             });
             return new ApiResponse<IEnumerable<ProductAllDto>> { Data = productDtos, Status = true };
         }
@@ -191,18 +254,24 @@ namespace ecommerce.Services
                 Description = p.Description,
                 Price = p.Price,
                 CategoryId = p.CategoryId,
-                InventoryCount = p.InventoryCount
+                InventoryCount = p.InventoryCount,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                Slug = p.Slug,
+                Gallery = p.Gallery,
+                Image = p.Image
             });
             return new ApiResponse<IEnumerable<ProductAllDto>> { Data = productDtos, Status = true };
         }
 
-        public async Task<ApiResponse<int>> UpdateProductAsync(int id, ProductUpdateDto product)
+        public async Task<ApiResponse<int>> UpdateProductAsync(int id, ProductUpdateDto product, IFormFile? image = null, List<IFormFile>? gallery = null)
         {
             // validation
             if (id <= 0)
             {
                 return new ApiResponse<int> { Message = "Product id is required", Status = false };
             }
+            
             var productItem = await _productRepository.GetProductByIdAsync(id);
             if (productItem == null)
             {
@@ -219,6 +288,35 @@ namespace ecommerce.Services
                     Slug = product.Name.GenerateSlug(),
                     UpdatedAt = DateTime.UtcNow,
                 };
+                if (image != null)
+                {
+                    // remove old image
+                    if (!string.IsNullOrEmpty(productItem.Image))
+                    {
+                        await _uploadFilesService.RemoveFileAsync(productItem.Image, "products");
+                    }
+                    var imageResponse = await _uploadFilesService.UploadFileAsync(image, "products");
+                    if (!imageResponse.Status)
+                    {
+                        return new ApiResponse<int> { Message = imageResponse.Message, Status = false };
+                    }
+                    productUpdate.Image = imageResponse.Data;
+                }
+                if (gallery != null && gallery.Count > 0)
+                {
+                    // remove old gallery
+                    if (!string.IsNullOrEmpty(productItem.Gallery))
+                    {
+                        var galleryStrings = productItem.Gallery.Split(",").ToList();
+                        await _uploadFilesService.RemoveFilesAsync(galleryStrings, "products");
+                    }
+                    var galleryRes = await _uploadFilesService.UploadFilesAsync(gallery, "products");
+                    if (!galleryRes.Status)
+                    {
+                        return new ApiResponse<int> { Message = galleryRes.Message, Status = false };
+                    }
+                    productUpdate.Gallery = string.Join(",", galleryRes.Data ?? new List<string>());
+                }
                 _productRepository.UpdateProduct(productUpdate, productItem);
                 await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int> { Message = "Product updated successfully", Status = true, Data = id };
