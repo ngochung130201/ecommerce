@@ -11,6 +11,16 @@ namespace ecommerce.Services
             _webHostEnvironment = webHostEnvironment;
         }
 
+        public string GetFilePath(string fileName, string nameFolder)
+        {
+            var filePath = Path.Combine(_webHostEnvironment.WebRootPath, nameFolder, fileName);
+            if (File.Exists(filePath))
+            {
+                return filePath;
+            }
+            return null;
+        }
+
         public async Task<ApiResponse<string>> RemoveFileAsync(string fileName, string nameFolder)
         {
             var filePath = Path.Combine(_webHostEnvironment.WebRootPath, nameFolder, fileName);
@@ -40,11 +50,6 @@ namespace ecommerce.Services
                 return new ApiResponse<List<string>> { Data = removedFiles, Message = "Files removed successfully", Status = true };
             }
             return new ApiResponse<List<string>> { Message = "Files not found", Status = false };
-        }
-
-        public Task<ApiResponse<string>> RemoveFileWhenErrorAsync(string fileName, string nameFolder)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<ApiResponse<string>> UploadFileAsync(IFormFile file, string nameFolder = "uploads")
