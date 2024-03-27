@@ -30,6 +30,20 @@ namespace ecommerce.Repository
             }
         }
 
+        public async void DeleteCategories(List<int> ids)
+        {
+            try 
+            {
+                var categories = await _repositoryBase.FindByConditionAsync(c => ids.Contains(c.CategoryId));
+                _repositoryBase.DeleteRange(categories);
+            }
+            catch (Exception ex)
+            {
+                throw new CustomException("Categories not deleted", 500);
+            }
+        }
+
+
         public void DeleteCategory(Category category)
         {
             try

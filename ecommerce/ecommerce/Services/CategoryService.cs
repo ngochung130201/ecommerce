@@ -35,6 +35,31 @@ namespace ecommerce.Services
             };
         }
 
+        public async Task<ApiResponse<int>> DeleteCategoriesAsync(List<int> ids)
+        {
+            try
+            {
+                _categoryRepository.DeleteCategories(ids);
+                await _unitOfWork.SaveChangesAsync();
+                return new ApiResponse<int>
+                {
+                    Data = 0,
+                    Message = "Categories deleted",
+                    Status = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<int>
+                {
+                    Data = 0,
+                    Message = ex.Message,
+                    Status = false
+                };
+            }
+        }
+
+
         public async Task<ApiResponse<int>> DeleteCategoryAsync(int id)
         {
             var category = await _categoryRepository.GetCategoryByIdAsync(id);

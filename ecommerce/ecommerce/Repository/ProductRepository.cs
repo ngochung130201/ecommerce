@@ -1,16 +1,20 @@
-﻿using ecommerce.DTO;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
 {
     public class ProductRepository : IProductRepository
     {
         private readonly IRepositoryBase<Product> _repositoryBase;
-        public ProductRepository(IRepositoryBase<Product> repositoryBase)
+        private readonly EcommerceContext _context;
+        public ProductRepository(IRepositoryBase<Product> repositoryBase, EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
+            _context = context;
         }
 
         public void AddProduct(Product product)
@@ -79,6 +83,13 @@ namespace ecommerce.Repository
             }
             return products;
         }
+
+        public async Task DeleteProducts(List<int> ids)
+        {
+            var products = await _context.Products.Where(x=>ids.Contains(x.ProductId)).ToListAsync();
+            _context.Products.RemoveRange(products);
+        }
+
 
         public async Task<IEnumerable<Product>> SearchProductsAsync(ProductSearchDto searchDTO)
         {

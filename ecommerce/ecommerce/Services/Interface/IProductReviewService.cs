@@ -11,6 +11,8 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<int>> UpdateProductReviewAsync(int id, ProductReviewUpdateDto productReview);
         Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByProductAsync(int productId);
         Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByUserAsync(int userId);
+        // delete product reviews
+        Task<ApiResponse<int>> DeleteProductReviewsAsync(List<int> ids);
 
     }
 }

@@ -10,5 +10,7 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<int>> AddCategoryAsync(CategoryDto category);
         Task<ApiResponse<int>> DeleteCategoryAsync(int id);
         Task<ApiResponse<int>> UpdateCategoryAsync(int id, CategoryDto category);
+        // delete categories
+        Task<ApiResponse<int>> DeleteCategoriesAsync(List<int> ids);
     }
 }

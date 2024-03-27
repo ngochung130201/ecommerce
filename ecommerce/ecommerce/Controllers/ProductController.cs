@@ -74,7 +74,7 @@ namespace ecommerce.Controllers
             return BadRequest(response);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProductAsync(int id, ProductUpdateDto product)
+        public async Task<IActionResult> UpdateProductAsync(int  id,[FromForm] ProductUpdateDto product)
         {
             var response = await _productService.UpdateProductAsync(id, product);
             if (response.Status)
@@ -87,6 +87,17 @@ namespace ecommerce.Controllers
         public async Task<IActionResult> DeleteProductAsync(int id)
         {
             var response = await _productService.DeleteProductAsync(id);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        // delete products
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteProductsAsync([FromBody] List<int> ids)
+        {
+            var response = await _productService.DeleteProductsAsync(ids);
             if (response.Status)
             {
                 return Ok(response);

@@ -10,5 +10,7 @@ namespace ecommerce.Repository.Interface
         void AddCategory(Category category);
         void DeleteCategory(Category category);
         Task UpdateCategoryAsync(int id, Category category);
+        // delete categories
+        void DeleteCategories(List<int> ids);
     }
 }

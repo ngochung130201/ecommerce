@@ -1,4 +1,5 @@
-﻿using ecommerce.Middleware;
+﻿using ecommerce.Context;
+using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 
@@ -7,9 +8,11 @@ namespace ecommerce.Repository
     public class ProductReviewRepository : IProductReviewRepository
     {
         private readonly IRepositoryBase<ProductReview> _repositoryBase;
-        public ProductReviewRepository(IRepositoryBase<ProductReview> repositoryBase)
+        private readonly EcommerceContext _context;
+        public ProductReviewRepository(IRepositoryBase<ProductReview> repositoryBase, EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
+            _context = context;
         }
         public async Task AddProductReviewAsync(ProductReview productReview)
         {
@@ -41,6 +44,13 @@ namespace ecommerce.Repository
                 throw new CustomException(ex.Message, 500);
             }
         }
+
+        public async Task DeleteProductReviewsAsync(List<int> ids)
+        {
+            var productReviews = await _repositoryBase.FindByConditionAsync(p => ids.Contains(p.ReviewId));
+            _context.ProductReviews.RemoveRange(productReviews);
+        }
+
 
         public async Task<IEnumerable<ProductReview>> GetAllProductReviewsAsync()
         {
