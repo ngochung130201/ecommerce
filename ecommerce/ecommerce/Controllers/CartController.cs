@@ -41,7 +41,7 @@ namespace ecommerce.Controllers
             return BadRequest(result);
         }
         /// <summary>
-        /// Delete cart from the database by cart id
+        /// Delete cart from the database by cart id remove all the cart items
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -55,22 +55,27 @@ namespace ecommerce.Controllers
             }
             return BadRequest(result);
         }
-        /// <summary>
-        /// Update cart in the database by cart id and cart details and add order, order details
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="cart"></param>
-        /// <returns></returns>
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCartAsync(int id, CartDto cart)
+        // remove cart item from the cart
+        [HttpDelete("{cartId}/cartItem/{cartItemId}")]
+        public async Task<IActionResult> DeleteCartItemAsync(int cartId, int cartItemId)
         {
-            var result = await _cartService.UpdateCartAsync(id, cart);
+            var result = await _cartService.DeleteCartItemAsync(cartId, cartItemId);
             if (result.Status)
             {
                 return Ok(result);
             }
             return BadRequest(result);
         }
-
+        // remove list of cart items 
+        [HttpDelete("{cartId}/cartItems")]
+        public async Task<IActionResult> DeleteCartItemsByCartIdAsync(int cartId, List<int> cartItemsId)
+        {
+            var result = await _cartService.DeleteCartItemsByCartIdAsync(cartId,cartItemsId);
+            if (result.Status)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }

@@ -40,9 +40,9 @@ namespace ecommerce.Repository
             return await _repositoryBase.FindAllAsync();
         }
 
-        public Task<Cart> GetCartByIdAsync(int id)
+        public async Task<Cart> GetCartByIdAsync(int id)
         {
-            var cart = _repositoryBase.FindByIdAsync(id);
+            var cart = await _context.Carts.Include(u=>u.CartItems).FirstOrDefaultAsync(c => c.CartId == id);
             return cart;
         }
 

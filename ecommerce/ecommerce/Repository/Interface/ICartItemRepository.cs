@@ -9,6 +9,7 @@ namespace ecommerce.Repository.Interface
         Task<IEnumerable<CartItem>> GetCartItemsByCartsIdAsync(int cartId);
         void AddCartItem(CartItem cartItem);
         void DeleteCartItem(CartItem? cartItem);
+    
         void UpdateCartItem(CartItem? cartItemToUpdate, CartItem cartItem);
         void UpdateCartsItem(IEnumerable<CartItem>? cartItemToUpdate, IEnumerable<CartItem> cartItem);
         // Get cart items by cart id

@@ -111,7 +111,46 @@ namespace ecommerce.Services
             // Remove all cart items associated with the cart
             var cartItems = cart.CartItems;
             await _cartItemService.DeleteCartItemsByCartIdAsync(cartItems);
+            // remove total price from the cart
+            await _unitOfWork.SaveChangesAsync();
             return new ApiResponse<int> { Message = "Cart deleted successfully", Status = true };
+        }
+
+        public async Task<ApiResponse<int>> DeleteCartItemAsync(int cartId, int cartItemId)
+        {
+           var cartItem = await _cartItemRepository.GetCartItemByIdAsync(cartItemId);
+            if (cartItem == null)
+            {
+                return new ApiResponse<int> { Message = "Cart Item not found", Status = false };
+            }
+            // remove total price from the cart
+            var cart = await _cartRepository.GetCartByIdAsync(cartId);
+            cart.TotalPrice -= cartItem.TotalPrice;
+            _cartItemRepository.DeleteCartItem(cartItem);
+            await _unitOfWork.SaveChangesAsync();
+            return new ApiResponse<int> { Message = "Cart Item deleted successfully", Status = true };
+        }
+
+        public async Task<ApiResponse<int>> DeleteCartItemsByCartIdAsync(int cartId, List<int> cartItemId)
+        {
+            var cartItems = await _cartItemRepository.GetCartItemsByCartsIdAsync(cartId);
+            if (cartItems == null)
+            {
+                return new ApiResponse<int> { Message = "Cart Items not found", Status = false };
+            }
+            // remove total price from the cart
+            var cart = await _cartRepository.GetCartByIdAsync(cartId);
+            foreach (var item in cartItems)
+            {
+                cart.TotalPrice -= item.TotalPrice;
+            }
+            _cartItemRepository.DeleteCartItemsByCartId(cartItems);
+            if (cart.CartItems.Count == cartItems.Count())
+            {
+                _cartRepository.DeleteCart(cart);
+            }
+            await _unitOfWork.SaveChangesAsync();
+            return new ApiResponse<int> { Message = "Cart Items deleted successfully", Status = true };
         }
 
         public async Task<ApiResponse<IEnumerable<CartDto>>> GetAllCartsAsync()
