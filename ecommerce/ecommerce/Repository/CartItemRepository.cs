@@ -1,15 +1,20 @@
-﻿using ecommerce.Middleware;
+﻿using ecommerce.Context;
+using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
 {
     public class CartItemRepository : ICartItemRepository
     {
         private readonly IRepositoryBase<CartItem> _repositoryBase;
-        public CartItemRepository(IRepositoryBase<CartItem> repositoryBase)
+        private readonly EcommerceContext _context;
+        
+        public CartItemRepository(IRepositoryBase<CartItem> repositoryBase, EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
+            _context = context;
         }
         public void AddCartItem(CartItem cartItem)
         {
@@ -78,16 +83,22 @@ namespace ecommerce.Repository
             }
             return cartItem;
         }
-
-        public Task<IEnumerable<CartItem>> GetCartItemsByCartIdAsync(int cartId, int productId)
+        public async Task<CartItem> GetCartItemsByCartIdAsync(int cartId, int productId)
         {
-            var cartItems = _repositoryBase.FindByConditionAsync(x => x.CartId == cartId && x.ProductId == productId);
+            var cartItems = await _context.CartItems.FirstOrDefaultAsync(x => x.CartId == cartId && x.ProductId == productId);
             if (cartItems == null)
             {
                 return null;
             }
             return cartItems;
         }
+
+        public async Task<IEnumerable<CartItem>> GetCartItemsByCartsIdAsync(int cartId)
+        {
+            var cart = await _context.CartItems.Where(x => x.CartId == cartId).ToListAsync();
+            return cart; 
+        }
+
 
         public void UpdateCartItem(CartItem? cartItemToUpdate, CartItem cartItem)
         {

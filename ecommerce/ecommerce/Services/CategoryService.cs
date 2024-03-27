@@ -24,6 +24,7 @@ namespace ecommerce.Services
                 Name = category.Name,
                 Description = category.Description,
                 Slug = StringHelper.GenerateSlug(category.Name),
+                CreatedAt = DateTime.UtcNow
             };
             _categoryRepository.AddCategory(newCategory);
             await _unitOfWork.SaveChangesAsync();

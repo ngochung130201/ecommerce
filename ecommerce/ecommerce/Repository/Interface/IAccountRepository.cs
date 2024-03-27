@@ -8,6 +8,7 @@ namespace ecommerce.Repository.Interface
         Task<IEnumerable<Admin>> GetAllAdmin();
         Task<Admin> GetByIdAdmin(int id);
         Task<User> GetByIdForUser(int id);
+        Task<User> GetByIdUser(int id);
         // email
         Task<User> GetByEmailForUser(string email);
         Task<Admin> GetByEmailForAdmin(string email);

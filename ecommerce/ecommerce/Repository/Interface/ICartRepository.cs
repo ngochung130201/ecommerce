@@ -6,7 +6,7 @@ namespace ecommerce.Repository.Interface
     {
         Task<IEnumerable<Cart>> GetAllCartsAsync();
         Task<Cart> GetCartByIdAsync(int id);
-        Task<IEnumerable<Cart>> GetCartsByUserIdAsync(int userId);
+        Task<Cart> GetCartsByUserIdAsync(int userId);
         void AddCart(Cart cart);
         void UpdateCart(Cart cart, Cart cartExist);
         void DeleteCart(Cart cart);

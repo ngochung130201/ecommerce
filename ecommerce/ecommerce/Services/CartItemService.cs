@@ -128,9 +128,9 @@ namespace ecommerce.Services
             };
         }
 
-        public async Task<ApiResponse<IEnumerable<CartItemDto>>> GetCartItemsByCartIdAsync(int cartId, int productId)
+        public async Task<ApiResponse<IEnumerable<CartItemDto>>> GetCartItemsByCartsIdAsync(int cartId)
         {
-            var cartItems = await _cartItemRepository.GetCartItemsByCartIdAsync(cartId, productId);
+            var cartItems = await _cartItemRepository.GetCartItemsByCartsIdAsync(cartId);
             if (cartItems == null)
             {
                 return new ApiResponse<IEnumerable<CartItemDto>>
@@ -178,45 +178,6 @@ namespace ecommerce.Services
                 Message = "Cart Item updated",
                 Status = true
             };
-        }
-
-        public async Task<ApiResponse<int>> UpdateCartItemsAsync(int id, List<CartItemDto> cartItem)
-        {
-            var cartItems = cartItem.Select(x => new CartItem
-            {
-                ProductId = x.ProductId,
-                Quantity = x.Quantity,
-                CartId = x.CartId
-            });
-            try
-            {
-                var cartItemsToUpdate = await _cartItemRepository.GetCartItemsByCartIdAsync(id, cartItem[0].ProductId);
-                if (cartItemsToUpdate == null)
-                {
-                    return new ApiResponse<int>
-                    {
-                        Data = id,
-                        Message = "No Cart Item found",
-                        Status = false
-                    };
-                }
-                _cartItemRepository.UpdateCartsItem(cartItemsToUpdate, cartItems);
-                return new ApiResponse<int>
-                {
-                    Data = id,
-                    Message = "Cart Items updated",
-                    Status = true
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<int>
-                {
-                    Data = id,
-                    Message = ex.Message,
-                    Status = false
-                };
-            }
         }
     }
 }
