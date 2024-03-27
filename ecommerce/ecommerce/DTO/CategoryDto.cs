@@ -4,7 +4,6 @@
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public DateTime? UpdatedAt { get; set; } = null;
         public string Slug { get; set; }
     }
     public class CategoryAllDto

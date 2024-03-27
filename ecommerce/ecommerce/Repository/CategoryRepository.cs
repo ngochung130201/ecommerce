@@ -18,7 +18,8 @@ namespace ecommerce.Repository
             {
                 Name = category.Name,
                 Description = category.Description,
-                Slug = category.Slug
+                Slug = category.Slug,
+                CreatedAt = category.CreatedAt
             };
             try
             {

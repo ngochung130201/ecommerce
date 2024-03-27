@@ -1,15 +1,19 @@
-﻿using ecommerce.Middleware;
+﻿using ecommerce.Context;
+using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
 {
     public class CartRepository : ICartRepository
     {
         private readonly IRepositoryBase<Cart> _repositoryBase;
-        public CartRepository(IRepositoryBase<Cart> repositoryBase)
+        private readonly EcommerceContext _context;
+        public CartRepository(IRepositoryBase<Cart> repositoryBase,EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
+            _context = context;
         }
         public void AddCart(Cart cart)
         {
@@ -42,11 +46,12 @@ namespace ecommerce.Repository
             return cart;
         }
 
-        public Task<IEnumerable<Cart>> GetCartsByUserIdAsync(int userId)
+        public async Task<Cart> GetCartsByUserIdAsync(int userId)
         {
-            var carts = _repositoryBase.FindByConditionAsync(c => c.UserId == userId);
+            var carts = await _context.Carts.Include(u=>u.CartItems).FirstOrDefaultAsync(c => c.UserId == userId);
             return carts;
         }
+        
 
         public void UpdateCart(Cart cart, Cart cartExist)
         {

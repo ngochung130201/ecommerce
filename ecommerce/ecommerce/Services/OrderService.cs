@@ -34,8 +34,7 @@ namespace ecommerce.Services
                 OrderStatus = order.OrderStatus,
                 UserId = order.UserId,
                 CreatedAt = DateTime.UtcNow,
-                OrderStatusMessage = nameof(order.OrderStatus),
-                TotalPrice = cart.Data?.SelectMany(c => c.CartItems).Sum(c => c.Product.Price * c.Quantity) ?? 0,
+                OrderStatusMessage = nameof(order.OrderStatus)
             };
             try
             {

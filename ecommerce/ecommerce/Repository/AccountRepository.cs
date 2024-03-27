@@ -2,6 +2,7 @@
 using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
 {
@@ -9,10 +10,12 @@ namespace ecommerce.Repository
     {
         private readonly IRepositoryBase<Admin> _repositoryBaseAdmin;
         private readonly IRepositoryBase<User> _repositoryBaseUser;
-        public AccountRepository(IRepositoryBase<Admin> repositoryBaseAdmin, IRepositoryBase<User> repositoryBaseUser)
+        private readonly EcommerceContext _context;
+        public AccountRepository(IRepositoryBase<Admin> repositoryBaseAdmin, IRepositoryBase<User> repositoryBaseUser,EcommerceContext context)
         {
             _repositoryBaseAdmin = repositoryBaseAdmin;
             _repositoryBaseUser = repositoryBaseUser;
+            _context = context;
         }
 
         public void Add(Admin admin)
@@ -135,7 +138,16 @@ namespace ecommerce.Repository
 
         public async Task<User> GetByIdForUser(int id)
         {
-            var user = await _repositoryBaseUser.FindByIdAsync(id);
+            var user = await _context.Users.Include(u=>u.Carts).ThenInclude(u=>u.CartItems).FirstOrDefaultAsync(x=>x.UserId == id);
+            if (user == null)
+            {
+                throw new CustomException("User not found", 404);
+            }
+            return user;
+        }
+        public async Task<User> GetByIdUser(int id)
+        {
+            var user = _context.Users.Include(u => u.Carts).FirstOrDefault(u => u.UserId == id);
             if (user == null)
             {
                 throw new CustomException("User not found", 404);

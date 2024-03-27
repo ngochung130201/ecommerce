@@ -15,9 +15,9 @@ namespace ecommerce.Controllers
             _cartService = cartService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllCartsAsync([FromQuery] int userId = 0)
+        public async Task<IActionResult> GetAllCartsAsync()
         {
-            var carts = await _cartService.GetAllCartsAsync(userId);
+            var carts = await _cartService.GetAllCartsAsync();
             if (carts.Status)
             {
                 return Ok(carts);
@@ -31,9 +31,9 @@ namespace ecommerce.Controllers
         /// <param name="productId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> AddCartAsync(CartDto cart, int productId)
+        public async Task<IActionResult> AddCartAsync(CartDto cart)
         {
-            var result = await _cartService.AddCartAsync(cart, productId);
+            var result = await _cartService.AddCartAsync(cart);
             if (result.Status)
             {
                 return Ok(result);

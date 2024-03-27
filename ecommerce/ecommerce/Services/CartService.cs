@@ -1,6 +1,8 @@
 ﻿using ecommerce.DTO;
+using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
+using ecommerce.UnitOfWork;
 
 namespace ecommerce.Services
 {
@@ -8,53 +10,88 @@ namespace ecommerce.Services
     {
         private readonly ICartRepository _cartRepository;
         private readonly ICartItemService _cartItemService;
+        private readonly ICartItemRepository _cartItemRepository;
+        private readonly IAccountRepository<User> _accountRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IUnitOfWork _unitOfWork;
         public CartService(ICartRepository cartRepository,
-        ICartItemService cartItemService)
+        ICartItemService cartItemService, ICartItemRepository cartItemRepository,
+        IAccountRepository<User> accountRepository, IUnitOfWork unitOfWork,
+        IProductRepository productRepository)
         {
             _cartRepository = cartRepository;
             _cartItemService = cartItemService;
+            _unitOfWork = unitOfWork;
+            _cartItemRepository = cartItemRepository;
+            _productRepository = productRepository;
+            _accountRepository = accountRepository;
         }
 
-        public async Task<ApiResponse<int>> AddCartAsync(CartDto cart, int productId)
+        public async Task<ApiResponse<int>> AddCartAsync(CartDto cart)
         {
-            var cartExist = await _cartRepository.GetCartByIdAsync(cart.CartId);
-            if (cartExist != null)
+            // kiểm tra xem user đã có cart chưa
+            var cartExistByUserId = await _cartRepository.GetCartsByUserIdAsync(cart.UserId);
+            var product = await _productRepository.GetProductByIdAsync(cart.ProductId);
+            if (cartExistByUserId != null)
             {
-                var cartItems = await _cartItemService.GetCartItemsByCartIdAsync(cart.CartId, productId);
-                if (cartItems != null)
+                // nếu có rồi thì không thêm nữa mà update số lượng và giá tiền
+                var cartItemExistByProductId = await _cartItemRepository.GetCartItemsByCartIdAsync(cartExistByUserId.CartId, productId: cart.ProductId);
+                if (cartItemExistByProductId == null)
                 {
-                    foreach (var cartItem in cartItems.Data)
+                    // add cart item to the cart
+                    var newCartItems = new CartItem
                     {
-                        cartItem.Quantity += cart.Quantity;
-                    }
-                    await _cartItemService.UpdateCartItemsAsync(cart.CartId, cartItems.Data.ToList());
+                        ProductId = cart.ProductId,
+                        Quantity = cart.Quantity,
+                        CartId = cartExistByUserId.CartId,
+                    };
+                    newCartItems.TotalPrice = product.Price * cart.Quantity;
+                    _cartItemRepository.AddCartItem(newCartItems);
+                    cartExistByUserId.TotalPrice += newCartItems.TotalPrice;
                 }
                 else
                 {
-                    await _cartItemService.AddCartItemAsync(new CartItemDto
-                    {
-                        CartId = cart.CartId,
-                        ProductId = productId,
-                        Quantity = cart.Quantity
-                    });
+                    cartItemExistByProductId.Quantity += cart.Quantity;
+                    cartItemExistByProductId.TotalPrice = product.Price * cartItemExistByProductId.Quantity;
 
                 }
             }
             else
             {
-                var newCart = new Models.Cart
+                // nếu chưa có cart thì tạo mới voi user
+                var cartOfUser = await _accountRepository.GetByIdForUser(cart.UserId);
+                var cartItemExist = await _cartItemRepository.GetCartItemsByCartIdAsync(cart.CartId, productId: cart.ProductId);
+                if (cartItemExist == null)
                 {
-                    UserId = cart.UserId,
-                    CreatedAt = DateTime.Now,
-                };
-                _cartRepository.AddCart(newCart);
-                await _cartItemService.AddCartItemAsync(new CartItemDto
+                    var newCartItems = new CartItem
+                    {
+                        ProductId = cart.ProductId,
+                        Quantity = cart.Quantity,
+                        CartId = cart.CartId,
+                    };
+                    newCartItems.TotalPrice = product.Price * cart.Quantity;
+                    _cartItemRepository.AddCartItem(newCartItems);
+                    if(cartOfUser.Carts == null)
+                    {
+                        cartOfUser.Carts = new Cart {
+                            UserId = cart.UserId,
+                            TotalPrice = newCartItems.TotalPrice,
+                            CartItems = new List<CartItem>{newCartItems},
+                            CreatedAt = DateTime.UtcNow
+                        };
+                    }
+                    else {
+                        cartOfUser.Carts.TotalPrice += newCartItems.TotalPrice;
+                        cartOfUser.Carts.CartItems.Add(newCartItems);
+                    }
+                }
+                else
                 {
-                    CartId = newCart.CartId,
-                    ProductId = productId,
-                    Quantity = cart.Quantity
-                });
+                    cartItemExist.Quantity += cart.Quantity;
+                    cartItemExist.TotalPrice = product.Price * cartItemExist.Quantity;
+                }
             }
+            await _unitOfWork.SaveChangesAsync();
             return new ApiResponse<int>
             {
                 Data = cart.CartId,
@@ -77,34 +114,22 @@ namespace ecommerce.Services
             return new ApiResponse<int> { Message = "Cart deleted successfully", Status = true };
         }
 
-        public async Task<ApiResponse<IEnumerable<CartDto>>> GetAllCartsAsync(int userId)
+        public async Task<ApiResponse<IEnumerable<CartDto>>> GetAllCartsAsync()
         {
             // if userId == 0 then get all carts with role admin
             // else get all carts with userId with role user
-            if (userId != 0)
+
+            var carts = await _cartRepository.GetAllCartsAsync();
+            if (carts == null)
             {
-                var carts = await _cartRepository.GetAllCartsAsync();
-                if (carts == null)
-                {
-                    return new ApiResponse<IEnumerable<CartDto>> { Message = "No carts found", Status = false };
-                }
-                var cartsDto = carts.Select(c => new CartDto
-                {
-                    CartId = c.CartId,
-                    UserId = c.UserId,
-                    CreatedAt = c.CreatedAt
-                });
-                return new ApiResponse<IEnumerable<CartDto>> { Data = cartsDto, Status = true };
+                return new ApiResponse<IEnumerable<CartDto>> { Message = "No carts found", Status = false };
             }
-            else
+            var cartsDto = carts.Select(c => new CartDto
             {
-                var carts = await GetCartsByUserIdAsync(userId);
-                if (carts == null)
-                {
-                    return new ApiResponse<IEnumerable<CartDto>> { Message = "No carts found", Status = false };
-                }
-                return carts;
-            }
+                CartId = c.CartId,
+                UserId = c.UserId
+            });
+            return new ApiResponse<IEnumerable<CartDto>> { Data = cartsDto, Status = true };
 
         }
 
@@ -119,25 +144,24 @@ namespace ecommerce.Services
             {
                 CartId = cart.CartId,
                 UserId = cart.UserId,
-                CreatedAt = cart.CreatedAt
             };
             return new ApiResponse<CartDto> { Data = cartDto, Status = true };
         }
 
-        public async Task<ApiResponse<IEnumerable<CartDto>>> GetCartsByUserIdAsync(int userId)
+        public async Task<ApiResponse<CartDto>> GetCartsByUserIdAsync(int userId)
         {
-            var carts = await _cartRepository.GetCartsByUserIdAsync(userId);
-            if (carts == null)
+            var cart = await _cartRepository.GetCartsByUserIdAsync(userId);
+            if (cart == null)
             {
                 return null;
             }
-            var cartsDto = carts.Select(c => new CartDto
+            var cartDto = new CartDto
             {
-                CartId = c.CartId,
-                UserId = c.UserId,
-                CreatedAt = c.CreatedAt
-            });
-            return new ApiResponse<IEnumerable<CartDto>> { Data = cartsDto, Status = true };
+                CartId = cart.CartId,
+                UserId = cart.UserId,
+
+            };
+            return new ApiResponse<CartDto> { Data = cartDto, Status = true };
         }
 
         public async Task<ApiResponse<int>> UpdateCartAsync(int id, CartDto cart)
@@ -150,7 +174,6 @@ namespace ecommerce.Services
             var newCart = new Models.Cart
             {
                 UserId = cart.UserId,
-                CreatedAt = cart.CreatedAt
             };
             var cartItems = await _cartItemService.GetCartItemByIdAsync(id);
             if (cartItems == null)
