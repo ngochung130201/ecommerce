@@ -35,7 +35,7 @@ namespace ecommerce.Controllers
             return BadRequest(wishlist);
         }
         [HttpPost]
-        public async Task<IActionResult> AddWishlistAsync(WishlistDto wishlist)
+        public async Task<IActionResult> AddWishlistAsync(WishlistRequestDto wishlist)
         {
             var result = await _wishlistService.AddWishlistAsync(wishlist);
             if (result.Status)
@@ -48,16 +48,6 @@ namespace ecommerce.Controllers
         public async Task<IActionResult> DeleteWishlistAsync(int id)
         {
             var result = await _wishlistService.DeleteWishlistAsync(id);
-            if (result.Status)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
-        }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateWishlistAsync(int id, WishlistDto wishlist)
-        {
-            var result = await _wishlistService.UpdateWishlistAsync(id, wishlist);
             if (result.Status)
             {
                 return Ok(result);

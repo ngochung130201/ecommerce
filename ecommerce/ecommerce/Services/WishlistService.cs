@@ -16,7 +16,7 @@ namespace ecommerce.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ApiResponse<int>> AddWishlistAsync(WishlistDto wishlist)
+        public async Task<ApiResponse<int>> AddWishlistAsync(WishlistRequestDto wishlist)
         {
             var newWishlist = new Wishlist
             {
@@ -97,7 +97,10 @@ namespace ecommerce.Services
                 Data = wishlists.Select(x => new WishlistDto
                 {
                     UserId = x.UserId,
-                    ProductId = x.ProductId
+                    ProductId = x.ProductId,
+                    WishlistId = x.WishlistId,
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt,
                 }),
                 Message = "Wishlist found",
                 Status = true
@@ -123,8 +126,8 @@ namespace ecommerce.Services
                 {
                     UserId = wishlist.UserId,
                     ProductId = wishlist.ProductId,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
+                    CreatedAt = wishlist.CreatedAt,
+                    UpdatedAt = wishlist.UpdatedAt,
                     WishlistId = wishlist.WishlistId
                 },
                 Message = "Wishlist found",
@@ -185,7 +188,7 @@ namespace ecommerce.Services
             };
         }
 
-        public async Task<ApiResponse<int>> UpdateWishlistAsync(int id, WishlistDto wishlist)
+        public async Task<ApiResponse<int>> UpdateWishlistAsync(int id, WishlistRequestDto wishlist)
         {
             var newWishlist = new Wishlist
             {
@@ -196,6 +199,7 @@ namespace ecommerce.Services
             try
             {
                 await _wishlistRepository.UpdateWishListAsync(id, newWishlist);
+                await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int>
                 {
                     Data = id,
