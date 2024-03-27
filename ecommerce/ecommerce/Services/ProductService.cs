@@ -114,7 +114,7 @@ namespace ecommerce.Services
                 {
                     await _uploadFilesService.RemoveFileAsync(product.Image, "products");
                 }
-                if (product.Gallery != null && string.IsNullOrEmpty(product.Gallery))
+                if (product.Gallery != null && !string.IsNullOrEmpty(product.Gallery))
                 {
                     var galleryStrings = product.Gallery.Split(",").ToList();
                     await _uploadFilesService.RemoveFilesAsync(galleryStrings, "products");
