@@ -13,6 +13,17 @@ namespace ecommerce.DTO
         public IFormFile Image { get; set; } 
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
     }
+     public class ProductRequestDto
+    {
+        public string CategoryId { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Price { get; set; }
+        public string InventoryCount { get; set; }
+        public string? Popular { get; set; } = null;
+        public IFormFile Image { get; set; } 
+        public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
+    }
     public class ProductAllDto
     {
         public int ProductId { get; set; }
@@ -37,6 +48,16 @@ namespace ecommerce.DTO
         public decimal Price { get; set; }
         public Popular? Popular { get; set; } = null;
         public int InventoryCount { get; set; }
+        public IFormFile Image { get; set; } 
+        public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
+    }
+    public class ProductUpdateRequestDto
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Price { get; set; }
+        public int? Popular { get; set; } = null;
+        public string InventoryCount { get; set; }
         public IFormFile Image { get; set; } 
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
     }

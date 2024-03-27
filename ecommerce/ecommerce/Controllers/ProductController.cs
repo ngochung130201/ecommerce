@@ -1,4 +1,5 @@
 ﻿using ecommerce.DTO;
+using ecommerce.Enums;
 using ecommerce.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
 
@@ -64,9 +65,30 @@ namespace ecommerce.Controllers
             return BadRequest(response);
         }
         [HttpPost]
-        public async Task<IActionResult> AddProductAsync([FromForm] ProductDto product)
+        public async Task<IActionResult> AddProductAsync([FromForm] ProductRequestDto product)
         {
-            var response = await _productService.AddProductAsync(product, product.Image, product.Gallery);
+            // convert type string to decimal, int
+            var categoryId = int.TryParse(product.CategoryId, out int catId) ? catId : 0;
+            var price = decimal.TryParse(product.Price, out decimal prc) ? prc : 0;
+            var inventoryCount = int.TryParse(product.InventoryCount, out int invCount) ? invCount : 0;
+            var popular = int.TryParse(product.Popular, out int pop) ? pop : 0;
+            if (categoryId == 0 || price == 0 || inventoryCount == 0)
+            {
+                return BadRequest(new { Status = false, Message = "Invalid input" });
+            }
+            var productModel = new ProductDto
+            {
+                Name = product.Name,
+                CategoryId = categoryId,
+                Description = product.Description,
+                Price = price,
+                InventoryCount = inventoryCount,
+                Image = product.Image,
+                Gallery = product.Gallery,
+                Popular = (Popular)popular,
+            };
+
+            var response = await _productService.AddProductAsync(productModel, product.Image, product.Gallery);
             if (response.Status)
             {
                 return Ok(response);
@@ -74,9 +96,26 @@ namespace ecommerce.Controllers
             return BadRequest(response);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProductAsync(int  id,[FromForm] ProductUpdateDto product)
+        public async Task<IActionResult> UpdateProductAsync(int  id,[FromForm] ProductUpdateRequestDto product)
         {
-            var response = await _productService.UpdateProductAsync(id, product);
+            var price = decimal.TryParse(product.Price, out decimal prc) ? prc : 0;
+            var inventoryCount = int.TryParse(product.InventoryCount, out int invCount) ? invCount : 0;
+            var popular = int.TryParse(product.Popular?.ToString(), out int pop) ? pop : 0;
+            if (price == 0 || inventoryCount == 0)
+            {
+                return BadRequest(new { Status = false, Message = "Invalid input" });
+            }
+            var productModel = new ProductUpdateDto
+            {
+                Name = product.Name,
+                Description = product.Description,
+                Price = price,
+                InventoryCount = inventoryCount,
+                Image = product.Image,
+                Gallery = product.Gallery,
+                Popular = (Popular)popular,
+            };
+            var response = await _productService.UpdateProductAsync(id, productModel);
             if (response.Status)
             {
                 return Ok(response);
