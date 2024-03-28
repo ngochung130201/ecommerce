@@ -20,6 +20,7 @@ namespace ecommerce.Services
                 PaymentId = history.PaymentId,
                 Status = history.Status,
                 StatusMessage = history.StatusMessage,
+                CreateAt = DateTime.UtcNow
             };
             try
             {
