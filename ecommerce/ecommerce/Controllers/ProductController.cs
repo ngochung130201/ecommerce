@@ -77,6 +77,7 @@ namespace ecommerce.Controllers
                 Gallery = product.Gallery,
                 Popular = (Popular)popular,
                 Sale = product.Sale,
+                PriceSale = product.PriceSale,
             };
 
             var response = await _productService.AddProductAsync(productModel, product.Image, product.Gallery);

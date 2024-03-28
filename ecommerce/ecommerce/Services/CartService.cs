@@ -45,7 +45,7 @@ namespace ecommerce.Services
                         Quantity = cart.Quantity,
                         CartId = cartExistByUserId.CartId,
                     };
-                    newCartItems.TotalPrice = product.Price * cart.Quantity;
+                    newCartItems.TotalPrice = product.PriceSale * cart.Quantity;
                     _cartItemRepository.AddCartItem(newCartItems);
                     cartExistByUserId.TotalPrice += newCartItems.TotalPrice;
                 }
@@ -69,7 +69,7 @@ namespace ecommerce.Services
                         Quantity = cart.Quantity,
                         CartId = cart.CartId,
                     };
-                    newCartItems.TotalPrice = product.Price * cart.Quantity;
+                    newCartItems.TotalPrice = product.PriceSale * cart.Quantity;
                     _cartItemRepository.AddCartItem(newCartItems);
                     if(cartOfUser.Carts == null)
                     {
@@ -88,7 +88,7 @@ namespace ecommerce.Services
                 else
                 {
                     cartItemExist.Quantity += cart.Quantity;
-                    cartItemExist.TotalPrice = product.Price * cartItemExist.Quantity;
+                    cartItemExist.TotalPrice = product.PriceSale * cartItemExist.Quantity;
                 }
             }
             await _unitOfWork.SaveChangesAsync();

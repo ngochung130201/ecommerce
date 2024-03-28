@@ -32,7 +32,8 @@ namespace ecommerce.Repository
                 Popular = product.Popular,
                 InventoryCount = product.InventoryCount,
                 PopularText = product.PopularText,
-                Sale = product.Sale
+                Sale = product.Sale,
+                PriceSale = product.PriceSale
             };
             _repositoryBase.Create(newProduct);
         }
@@ -118,12 +119,19 @@ namespace ecommerce.Repository
             productExist.Price = product.Price;
             productExist.UpdatedAt = DateTime.UtcNow;
             productExist.Slug = product.Slug;
-            productExist.Image = product.Image;
-            productExist.Gallery = product.Gallery;
+            if (product.Image != null)
+            {
+                productExist.Image = product.Image;
+            }
+            if (!string.IsNullOrEmpty(product.Gallery))
+            {
+                productExist.Gallery = product.Gallery;
+            }
             productExist.Popular = product.Popular;
             productExist.InventoryCount = product.InventoryCount;
             productExist.PopularText = product.PopularText;
             productExist.Sale = product.Sale;
+            productExist.PriceSale = product.PriceSale;
             _repositoryBase.Update(productExist);
 
         }
