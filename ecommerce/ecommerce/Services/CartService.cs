@@ -71,16 +71,18 @@ namespace ecommerce.Services
                     };
                     newCartItems.TotalPrice = product.PriceSale * cart.Quantity;
                     _cartItemRepository.AddCartItem(newCartItems);
-                    if(cartOfUser.Carts == null)
+                    if (cartOfUser.Carts == null)
                     {
-                        cartOfUser.Carts = new Cart {
+                        cartOfUser.Carts = new Cart
+                        {
                             UserId = cart.UserId,
                             TotalPrice = newCartItems.TotalPrice,
-                            CartItems = new List<CartItem>{newCartItems},
+                            CartItems = new List<CartItem> { newCartItems },
                             CreatedAt = DateTime.UtcNow
                         };
                     }
-                    else {
+                    else
+                    {
                         cartOfUser.Carts.TotalPrice += newCartItems.TotalPrice;
                         cartOfUser.Carts.CartItems.Add(newCartItems);
                     }
@@ -108,17 +110,13 @@ namespace ecommerce.Services
                 return new ApiResponse<int> { Message = "Cart not found", Status = false };
             }
             _cartRepository.DeleteCart(cart);
-            // Remove all cart items associated with the cart
-            var cartItems = cart.CartItems;
-            await _cartItemService.DeleteCartItemsByCartIdAsync(cartItems);
             // remove total price from the cart
-            await _unitOfWork.SaveChangesAsync();
             return new ApiResponse<int> { Message = "Cart deleted successfully", Status = true };
         }
 
         public async Task<ApiResponse<int>> DeleteCartItemAsync(int cartId, int cartItemId)
         {
-           var cartItem = await _cartItemRepository.GetCartItemByIdAsync(cartItemId);
+            var cartItem = await _cartItemRepository.GetCartItemByIdAsync(cartItemId);
             if (cartItem == null)
             {
                 return new ApiResponse<int> { Message = "Cart Item not found", Status = false };
@@ -153,7 +151,20 @@ namespace ecommerce.Services
             return new ApiResponse<int> { Message = "Cart Items deleted successfully", Status = true };
         }
 
-        public async Task<ApiResponse<IEnumerable<CartDto>>> GetAllCartsAsync()
+        public async Task<ApiResponse<int>> DeleteListCartItemAsync(List<CartItem> cartItems)
+        {
+            try
+            {
+                _cartItemRepository.DeleteCartItemsByCartId(cartItems);
+                return new ApiResponse<int> { Message = "Cart Items deleted successfully", Status = true };
+            }
+            catch (System.Exception)
+            {
+                return new ApiResponse<int> { Message = "Cart Items not found", Status = false };
+            }
+        }
+
+        public async Task<ApiResponse<IEnumerable<CartAllDto>>> GetAllCartsAsync()
         {
             // if userId == 0 then get all carts with role admin
             // else get all carts with userId with role user
@@ -161,46 +172,71 @@ namespace ecommerce.Services
             var carts = await _cartRepository.GetAllCartsAsync();
             if (carts == null)
             {
-                return new ApiResponse<IEnumerable<CartDto>> { Message = "No carts found", Status = false };
+                return new ApiResponse<IEnumerable<CartAllDto>> { Message = "No carts found", Status = false };
             }
-            var cartsDto = carts.Select(c => new CartDto
+            var cartsDto = carts.Select(c => new CartAllDto
             {
                 CartId = c.CartId,
-                UserId = c.UserId
+                UserId = c.UserId,
+                CartItems = c.CartItems.Select(ci => new CartItemDto
+                {
+                    CartItemId = ci.CartItemId,
+                    ProductId = ci.ProductId,
+                    Quantity = ci.Quantity,
+                    TotalPrice = ci.TotalPrice,
+                    CartId = ci.CartId,
+
+                }).ToList()
             });
-            return new ApiResponse<IEnumerable<CartDto>> { Data = cartsDto, Status = true };
+            return new ApiResponse<IEnumerable<CartAllDto>> { Data = cartsDto, Status = true };
 
         }
 
-        public async Task<ApiResponse<CartDto>> GetCartByIdAsync(int id)
+        public async Task<ApiResponse<CartAllDto>> GetCartByIdAsync(int id)
         {
             var cart = await _cartRepository.GetCartByIdAsync(id);
             if (cart == null)
             {
-                return new ApiResponse<CartDto> { Message = "Cart not found", Status = false };
+                return new ApiResponse<CartAllDto> { Message = "Cart not found", Status = false };
             }
-            var cartDto = new CartDto
+            var cartDto = new CartAllDto
             {
                 CartId = cart.CartId,
                 UserId = cart.UserId,
+                CartItems = cart.CartItems.Select(ci => new CartItemDto
+                {
+                    CartItemId = ci.CartItemId,
+                    ProductId = ci.ProductId,
+                    Quantity = ci.Quantity,
+                    TotalPrice = ci.TotalPrice,
+                    CartId = ci.CartId,
+                }).ToList()
             };
-            return new ApiResponse<CartDto> { Data = cartDto, Status = true };
+            return new ApiResponse<CartAllDto> { Data = cartDto, Status = true };
         }
 
-        public async Task<ApiResponse<CartDto>> GetCartsByUserIdAsync(int userId)
+        public async Task<ApiResponse<CartAllDto>> GetCartsByUserIdAsync(int userId)
         {
             var cart = await _cartRepository.GetCartsByUserIdAsync(userId);
             if (cart == null)
             {
                 return null;
             }
-            var cartDto = new CartDto
+            var cartDto = new CartAllDto
             {
                 CartId = cart.CartId,
                 UserId = cart.UserId,
+                CartItems = cart.CartItems.Select(ci => new CartItemDto
+                {
+                    CartItemId = ci.CartItemId,
+                    ProductId = ci.ProductId,
+                    Quantity = ci.Quantity,
+                    TotalPrice = ci.TotalPrice,
+                    CartId = ci.CartId,
+                }).ToList()
 
             };
-            return new ApiResponse<CartDto> { Data = cartDto, Status = true };
+            return new ApiResponse<CartAllDto> { Data = cartDto, Status = true };
         }
 
         public async Task<ApiResponse<int>> UpdateCartAsync(int id, CartDto cart)

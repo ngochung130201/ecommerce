@@ -35,7 +35,7 @@ namespace ecommerce.Models
         }
         public Order()
         {
-            TotalPrice = this.OrderItems?.Sum(oi => oi.PriceAtTimeOfOrder * oi.Quantity) ?? 0;
+
         }
     }
 }

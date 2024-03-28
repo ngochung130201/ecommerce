@@ -1,4 +1,5 @@
 ﻿using ecommerce.DTO;
+using ecommerce.Models;
 
 namespace ecommerce.Services.Interface
 {
@@ -9,5 +10,7 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<int>> AddPaymentAsync(PaymentDto payment);
         Task<ApiResponse<int>> DeletePaymentAsync(int id);
         Task<ApiResponse<int>> UpdatePaymentAsync(int id, PaymentDto payment);
+        // Get payment by order id
+        Task<Payment> GetPaymentByOrderIdAsync(int orderId);
     }
 }

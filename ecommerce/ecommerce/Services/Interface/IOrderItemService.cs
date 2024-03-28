@@ -12,5 +12,6 @@ namespace ecommerce.Services
         Task<ApiResponse<int>> UpdateOrderItemAsync(int id, OrderItemDto orderItem);
         Task<ApiResponse<int>> DeleteOrderItemAsync(int id);
         Task<ApiResponse<int>> DeleteOrderItemByOrderIdAsync(int orderId);
+        Task<ApiResponse<int>> DeleteListOrderItemAsync(int orderId, List<int> orderItemIds);
     }
 }

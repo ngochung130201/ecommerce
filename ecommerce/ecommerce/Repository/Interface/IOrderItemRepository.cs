@@ -12,5 +12,6 @@ namespace ecommerce.Repository.Interface
         void UpdateOrderItem(OrderItem existingOrderItem);
         void DeleteOrderItem(OrderItem? orderItem);
         void DeleteOrderItemByOrderId(IEnumerable<OrderItem>? orderItems);
+        Task<IEnumerable<OrderItem>> GetListOrderItemsByOrderIdAsync(int orderId, List<int> orderItemIds);
     }
 }

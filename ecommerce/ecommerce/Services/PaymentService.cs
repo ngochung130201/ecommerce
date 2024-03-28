@@ -1,17 +1,20 @@
-﻿using ecommerce.DTO;
-using ecommerce.Middleware;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Models;
 using ecommerce.Repository;
 using ecommerce.Services.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Services
 {
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository _paymentRepository;
-        public PaymentService(IPaymentRepository paymentRepository)
+        private readonly EcommerceContext _context;
+        public PaymentService(IPaymentRepository paymentRepository, EcommerceContext context)
         {
             _paymentRepository = paymentRepository;
+            _context = context;
         }
 
         public async Task<ApiResponse<int>> AddPaymentAsync(PaymentDto payment)
@@ -22,7 +25,9 @@ namespace ecommerce.Services
                 PaymentStatus = payment.PaymentStatus,
                 CreatedAt = payment.CreatedAt,
                 Amount = payment.Amount,
-                OrderId = payment.OrderId
+                OrderId = payment.OrderId,
+                PaymentMethodText = payment.PaymentMethod.ToString(),
+                PaymentStatusText = payment.PaymentStatus.ToString(),
             };
             try
             {
@@ -99,15 +104,27 @@ namespace ecommerce.Services
             };
         }
 
+        public async Task<Payment> GetPaymentByOrderIdAsync(int orderId)
+        {
+            var payment = await _context.Payments.FirstOrDefaultAsync(x => x.OrderId == orderId);
+            if (payment == null)
+            {
+                return null;
+            }
+            return payment;
+
+        }
+
+
         public async Task<ApiResponse<int>> UpdatePaymentAsync(int id, PaymentDto payment)
         {
             var paymentToUpdate = new Payment
             {
                 PaymentMethod = payment.PaymentMethod,
                 PaymentStatus = payment.PaymentStatus,
-                CreatedAt = payment.CreatedAt,
                 Amount = payment.Amount,
-                OrderId = payment.OrderId
+                OrderId = payment.OrderId,
+                UpdatedAt = DateTime.UtcNow
             };
             try
             {

@@ -3,6 +3,7 @@ using ecommerce.Enums;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
+using ecommerce.UnitOfWork;
 
 namespace ecommerce.Services
 {
@@ -13,56 +14,101 @@ namespace ecommerce.Services
         private readonly ICartService _cartItemService;
         private readonly IPaymentService _paymentService;
         private readonly IHistoryService _historyService;
+        private readonly IUnitOfWork _unitOfWork;
         public OrderService(IOrderRepository orderRepository,
         IPaymentService paymentService, IOrderItemService orderItemService,
-        ICartService cartItemService, IHistoryService historyService)
+        ICartService cartItemService, IHistoryService historyService,
+        IUnitOfWork unitOfWork)
         {
             _orderRepository = orderRepository;
             _paymentService = paymentService;
             _orderItemService = orderItemService;
             _cartItemService = cartItemService;
             _historyService = historyService;
+            _unitOfWork = unitOfWork;
         }
-        public async Task<ApiResponse<int>> AddOrderAsync(OrderDto order)
+        public async Task<ApiResponse<int>> ProcessOrderAsync(OrderRequestDto order)
         {
-            // find cart by user id
-            var cart = await _cartItemService.GetCartsByUserIdAsync(order.UserId);
-
-            // add order item
-            var newOrder = new Order
-            {
-                OrderStatus = order.OrderStatus,
-                UserId = order.UserId,
-                CreatedAt = DateTime.UtcNow,
-                OrderStatusMessage = nameof(order.OrderStatus)
-            };
-            try
-            {
-                var orderId = await _orderRepository.AddOrderAsync(newOrder);
-                // add order to order table
-                foreach (var item in order.OrderItems)
-                {
-                    item.OrderId = orderId;
-                }
-                await _orderItemService.AddOrderItemAsync(order.OrderItems.ToList());
-                return new ApiResponse<int>
-                {
-                    Data = 0,
-                    Message = "Order added",
-                    Status = true
-                };
-            }
-            catch (Exception ex)
+            var existingOrder = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
+            var orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
+            if (orderIdByUser.User.Carts == null)
             {
                 return new ApiResponse<int>
                 {
                     Data = 0,
-                    Message = ex.Message,
+                    Message = "No Cart found",
                     Status = false
                 };
             }
+            var cartItemsToProcess = orderIdByUser.User.Carts.CartItems.ToList();
+            var productIds = cartItemsToProcess.Select(u => u.ProductId).ToList();
+            var isDupProduct = productIds.Any(u => order.ProductIds.Contains(u));
+            // khac ngay hom nay van tao order moi
+            var isToday = existingOrder.CreatedAt.Date == DateTime.UtcNow.Date;
+            // Create a new order if it doesn't exist
+            if (!isDupProduct || !isToday)
+            {
+                var newOrder = new Order
+                {
+                    UserId = order.UserId,
+                    OrderStatus = OrderStatus.Pending,
+                    OrderStatusMessage = nameof(OrderStatus.Pending),
+                    CreatedAt = DateTime.UtcNow,
+                };
+                await _orderRepository.AddOrderAsync(newOrder);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            foreach (var cartItem in cartItemsToProcess)
+            {
+                var productExist = order.ProductIds.Contains(cartItem.ProductId);
+                if (!productExist)
+                {
+                    await _orderItemService.AddOrderItemAsync(new OrderItemDto
+                    {
+                        OrderId = orderIdByUser.OrderId,
+                        ProductId = cartItem.ProductId,
+                        Quantity = cartItem.Quantity,
+                        PriceAtTimeOfOrder = cartItem.TotalPrice,
+                    });
+                }
+                // Update order item quantity
+                else
+                {
+                    var orderItem = orderIdByUser.OrderItems.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
+                    orderItem.Quantity += cartItem.Quantity;
+                    orderItem.PriceAtTimeOfOrder += cartItem.TotalPrice;
+                    await _orderItemService.UpdateOrderItemAsync(orderItem.OrderItemId, new OrderItemDto
+                    {
+                        PriceAtTimeOfOrder = orderItem.PriceAtTimeOfOrder,
+                    });
 
+                }
+            }
+            orderIdByUser.TotalPrice = orderIdByUser.OrderItems.Sum(u => u.PriceAtTimeOfOrder);
+
+            // Delete processed cart items and possibly the cart
+            await _cartItemService.DeleteListCartItemAsync(cartItemsToProcess);
+            await _cartItemService.DeleteCartAsync(orderIdByUser.User.Carts.CartId);
+            // Add payment
+            await AddPaymentAsync(payment: new PaymentDto
+            {
+                OrderId = orderIdByUser.OrderId,
+                PaymentMethod = order.PaymentMethod,
+                Amount = orderIdByUser.TotalPrice,
+                PaymentStatus = PaymentStatus.Initiated,
+                CreatedAt = DateTime.UtcNow,
+
+            }, orderId: orderIdByUser.OrderId, orderStatus: order.OrderStatus);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ApiResponse<int>
+            {
+                Data = orderIdByUser.OrderId,
+                Message = "Order added",
+                Status = true
+            };
         }
+
 
         public async Task<ApiResponse<int>> DeleteOrderAsync(int id)
         {
@@ -81,6 +127,11 @@ namespace ecommerce.Services
                 // delete order item
                 await _orderItemService.DeleteOrderItemByOrderIdAsync(id);
                 await _orderRepository.DeleteOrderAsync(id);
+                // remove cart and cart item
+                await _cartItemService.DeleteListCartItemAsync(order.User.Carts.CartItems.ToList());
+                await _cartItemService.DeleteCartAsync(order.UserId);
+                await _unitOfWork.SaveChangesAsync();
+
                 return new ApiResponse<int>
                 {
                     Data = id,
@@ -149,17 +200,18 @@ namespace ecommerce.Services
             };
         }
 
-        public async Task<ApiResponse<int>> UpdateOrderAsync(int id, OrderDto order, PaymentMethod paymentMethod)
+        public async Task<ApiResponse<int>> UpdateOrderAsync(OrderUpdate order)
         {
             var orderToPayment = new OrderStatus[]
             {
                 OrderStatus.Delivered,
                 OrderStatus.Shipped,
-                OrderStatus.Cancelled
+                OrderStatus.Processing,
+                OrderStatus.Pending
             };
             try
             {
-                var orderExist = await _orderRepository.GetOrderByIdAsync(id);
+                var orderExist = await _orderRepository.GetOrderByIdAsync(order.OrderId);
                 if (orderExist == null)
                 {
                     return new ApiResponse<int>
@@ -169,42 +221,56 @@ namespace ecommerce.Services
                         Status = false
                     };
                 }
-                var orderStatus = GetOrderStatus(order);
-                orderExist.OrderStatus = orderStatus;
-                orderExist.UpdatedAt = order.UpdatedAt;
-                orderExist.OrderStatusMessage = nameof(orderStatus);
+                if (OrderStatus.Cancelled == order.OrderStatus)
+                {
+                    // add table history
+                    var history = new HistoryDto
+                    {
+                        UserId = order.UserId,
+                        Message = "Order Cancelled",
+                        PaymentId = 0,
+                        Status = HistoryStatus.OrderCancelled,
+                        StatusMessage = nameof(HistoryStatus.OrderCancelled)
+                    };
+                    await _historyService.AddHistoryAsync(history);
+                    await _orderRepository.DeleteOrderAsync(order.OrderId);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+                // if status == delivered, shipped, processing, pending add payment
+                orderExist.OrderStatus = order.OrderStatus;
+                orderExist.OrderStatusMessage = nameof(order.OrderStatus);
                 orderExist.UpdatedAt = DateTime.UtcNow;
-                if (!orderToPayment.Contains(orderStatus))
-                {
-                    await _orderRepository.UpdateOrderAsync(id, orderExist);
-                }
-                else
-                {
-                    if (orderExist.OrderStatus == OrderStatus.Cancelled)
-                    {
-                        // add table history
-                        var history = new HistoryDto
-                        {
-                            UserId = order.UserId,
-                            Message = "Order Cancelled",
-                            PaymentId = 0,
-                            Status = HistoryStatus.OrderCancelled,
-                            StatusMessage = nameof(HistoryStatus.OrderCancelled)
-                        };
-                        await _historyService.AddHistoryAsync(history);
+                await _orderRepository.UpdateOrderAsync(order.OrderId, orderExist);
+                await _unitOfWork.SaveChangesAsync();
 
-                    }
-                    else
+                var payment = await _paymentService.GetPaymentByOrderIdAsync(order.OrderId);
+                if (orderToPayment.Contains(orderExist.OrderStatus) && payment != null)
+                {
+                    if (order.OrderStatus == OrderStatus.Pending)
                     {
-                        await AddPaymentAsync(payment: new PaymentDto
-                        {
-                            OrderId = id,
-                            PaymentMethod = paymentMethod,
-                            Amount = orderExist.TotalPrice
-                        }, orderId: id, orderStatus: orderStatus);
+                        payment.PaymentStatus = PaymentStatus.Processing;
                     }
-
+                    if (order.OrderStatus == OrderStatus.Processing && payment.PaymentStatus == PaymentStatus.Initiated)
+                    {
+                        payment.PaymentStatus = PaymentStatus.Processing;
+                    }
+                    if (order.OrderStatus == OrderStatus.Shipped)
+                    {
+                        payment.PaymentStatus = PaymentStatus.Processing;
+                    }
+                    if (order.OrderStatus == OrderStatus.Delivered)
+                    {
+                        payment.PaymentStatus = PaymentStatus.Completed;
+                    }
+                    if (order.OrderStatus == OrderStatus.Cancelled)
+                    {
+                        payment.PaymentStatus = PaymentStatus.Failed;
+                    }
+                    payment.PaymentMethod = order.PaymentMethod;
+                    payment.PaymentMethodText = payment.PaymentMethod.ToString();
+                    payment.UpdatedAt = DateTime.UtcNow;
                 }
+                await _unitOfWork.SaveChangesAsync();
 
                 return new ApiResponse<int>
                 {
@@ -224,7 +290,7 @@ namespace ecommerce.Services
             }
         }
         // Get Order status update
-        public OrderStatus GetOrderStatus(OrderDto order)
+        public OrderStatus GetOrderStatus(OrderUpdate order)
         {
             switch (order.OrderStatus)
             {
@@ -247,12 +313,27 @@ namespace ecommerce.Services
         public async Task AddPaymentAsync(PaymentDto payment, int orderId, OrderStatus orderStatus)
         {
             await _paymentService.AddPaymentAsync(payment);
-            await _orderRepository.UpdateOrderAsync(orderId, new Order
-            {
-                OrderStatus = orderStatus,
-                UpdatedAt = DateTime.UtcNow,
-                OrderStatusMessage = nameof(orderStatus),
-            });
         }
+
+        public async Task<ApiResponse<bool>> DeleteOrderItemsAsync(OrderItemDeleteDto orderItemDeleteDto)
+        {
+            var result = await _orderItemService.DeleteListOrderItemAsync(orderItemDeleteDto.OrderId, orderItemDeleteDto.OrderItemIds);
+            if (result.Status)
+            {
+                return new ApiResponse<bool>
+                {
+                    Data = true,
+                    Message = "Order items deleted",
+                    Status = true
+                };
+            }
+            return new ApiResponse<bool>
+            {
+                Data = false,
+                Message = "Error deleting order items",
+                Status = false
+            };
+        }
+
     }
 }
