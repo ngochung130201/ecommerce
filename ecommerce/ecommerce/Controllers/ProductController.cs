@@ -10,9 +10,14 @@ namespace ecommerce.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-        public ProductController(IProductService productService)
+        private readonly IUploadFilesService _uploadFilesService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public ProductController(IProductService productService,IUploadFilesService uploadFilesService, IHttpContextAccessor httpContextAccessor)
         {
             _productService = productService;
+            _uploadFilesService = uploadFilesService;
+            _httpContextAccessor = httpContextAccessor;
+
         }
         [HttpGet]
         public async Task<IActionResult> GetAllProductsAsync()
@@ -146,5 +151,26 @@ namespace ecommerce.Controllers
             }
             return BadRequest(response);
         }
+        // Get image by filename and folder
+        [HttpGet("image/{folder}/{filename}")]
+        public IActionResult GetImage(string folder, string filename)
+        {
+            string ImageUrl = string.Empty;
+            string HostUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
+            string Filepath = _uploadFilesService.GetImageHostPath(filename, folder);
+            string Imagepath = Filepath + "\\image.png";
+            if (!System.IO.File.Exists(Imagepath))
+            {
+                ImageUrl = HostUrl + "/none.png";
+            }
+            else
+            {
+               ImageUrl = HostUrl + "/" + folder + "/" + filename;
+            }
+            // return File
+            return Ok(new { ImageUrl });
+            
+        }
+        
     }
 }

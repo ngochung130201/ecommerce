@@ -6,19 +6,32 @@ namespace ecommerce.Services
     public class UploadFilesService : IUploadFilesService
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
-        public UploadFilesService(IWebHostEnvironment webHostEnvironment)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public UploadFilesService(IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor)
         {
             _webHostEnvironment = webHostEnvironment;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public string GetFilePath(string fileName, string nameFolder)
         {
+            string ImageUrl = string.Empty;
+            string HostUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
             var filePath = Path.Combine(_webHostEnvironment.WebRootPath, nameFolder, fileName);
-            if (File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
-                return filePath;
+                ImageUrl = HostUrl + "/none.png";
             }
-            return null;
+            else
+            {
+               ImageUrl = HostUrl + "/" + nameFolder + "/" + fileName;
+            }
+            return ImageUrl;
+        }
+
+        public string GetImageHostPath(string fileName, string nameFolder)
+        {
+            return _webHostEnvironment.WebRootPath + $"\\{nameFolder}\\";
         }
 
         public async Task<ApiResponse<string>> RemoveFileAsync(string fileName, string nameFolder)
@@ -64,6 +77,7 @@ namespace ecommerce.Services
                 }
 
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                uniqueFileName.Replace(" ", "");
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -97,6 +111,7 @@ namespace ecommerce.Services
                     if (file.Length > 0)
                     {
                         string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                        uniqueFileName.Replace(" ", "");
                         string filePath = Path.Combine(galleryFolder, uniqueFileName);
 
                         using (var fileStream = new FileStream(filePath, FileMode.Create))
