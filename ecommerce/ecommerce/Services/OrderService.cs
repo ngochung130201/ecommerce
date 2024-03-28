@@ -221,21 +221,6 @@ namespace ecommerce.Services
                         Status = false
                     };
                 }
-                if (OrderStatus.Cancelled == order.OrderStatus)
-                {
-                    // add table history
-                    var history = new HistoryDto
-                    {
-                        UserId = order.UserId,
-                        Message = "Order Cancelled",
-                        PaymentId = 0,
-                        Status = HistoryStatus.OrderCancelled,
-                        StatusMessage = nameof(HistoryStatus.OrderCancelled)
-                    };
-                    await _historyService.AddHistoryAsync(history);
-                    await _orderRepository.DeleteOrderAsync(order.OrderId);
-                    await _unitOfWork.SaveChangesAsync();
-                }
                 // if status == delivered, shipped, processing, pending add payment
                 orderExist.OrderStatus = order.OrderStatus;
                 orderExist.OrderStatusMessage = nameof(order.OrderStatus);
@@ -265,10 +250,26 @@ namespace ecommerce.Services
                     if (order.OrderStatus == OrderStatus.Cancelled)
                     {
                         payment.PaymentStatus = PaymentStatus.Failed;
+                        await _orderRepository.DeleteOrderAsync(order.OrderId);
+                        // remove order detail
+                        await _orderItemService.DeleteOrderItemByOrderIdAsync(order.OrderId);
                     }
                     payment.PaymentMethod = order.PaymentMethod;
                     payment.PaymentMethodText = payment.PaymentMethod.ToString();
                     payment.UpdatedAt = DateTime.UtcNow;
+                    if (payment.PaymentStatus == PaymentStatus.Failed || payment.PaymentStatus == PaymentStatus.Completed)
+                    {
+                        // add table history
+                        var history = new HistoryDto
+                        {
+                            UserId = order.UserId,
+                            Message = "Order Cancelled",
+                            PaymentId = 0,
+                            Status = HistoryStatus.OrderCancelled,
+                            StatusMessage = nameof(HistoryStatus.OrderCancelled)
+                        };
+                        await _historyService.AddHistoryAsync(history);
+                    }
                 }
                 await _unitOfWork.SaveChangesAsync();
 
