@@ -23,7 +23,11 @@ namespace ecommerce.Controllers
         public async Task<IActionResult> LoginAsync([FromBody] LoginDto login)
         {
             var response = await _accountService.LoginAsync(login);
-            return Ok(response);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
         }
         // POST: api/account/register
         [HttpPost("register")]
@@ -52,14 +56,33 @@ namespace ecommerce.Controllers
         public async Task<IActionResult> ForgotPasswordAsync(string email)
         {
             var response = await _accountService.ForgotPasswordAsync(email);
-            return Ok(response);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
         }
         // Reset password with token
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest resetPassword)
         {
             var response = await _accountService.ResetPasswordAsync(resetPassword.Email, resetPassword.Token, resetPassword.NewPassword);
-            return Ok(response);
+            if (response)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        // reset password with email
+        [HttpPost("reset-password-email")]
+        public async Task<IActionResult> ResetPasswordEmailAsync([FromBody] ResetPasswordEmailRequest resetPassword)
+        {
+            var response = await _accountService.ResetPasswordEmailAsync(resetPassword.Email,resetPassword.NewPassword);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
         }
 
     }

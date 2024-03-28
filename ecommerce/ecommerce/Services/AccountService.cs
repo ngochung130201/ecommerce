@@ -149,7 +149,7 @@ namespace ecommerce.Services
                             AdminId = admin.AdminId,
                             Username = admin.Username,
                             Email = admin.Email,
-                            AdminRole= admin.Role,
+                            AdminRole = admin.Role,
                         },
                         AdminRole = admin.Role,
                         IsAdmin = true
@@ -157,7 +157,7 @@ namespace ecommerce.Services
                     Message = "Admin logged in successfully",
                     Status = true
                 };
-               
+
             }
 
         }
@@ -184,7 +184,8 @@ namespace ecommerce.Services
                     Username = username,
                     Email = email,
                     PasswordHash = passwordHash,
-                    PasswordSalt = passwordSalt
+                    PasswordSalt = passwordSalt,
+                    CreatedAt = DateTime.UtcNow
                 };
                 var existingUser = await _accountUserRepository.GetByEmailForUser(email);
                 if (existingUser != null)
@@ -206,7 +207,8 @@ namespace ecommerce.Services
                     Email = email,
                     PasswordHash = passwordHash,
                     PasswordSalt = passwordSalt,
-                    Role = adminRole ?? AdminRole.Admin
+                    Role = adminRole ?? AdminRole.Admin,
+                    CreatedAt = DateTime.UtcNow
                 };
                 _accountAdminRepository.Add(admin);
                 var existingAdmin = await _accountAdminRepository.GetByEmailForAdmin(email);
@@ -368,6 +370,7 @@ namespace ecommerce.Services
                 }
                 admin.PasswordHash = passwordHash;
                 admin.PasswordSalt = passwordSalt;
+                admin.UpdatedAt = DateTime.UtcNow;
                 _accountAdminRepository.Update(admin);
 
             }
@@ -382,6 +385,7 @@ namespace ecommerce.Services
                 }
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
+                user.UpdatedAt = DateTime.UtcNow;
                 _accountUserRepository.Update(user);
             }
             await _unitOfWork.SaveChangesAsync();
@@ -405,5 +409,56 @@ namespace ecommerce.Services
                 return computedHash.SequenceEqual(storedHash);
             }
         }
+
+        public async Task<ApiResponse<string>> ResetPasswordEmailAsync(string email, string newPassword)
+        {
+            var user = await _accountUserRepository.GetByEmailForUser(email);
+            if (user != null)
+            {
+                // Update user password
+                CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordSalt;
+                user.UpdatedAt = DateTime.UtcNow;
+                _accountUserRepository.Update(user);
+                await _unitOfWork.SaveChangesAsync();
+                return new ApiResponse<string>
+                {
+                    Data = "Password reset successfully",
+                    Message = "Password reset successfully",
+                    Status = true
+                };
+            }
+            else
+            {
+                var admin = await _accountAdminRepository.GetByEmailForAdmin(email);
+                if (admin != null)
+                {
+                    // Update admin password
+                    CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
+                    admin.PasswordHash = passwordHash;
+                    admin.PasswordSalt = passwordSalt;
+                    admin.UpdatedAt = DateTime.UtcNow;
+                    _accountAdminRepository.Update(admin);
+                    await _unitOfWork.SaveChangesAsync();
+                    return new ApiResponse<string>
+                    {
+                        Data = "Password reset successfully",
+                        Message = "Password reset successfully",
+                        Status = true
+                    };
+                }
+                else
+                {
+                    return new ApiResponse<string>
+                    {
+                        Data = null,
+                        Message = "User not found",
+                        Status = false
+                    };
+                }
+            }
+        }
+
     }
 }

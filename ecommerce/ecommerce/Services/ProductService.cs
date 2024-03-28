@@ -69,7 +69,8 @@ namespace ecommerce.Services
                     CreatedAt = DateTime.UtcNow,
                     Popular = product.Popular,
                     Sale = product.Sale,
-                    PopularText = nameof(product.Popular)
+                    PopularText = nameof(product.Popular),
+                    PriceSale = product.PriceSale,
                 };
                 if (galleryString.Count > 0)
                 {
@@ -248,7 +249,8 @@ namespace ecommerce.Services
                 Popular = product.Popular,
                 PopularText = product.PopularText,
                 CategoryName = product.Category.Name,
-                Sale = p.Sale
+                Sale = product.Sale,
+                PriceSale = product.PriceSale
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -285,7 +287,8 @@ namespace ecommerce.Services
                 Popular = product.Popular,
                 PopularText = product.PopularText,
                 CategoryName = product.Category.Name,
-                Sale = p.Sale
+                Sale = product.Sale,
+                PriceSale = product.PriceSale
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -330,6 +333,8 @@ namespace ecommerce.Services
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
+                PriceSale = p.PriceSale
+
             });
             // get file path
             foreach (var product in productDtos)
@@ -377,6 +382,7 @@ namespace ecommerce.Services
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
+                PriceSale = p.PriceSale
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
@@ -423,6 +429,7 @@ namespace ecommerce.Services
                     Popular = product.Popular,
                     PopularText = nameof(product.Popular),
                     Sale = product.Sale,
+                    PriceSale = product.PriceSale,
                 };
                 if (image != null)
                 {

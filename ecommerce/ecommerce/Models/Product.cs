@@ -43,6 +43,8 @@ namespace ecommerce.Models
         // Sale 1-100
         [Column("sale")]
         public decimal? Sale { get; set; } = null;
+        [Column("price_sale", TypeName = "DECIMAL(20,7)")]
+        public decimal PriceSale { get; set; }
 
         // Navigation properties
         public virtual Category Category { get; set; }

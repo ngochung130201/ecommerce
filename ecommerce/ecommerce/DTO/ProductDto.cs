@@ -10,7 +10,8 @@ namespace ecommerce.DTO
         public decimal Price { get; set; }
         public int InventoryCount { get; set; }
         public Popular? Popular { get; set; } = null;
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; } = null;
+        public decimal PriceSale { get; set; }
         public decimal? Sale { get; set; } = null;
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
     }
@@ -22,7 +23,8 @@ namespace ecommerce.DTO
         public string Price { get; set; }
         public string InventoryCount { get; set; }
         public string? Popular { get; set; } = null;
-        public IFormFile Image { get; set; }
+        public decimal PriceSale { get; set; }
+        public IFormFile? Image { get; set; } = null;
         public decimal? Sale { get; set; } = null;
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
     }
@@ -38,6 +40,7 @@ namespace ecommerce.DTO
         public string? PopularText { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
+        public decimal PriceSale { get; set; }
         public int InventoryCount { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
@@ -51,7 +54,8 @@ namespace ecommerce.DTO
         public decimal Price { get; set; }
         public Popular? Popular { get; set; } = null;
         public int InventoryCount { get; set; }
-        public IFormFile Image { get; set; } 
+        public IFormFile? Image { get; set; } = null;
+        public decimal PriceSale { get; set; }
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
         public decimal? Sale { get; set; } = null;
     }
@@ -62,8 +66,9 @@ namespace ecommerce.DTO
         public string Price { get; set; }
         public int? Popular { get; set; } = null;
         public string InventoryCount { get; set; }
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; } = null;
         public decimal? Sale { get; set; } = null;
+        public decimal PriceSale { get; set; }
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
     }
 }
