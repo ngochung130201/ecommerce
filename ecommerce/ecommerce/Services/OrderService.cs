@@ -263,8 +263,8 @@ namespace ecommerce.Services
                         var history = new HistoryDto
                         {
                             UserId = order.UserId,
-                            Message = "Order Cancelled",
-                            PaymentId = 0,
+                            Message = "Order " + payment.PaymentStatus.ToString() + "_" + order.OrderId,
+                            PaymentId = payment.PaymentId,
                             Status = HistoryStatus.OrderCancelled,
                             StatusMessage = nameof(HistoryStatus.OrderCancelled)
                         };
