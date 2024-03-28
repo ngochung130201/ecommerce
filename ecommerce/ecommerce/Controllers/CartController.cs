@@ -24,6 +24,17 @@ namespace ecommerce.Controllers
             }
             return BadRequest(carts);
         }
+        // get cart by user id
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetCartsByUserIdAsync(int userId)
+        {
+            var cart = await _cartService.GetCartsByUserIdAsync(userId);
+            if (cart.Status)
+            {
+                return Ok(cart);
+            }
+            return BadRequest(cart);
+        }
         /// <summary>
         /// Add cart to the database with the product id and cart item details 
         /// </summary>
@@ -70,7 +81,7 @@ namespace ecommerce.Controllers
         [HttpDelete("{cartId}/cartItems")]
         public async Task<IActionResult> DeleteCartItemsByCartIdAsync(int cartId, List<int> cartItemsId)
         {
-            var result = await _cartService.DeleteCartItemsByCartIdAsync(cartId,cartItemsId);
+            var result = await _cartService.DeleteCartItemsByCartIdAsync(cartId, cartItemsId);
             if (result.Status)
             {
                 return Ok(result);

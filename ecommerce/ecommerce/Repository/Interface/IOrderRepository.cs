@@ -9,5 +9,6 @@ namespace ecommerce.Repository.Interface
         Task<int> AddOrderAsync(Order order);
         Task DeleteOrderAsync(int id);
         Task UpdateOrderAsync(int id, Order orderToUpdate);
+        Task<Order> GetOrderByUserIdAsync(int userId);
     }
 }

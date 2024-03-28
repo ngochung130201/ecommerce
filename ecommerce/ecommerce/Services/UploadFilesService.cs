@@ -24,7 +24,7 @@ namespace ecommerce.Services
             }
             else
             {
-               ImageUrl = HostUrl + "/" + nameFolder + "/" + fileName;
+                ImageUrl = HostUrl + "/" + nameFolder + "/" + fileName;
             }
             return ImageUrl;
         }
@@ -43,7 +43,7 @@ namespace ecommerce.Services
                 return new ApiResponse<string> { Data = fileName, Message = "File removed successfully", Status = true };
             }
             return new ApiResponse<string> { Message = "File not found", Status = false };
-            
+
         }
 
         public async Task<ApiResponse<List<string>>> RemoveFilesAsync(List<string> fileNames, string nameFolder)
@@ -98,7 +98,7 @@ namespace ecommerce.Services
         {
             if (files != null && files.Count > 0)
             {
-                string galleryFolder = Path.Combine(_webHostEnvironment.WebRootPath, $"gallery-{nameFolder}");
+                string galleryFolder = Path.Combine(_webHostEnvironment.WebRootPath, $"{nameFolder}");
 
                 if (!Directory.Exists(galleryFolder))
                 {

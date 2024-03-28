@@ -1,15 +1,19 @@
-﻿using ecommerce.Middleware;
+﻿using ecommerce.Context;
+using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
 {
     public class OrderItemRepository : IOrderItemRepository
     {
         private readonly IRepositoryBase<OrderItem> _repositoryBase;
-        public OrderItemRepository(IRepositoryBase<OrderItem> repositoryBase)
+        private readonly EcommerceContext _context;
+        public OrderItemRepository(IRepositoryBase<OrderItem> repositoryBase, EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
+            _context = context;
         }
 
         public void AddOrderItem(OrderItem orderItem)
@@ -83,6 +87,17 @@ namespace ecommerce.Repository
             }
             return orderItem;
         }
+
+        public async Task<IEnumerable<OrderItem>> GetListOrderItemsByOrderIdAsync(int orderId, List<int> orderItemIds)
+        {
+            var orderItems = await _context.OrderItems.Where(x => x.OrderId == orderId && orderItemIds.Contains(x.OrderItemId)).ToListAsync();
+            if (orderItems.Any())
+            {
+                return orderItems;
+            }
+            return null;
+        }
+
 
         public Task<IEnumerable<OrderItem>> GetOrderItemsByOrderIdAsync(int orderId)
         {

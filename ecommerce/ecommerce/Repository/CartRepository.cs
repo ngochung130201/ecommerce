@@ -10,7 +10,7 @@ namespace ecommerce.Repository
     {
         private readonly IRepositoryBase<Cart> _repositoryBase;
         private readonly EcommerceContext _context;
-        public CartRepository(IRepositoryBase<Cart> repositoryBase,EcommerceContext context)
+        public CartRepository(IRepositoryBase<Cart> repositoryBase, EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
             _context = context;
@@ -37,21 +37,21 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<Cart>> GetAllCartsAsync()
         {
-            return await _repositoryBase.FindAllAsync();
+            return await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).ToListAsync();
         }
 
         public async Task<Cart> GetCartByIdAsync(int id)
         {
-            var cart = await _context.Carts.Include(u=>u.CartItems).FirstOrDefaultAsync(c => c.CartId == id);
+            var cart = await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).FirstOrDefaultAsync(c => c.CartId == id);
             return cart;
         }
 
         public async Task<Cart> GetCartsByUserIdAsync(int userId)
         {
-            var carts = await _context.Carts.Include(u=>u.CartItems).FirstOrDefaultAsync(c => c.UserId == userId);
+            var carts = await _context.Carts.Include(u => u.CartItems).ThenInclude(k => k.Product).FirstOrDefaultAsync(c => c.UserId == userId);
             return carts;
         }
-        
+
 
         public void UpdateCart(Cart cart, Cart cartExist)
         {

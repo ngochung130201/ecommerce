@@ -12,7 +12,7 @@ namespace ecommerce.Controllers
         private readonly IProductService _productService;
         private readonly IUploadFilesService _uploadFilesService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public ProductController(IProductService productService,IUploadFilesService uploadFilesService, IHttpContextAccessor httpContextAccessor)
+        public ProductController(IProductService productService, IUploadFilesService uploadFilesService, IHttpContextAccessor httpContextAccessor)
         {
             _productService = productService;
             _uploadFilesService = uploadFilesService;
@@ -93,7 +93,7 @@ namespace ecommerce.Controllers
             return BadRequest(response);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProductAsync(int  id,[FromForm] ProductUpdateRequestDto product)
+        public async Task<IActionResult> UpdateProductAsync(int id, [FromForm] ProductUpdateRequestDto product)
         {
             var price = decimal.TryParse(product.Price, out decimal prc) ? prc : 0;
             var inventoryCount = int.TryParse(product.InventoryCount, out int invCount) ? invCount : 0;
@@ -111,6 +111,8 @@ namespace ecommerce.Controllers
                 Image = product.Image,
                 Gallery = product.Gallery,
                 Popular = (Popular)popular,
+                Sale = product.Sale,
+                PriceSale = product.PriceSale,
             };
             var response = await _productService.UpdateProductAsync(id, productModel);
             if (response.Status)
@@ -165,12 +167,12 @@ namespace ecommerce.Controllers
             }
             else
             {
-               ImageUrl = HostUrl + "/" + folder + "/" + filename;
+                ImageUrl = HostUrl + "/" + folder + "/" + filename;
             }
             // return File
             return Ok(new { ImageUrl });
-            
+
         }
-        
+
     }
 }

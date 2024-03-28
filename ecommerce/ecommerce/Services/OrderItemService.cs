@@ -17,7 +17,8 @@ namespace ecommerce.Services
             {
                 OrderId = orderItem.OrderId,
                 ProductId = orderItem.ProductId,
-                Quantity = orderItem.Quantity
+                Quantity = orderItem.Quantity,
+                PriceAtTimeOfOrder = orderItem.PriceAtTimeOfOrder,
             };
             try
             {
@@ -90,6 +91,34 @@ namespace ecommerce.Services
                 };
             }
         }
+
+        public async Task<ApiResponse<int>> DeleteListOrderItemAsync(int orderId, List<int> orderItemIds)
+        {
+            var orderItems = await _orderItemRepository.GetListOrderItemsByOrderIdAsync(orderId, orderItemIds);
+            if (orderItems == null)
+            {
+                return new ApiResponse<int>
+                {
+                    Message = "Order items not found"
+                };
+            }
+            try
+            {
+                _orderItemRepository.DeleteOrderItemByOrderId(orderItems);
+                return new ApiResponse<int>
+                {
+                    Data = orderId
+                };
+            }
+            catch (Exception e)
+            {
+                return new ApiResponse<int>
+                {
+                    Message = "Error deleting order items"
+                };
+            }
+        }
+
 
         public async Task<ApiResponse<int>> DeleteOrderItemByOrderIdAsync(int orderId)
         {
@@ -187,23 +216,10 @@ namespace ecommerce.Services
         public async Task<ApiResponse<int>> UpdateOrderItemAsync(int id, OrderItemDto orderItem)
         {
             var existingOrderItem = await _orderItemRepository.GetOrderItemByIdAsync(id);
-            if (existingOrderItem == null)
-            {
-                return new ApiResponse<int>
-                {
-                    Message = "Order item not found"
-                };
-            }
-            var orderItemEntity = new OrderItem
-            {
-                OrderItemId = id,
-                OrderId = orderItem.OrderId,
-                ProductId = orderItem.ProductId,
-                Quantity = orderItem.Quantity
-            };
+            existingOrderItem.PriceAtTimeOfOrder = orderItem.PriceAtTimeOfOrder;
             try
             {
-                _orderItemRepository.UpdateOrderItem(orderItemEntity);
+                _orderItemRepository.UpdateOrderItem(existingOrderItem);
                 return new ApiResponse<int>
                 {
                     Data = id

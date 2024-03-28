@@ -1,7 +1,5 @@
 ﻿using ecommerce.DTO;
-using ecommerce.Enums;
 using ecommerce.Services.Interface;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ecommerce.Controllers
@@ -36,9 +34,9 @@ namespace ecommerce.Controllers
             return BadRequest(order);
         }
         [HttpPost]
-        public async Task<IActionResult> AddOrderAsync(OrderDto order)
+        public async Task<IActionResult> AddOrderAsync(OrderRequestDto order)
         {
-            var result = await _orderService.AddOrderAsync(order);
+            var result = await _orderService.ProcessOrderAsync(order);
             if (result.Status)
             {
                 return Ok(result);
@@ -55,16 +53,28 @@ namespace ecommerce.Controllers
             }
             return BadRequest(result);
         }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateOrderAsync(int id, OrderDto order, PaymentMethod paymentMethod)
+        [HttpPut]
+        public async Task<IActionResult> UpdateOrderAsync(OrderUpdate order)
         {
-            var result = await _orderService.UpdateOrderAsync(id, order, paymentMethod);
+            var result = await _orderService.UpdateOrderAsync(order);
             if (result.Status)
             {
                 return Ok(result);
             }
             return BadRequest(result);
         }
+        // delete order by list order item id
+        [HttpDelete("{orderId}/orderItem/{orderItemId}")]
+        public async Task<IActionResult> DeleteOrderItemsAsync(OrderItemDeleteDto orderItemDto)
+        {
+            var result = await _orderService.DeleteOrderItemsAsync(orderItemDto);
+            if (result.Status)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
 
     }
 }

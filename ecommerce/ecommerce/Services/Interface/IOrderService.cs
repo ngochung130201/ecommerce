@@ -1,5 +1,4 @@
 ﻿using ecommerce.DTO;
-using ecommerce.Enums;
 
 namespace ecommerce.Services.Interface
 {
@@ -7,8 +6,9 @@ namespace ecommerce.Services.Interface
     {
         Task<ApiResponse<IEnumerable<OrderDto>>> GetAllOrdersAsync();
         Task<ApiResponse<OrderDto>> GetOrderByIdAsync(int id);
-        Task<ApiResponse<int>> AddOrderAsync(OrderDto order);
+        Task<ApiResponse<int>> ProcessOrderAsync(OrderRequestDto order);
         Task<ApiResponse<int>> DeleteOrderAsync(int id);
-        Task<ApiResponse<int>> UpdateOrderAsync(int id, OrderDto order, PaymentMethod paymentMethod);
+        Task<ApiResponse<int>> UpdateOrderAsync(OrderUpdate order);
+        Task<ApiResponse<bool>> DeleteOrderItemsAsync(OrderItemDeleteDto orderItemDeleteDto);
     }
 }
