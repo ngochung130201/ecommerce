@@ -12,19 +12,11 @@ namespace ecommerce.Services
         {
             _historyRepository = historyRepository;
         }
-        public async Task<ApiResponse<int>> AddHistoryAsync(HistoryDto history)
+        public async Task<ApiResponse<int>> AddHistoryAsync(History history)
         {
-            var historyModel = new History
-            {
-                Message = history.Message,
-                PaymentId = history.PaymentId,
-                Status = history.Status,
-                StatusMessage = history.StatusMessage,
-                CreateAt = DateTime.UtcNow
-            };
             try
             {
-                await _historyRepository.AddHistoryAsync(historyModel);
+                await _historyRepository.AddHistoryAsync(history);
                 return new ApiResponse<int>
                 {
                     Data = 0,

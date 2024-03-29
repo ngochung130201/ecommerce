@@ -65,11 +65,6 @@ namespace ecommerce.Repository
 
         public async Task UpdatePaymentAsync(int id, Payment payment)
         {
-            var paymentToUpdate = await _repositoryBase.FindByIdAsync(id);
-            if (paymentToUpdate == null)
-            {
-                throw new CustomException("Payment not found", 404);
-            }
             try
             {
                 _repositoryBase.Update(payment);
