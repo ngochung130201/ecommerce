@@ -16,9 +16,27 @@ namespace ecommerce.Controllers
             _accountService = accountService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllAccountsAsync()
+        public async Task<IActionResult> GetAllAccountsAsync(bool isAdmin = false)
         {
-            return Ok();
+            if (isAdmin)
+            {
+                var response = await _accountService.GetListRoleAsync();
+                if (response.Status)
+                {
+                    return Ok(response);
+                }
+                return BadRequest(response);
+            }
+            else
+            {
+                var response = await _accountService.GetListUserAsync();
+                if (response.Status)
+                {
+                    return Ok(response);
+                }
+                return BadRequest(response);
+            }
+
         }
         // GET: api/account/login
         [HttpPost("login")]
