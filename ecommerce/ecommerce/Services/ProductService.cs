@@ -438,7 +438,7 @@ namespace ecommerce.Services
                     {
                         await _uploadFilesService.RemoveFileAsync(productItem.Image, Contains.ProductImageFolder);
                     }
-                    var imageResponse = await _uploadFilesService.UploadFileAsync(image, Contains.ProductGalleryFolder);
+                    var imageResponse = await _uploadFilesService.UploadFileAsync(image, Contains.ProductImageFolder);
                     if (!imageResponse.Status)
                     {
                         return new ApiResponse<int> { Message = imageResponse.Message, Status = false };
@@ -451,9 +451,9 @@ namespace ecommerce.Services
                     if (!string.IsNullOrEmpty(productItem.Gallery))
                     {
                         var galleryStrings = productItem.Gallery.Split(",").ToList();
-                        await _uploadFilesService.RemoveFilesAsync(galleryStrings, "products");
+                        await _uploadFilesService.RemoveFilesAsync(galleryStrings, Contains.ProductGalleryFolder);
                     }
-                    var galleryRes = await _uploadFilesService.UploadFilesAsync(gallery, "products");
+                    var galleryRes = await _uploadFilesService.UploadFilesAsync(gallery, Contains.ProductGalleryFolder);
                     if (!galleryRes.Status)
                     {
                         return new ApiResponse<int> { Message = galleryRes.Message, Status = false };

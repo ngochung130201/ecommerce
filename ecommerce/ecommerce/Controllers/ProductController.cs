@@ -114,7 +114,7 @@ namespace ecommerce.Controllers
                 Sale = product.Sale,
                 PriceSale = product.PriceSale,
             };
-            var response = await _productService.UpdateProductAsync(id, productModel);
+            var response = await _productService.UpdateProductAsync(id, productModel, image: product.Image, gallery: product.Gallery);
             if (response.Status)
             {
                 return Ok(response);
