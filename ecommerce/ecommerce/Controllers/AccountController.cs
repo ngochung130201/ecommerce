@@ -61,16 +61,14 @@ namespace ecommerce.Controllers
             return Ok(response);
         }
         // POST: api/account/register-admin only admin can access
-        [Authorize(Roles = "SuperAdmin")]
+
         [HttpPost("register-admin")]
         public async Task<IActionResult> RegisterAdminAsync([FromBody] RegisterAdminDto register)
         {
-            // check token role
-            var token = Request.Headers["Authorization"];
-            var responseToken = await _accountService.GetRoleAsync(token, AdminRole.SuperAdmin);
+            var responseToken = await _accountService.GetRoleAsync(register.EmailForSupperAdmin, AdminRole.SuperAdmin);
             if (!responseToken.Status)
             {
-                return BadRequest(responseToken);
+               return Unauthorized("You are not authorized to access this endpoint");
             }
             if (register.Password != register.ConfirmPassword)
             {

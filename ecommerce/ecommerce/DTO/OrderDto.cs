@@ -9,6 +9,7 @@ namespace ecommerce.DTO
         public OrderStatus OrderStatus { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
+        public decimal TotalPrice { get; set; }
         public virtual ICollection<OrderItemDto> OrderItems { get; set; }
     }
     public class OrderUpdate
