@@ -74,27 +74,24 @@ namespace ecommerce.Services
                 var productExist = order.ProductIds.Contains(cartItem.ProductId);
                 if (!productExist)
                 {
-                    await _orderItemService.AddOrderItemAsync(new OrderItemDto
-                    {
-                        OrderId = orderIdByUser.OrderId,
-                        ProductId = cartItem.ProductId,
-                        Quantity = cartItem.Quantity,
-                        PriceAtTimeOfOrder = cartItem.TotalPrice,
-                    });
+                    continue;
                 }
-                // Update order item quantity
-                else
+                await _orderItemService.AddOrderItemAsync(new OrderItemDto
                 {
-                    var orderItem = orderIdByUser.OrderItems.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
-                    var product = products.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
-                    orderItem.Quantity += cartItem.Quantity;
-                    orderItem.PriceAtTimeOfOrder = product.PriceSale;
-                    await _orderItemService.UpdateOrderItemAsync(orderItem.OrderItemId, new OrderItemDto
-                    {
-                        PriceAtTimeOfOrder = orderItem.PriceAtTimeOfOrder,
-                    });
-
-                }
+                    OrderId = orderIdByUser.OrderId,
+                    ProductId = cartItem.ProductId,
+                    Quantity = cartItem.Quantity,
+                    PriceAtTimeOfOrder = cartItem.TotalPrice,
+                });
+                await _unitOfWork.SaveChangesAsync();
+                var orderItem = orderIdByUser.OrderItems.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
+                var product = products.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
+                orderItem.Quantity += cartItem.Quantity;
+                orderItem.PriceAtTimeOfOrder = product.PriceSale;
+                await _orderItemService.UpdateOrderItemAsync(orderItem.OrderItemId, new OrderItemDto
+                {
+                    PriceAtTimeOfOrder = orderItem.PriceAtTimeOfOrder,
+                });
             }
             orderIdByUser.TotalPrice = orderIdByUser.OrderItems.Sum(u => u.PriceAtTimeOfOrder);
 
