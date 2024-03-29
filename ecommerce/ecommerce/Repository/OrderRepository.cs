@@ -57,6 +57,11 @@ namespace ecommerce.Repository
             return orders;
         }
 
+        public Task<Order> GetCartByUserIdAsync(int userId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<Order> GetOrderByIdAsync(int id)
         {
             var order = await _repositoryBase.FindByIdAsync(id);

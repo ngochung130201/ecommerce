@@ -13,17 +13,17 @@ namespace ecommerce.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderItemService _orderItemService;
-        private readonly ICartService _cartService;
+        private readonly ICartService  _cartService;
+        private readonly EcommerceContext _context;
         private readonly IPaymentService _paymentService;
         private readonly IHistoryService _historyService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly EcommerceContext _context;
         private readonly IRevenueReportService _revenueReportService;
         public OrderService(IOrderRepository orderRepository,
         IPaymentService paymentService, IOrderItemService orderItemService,
-        ICartService cartService, IHistoryService historyService,
-        IRevenueReportService revenueReportService,
         EcommerceContext context,
+        ICartService  cartService, IHistoryService historyService,
+        IRevenueReportService revenueReportService,
         IUnitOfWork unitOfWork)
         {
             _orderRepository = orderRepository;
@@ -258,7 +258,6 @@ namespace ecommerce.Services
                 await _unitOfWork.SaveChangesAsync();
 
                 var payment = await _paymentService.GetPaymentByOrderIdAsync(order.OrderId);
-                var productIds = orderExist.OrderItems.Select(u => u.ProductId).ToList();
                 if (orderToPayment.Contains(orderExist.OrderStatus) && payment != null)
                 {
                     if (order.OrderStatus == OrderStatus.Pending)
@@ -290,21 +289,14 @@ namespace ecommerce.Services
 
                     if (order.OrderStatus == OrderStatus.Delivered)
                     {
-                        // add revenue report
-                        var revenue = new RevenueReportAddDto
-                        {
+                       // add revenue report
+                       var revenue = new RevenueReportAddDto
+                       {
                             TotalRevenue = payment.Amount
-                        };
-                        await _revenueReportService.AddRevenueReportAsync(revenue);
-                        // remove quantity product
-                        var listProduct = await _context.Products.Where(u => productIds.Contains(u.ProductId)).ToListAsync();
-                        foreach (var product in listProduct)
-                        {
-                            product.InventoryCount -= 1;
-                        }
-
+                       };
+                       await _revenueReportService.AddRevenueReportAsync(revenue);  
                     }
-
+    
                     // add table history
                     var historyStatus = GetHistoryStatus(order.OrderStatus);
                     await _historyService.AddHistoryAsync(new History
@@ -377,7 +369,7 @@ namespace ecommerce.Services
         // Add Payment
         public async Task AddPaymentAsync(PaymentDto payment, int orderId, OrderStatus orderStatus)
         {
-
+            
             await _paymentService.AddPaymentAsync(payment);
         }
 
@@ -400,8 +392,8 @@ namespace ecommerce.Services
                 Status = false
             };
         }
-
-
+     
+                     
 
     }
 }
