@@ -1,11 +1,13 @@
 ﻿
 
+using ecommerce.Context;
 using ecommerce.DTO;
 using ecommerce.Enums;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
 using ecommerce.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -21,14 +23,16 @@ namespace ecommerce.Services
         private readonly IAccountRepository<User> _accountUserRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
-        public AccountService(IConfiguration configuration, IAccountRepository<Admin> accountAdminRepository,
-            IAccountRepository<User> accountUserRepository, IUnitOfWork unitOfWork, IEmailService emailService)
+        private readonly EcommerceContext _context;
+        public AccountService(IConfiguration configuration, IAccountRepository<Admin> accountAdminRepository, EcommerceContext context,
+        IAccountRepository<User> accountUserRepository, IUnitOfWork unitOfWork, IEmailService emailService)
         {
             _configuration = configuration;
             _accountAdminRepository = accountAdminRepository;
             _accountUserRepository = accountUserRepository;
             _unitOfWork = unitOfWork;
             _emailService = emailService;
+            _context = context;
 
         }
         public string GenerateJwtToken(AdminDto admin)
@@ -460,5 +464,213 @@ namespace ecommerce.Services
             }
         }
 
+        public async Task<ApiResponse<string>> AddRoleAsync(string email, AdminRole role)
+        {
+            var admin = await _accountAdminRepository.GetByEmailForAdmin(email);
+            if (admin != null)
+            {
+                if (admin.Role == role)
+                {
+                    return new ApiResponse<string>
+                    {
+                        Data = null,
+                        Message = "Role already assigned",
+                        Status = false
+                    };
+                }
+                else
+                {
+                    admin.Role = role;
+                    _accountAdminRepository.Update(admin);
+                    await _unitOfWork.SaveChangesAsync();
+                    return new ApiResponse<string>
+                    {
+                        Data = "Role assigned successfully",
+                        Message = "Role assigned successfully",
+                        Status = true
+                    };
+                }
+            }
+            else
+            {
+                return new ApiResponse<string>
+                {
+                    Data = null,
+                    Message = "Admin not found",
+                    Status = false
+                };
+            }
+        }
+
+        public async Task<ApiResponse<string>> UpdateRoleAsync(string email, AdminRole role)
+        {
+            var admin = await _accountAdminRepository.GetByEmailForAdmin(email);
+            if (admin != null)
+            {
+                if (admin.Role == role)
+                {
+                    return new ApiResponse<string>
+                    {
+                        Data = null,
+                        Message = "Role already assigned",
+                        Status = false
+                    };
+                }
+                else
+                {
+                    admin.Role = role;
+                    _accountAdminRepository.Update(admin);
+                    await _unitOfWork.SaveChangesAsync();
+                    return new ApiResponse<string>
+                    {
+                        Data = "Role updated successfully",
+                        Message = "Role updated successfully",
+                        Status = true
+                    };
+                }
+            }
+            else
+            {
+                return new ApiResponse<string>
+                {
+                    Data = null,
+                    Message = "Admin not found",
+                    Status = false
+                };
+            }
+
+        }
+
+        public async Task<ApiResponse<string>> DeleteRoleAsync(string email, AdminRole role)
+        {
+            var admin = await _accountAdminRepository.GetByEmailForAdmin(email);
+            if (admin != null)
+            {
+                if (admin.Role != role)
+                {
+                    return new ApiResponse<string>
+                    {
+                        Data = null,
+                        Message = "Role not assigned",
+                        Status = false
+                    };
+                }
+                else
+                {
+                    admin.Role = role;
+                    _accountAdminRepository.Update(admin);
+                    await _unitOfWork.SaveChangesAsync();
+                    return new ApiResponse<string>
+                    {
+                        Data = "Role deleted successfully",
+                        Message = "Role deleted successfully",
+                        Status = true
+                    };
+                }
+            }
+            else
+            {
+                return new ApiResponse<string>
+                {
+                    Data = null,
+                    Message = "Admin not found",
+                    Status = false
+                };
+            }
+        }
+
+        public async Task<ApiResponse<AdminDto>> GetRoleAsync(string email, AdminRole role)
+        {
+            var admin = await _accountAdminRepository.GetByEmailForAdmin(email);
+            if (admin == null)
+            {
+                return new ApiResponse<AdminDto>
+                {
+                    Data = null,
+                    Message = "Admin not found",
+                    Status = false
+                };
+            }
+            else
+            {
+                if (admin.Role != role)
+                {
+                    return new ApiResponse<AdminDto>
+                    {
+                        Data = null,
+                        Message = "Role not assigned",
+                        Status = false
+                    };
+                }
+                else
+                {
+                    return new ApiResponse<AdminDto>
+                    {
+                        Data = new AdminDto
+                        {
+                            AdminId = admin.AdminId,
+                            Username = admin.Username,
+                            Email = admin.Email,
+                            AdminRole = admin.Role
+                        },
+                        Message = "Role found",
+                        Status = true
+                    };
+                }
+            }
+
+        }
+
+        public async Task<ApiResponse<List<AdminDto>>> GetListRoleAsync(AdminRole role)
+        {
+            var admins = await _context.Admins.Where(a => a.Role == role).ToListAsync();
+            if (admins == null)
+            {
+                return new ApiResponse<List<AdminDto>>
+                {
+                    Data = null,
+                    Message = "Admins not found",
+                    Status = false
+                };
+            }
+            return new ApiResponse<List<AdminDto>>
+            {
+                Data = admins.Select(a => new AdminDto
+                {
+                    AdminId = a.AdminId,
+                    Username = a.Username,
+                    Email = a.Email,
+                    AdminRole = a.Role
+                }).ToList(),
+                Message = "Admins found",
+                Status = true
+            };
+        }
+
+        public async Task<ApiResponse<List<AdminDto>>> GetListRoleAsync()
+        {
+            var admins = await _context.Admins.ToListAsync();
+            if (admins == null)
+            {
+                return new ApiResponse<List<AdminDto>>
+                {
+                    Data = null,
+                    Message = "Admins not found",
+                    Status = false
+                };
+            }
+            return new ApiResponse<List<AdminDto>>
+            {
+                Data = admins.Select(a => new AdminDto
+                {
+                    AdminId = a.AdminId,
+                    Username = a.Username,
+                    Email = a.Email,
+                    AdminRole = a.Role
+                }).ToList(),
+                Message = "Admins found",
+                Status = true
+            };
+        }
     }
 }

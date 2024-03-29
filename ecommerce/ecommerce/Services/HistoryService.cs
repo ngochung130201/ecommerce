@@ -1,16 +1,20 @@
-﻿using ecommerce.DTO;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Services
 {
     public class HistoryService : IHistoryService
     {
         private readonly IHistoryRepository _historyRepository;
-        public HistoryService(IHistoryRepository historyRepository)
+        private readonly EcommerceContext _context;
+        public HistoryService(IHistoryRepository historyRepository, EcommerceContext context)
         {
             _historyRepository = historyRepository;
+            _context = context;
         }
         public async Task<ApiResponse<int>> AddHistoryAsync(History history)
         {
@@ -93,6 +97,33 @@ namespace ecommerce.Services
                 Status = true
             };
         }
+
+        public async Task<ApiResponse<IEnumerable<HistoryDto>>> GetHistoriesByPaymentIdAsync(int paymentId)
+        {
+            var histories = await _context.Histories.Where(x => x.PaymentId == paymentId).ToListAsync();
+            if (histories == null)
+            {
+                return new ApiResponse<IEnumerable<HistoryDto>>
+                {
+                    Data = null,
+                    Message = "No History found",
+                    Status = false
+                };
+            }
+            return new ApiResponse<IEnumerable<HistoryDto>>
+            {
+                Data = new List<HistoryDto>(histories.Select(x => new HistoryDto
+                {
+                    Message = x.Message,
+                    PaymentId = x.PaymentId,
+                    Status = x.Status,
+                    StatusMessage = x.StatusMessage,
+                })),
+                Message = "Histories found",
+                Status = true
+            };
+        }
+
 
         public async Task<ApiResponse<HistoryDto>> GetHistoryByIdAsync(int id)
         {
