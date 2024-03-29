@@ -9,5 +9,6 @@ namespace ecommerce.DTO
         public string Password { get; set; }
         public string ConfirmPassword { get; set; }
         public AdminRole Role { get; set; }
+        public string EmailForSupperAdmin { get; set; }
     }
 }

@@ -194,7 +194,10 @@ namespace ecommerce.Services
                 {
                     OrderStatus = order.OrderStatus,
                     UserId = order.UserId,
-                    CreatedAt = order.CreatedAt
+                    CreatedAt = order.CreatedAt,
+                    OrderId = order.OrderId,
+                    UpdatedAt = order.UpdatedAt,
+                    TotalPrice = order.TotalPrice
                 }),
                 Message = "Orders retrieved",
                 Status = true
@@ -219,7 +222,10 @@ namespace ecommerce.Services
                 {
                     OrderStatus = order.OrderStatus,
                     UserId = order.UserId,
-                    CreatedAt = order.CreatedAt
+                    CreatedAt = order.CreatedAt,
+                    OrderId = order.OrderId,
+                    UpdatedAt = order.UpdatedAt,
+                    TotalPrice = order.TotalPrice
                 },
                 Message = "Order found",
                 Status = true
