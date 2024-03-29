@@ -15,9 +15,11 @@ namespace ecommerce.Services
         private readonly IPaymentService _paymentService;
         private readonly IHistoryService _historyService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IRevenueReportService _revenueReportService;
         public OrderService(IOrderRepository orderRepository,
         IPaymentService paymentService, IOrderItemService orderItemService,
         ICartService cartItemService, IHistoryService historyService,
+        IRevenueReportService revenueReportService,
         IUnitOfWork unitOfWork)
         {
             _orderRepository = orderRepository;
@@ -26,10 +28,10 @@ namespace ecommerce.Services
             _cartItemService = cartItemService;
             _historyService = historyService;
             _unitOfWork = unitOfWork;
+            _revenueReportService = revenueReportService;
         }
         public async Task<ApiResponse<int>> ProcessOrderAsync(OrderRequestDto order)
         {
-            var existingOrder = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
             var orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
             if (orderIdByUser.User.Carts == null)
             {
@@ -44,7 +46,7 @@ namespace ecommerce.Services
             var productIds = cartItemsToProcess.Select(u => u.ProductId).ToList();
             var isDupProduct = productIds.Any(u => order.ProductIds.Contains(u));
             // khac ngay hom nay van tao order moi
-            var isToday = existingOrder.CreatedAt.Date == DateTime.UtcNow.Date;
+            var isToday = orderIdByUser.CreatedAt.Date == DateTime.UtcNow.Date;
             // Create a new order if it doesn't exist
             if (!isDupProduct || !isToday)
             {
@@ -57,6 +59,7 @@ namespace ecommerce.Services
                 };
                 await _orderRepository.AddOrderAsync(newOrder);
                 await _unitOfWork.SaveChangesAsync();
+                // add table history
             }
             foreach (var cartItem in cartItemsToProcess)
             {
@@ -100,7 +103,24 @@ namespace ecommerce.Services
 
             }, orderId: orderIdByUser.OrderId, orderStatus: order.OrderStatus);
             await _unitOfWork.SaveChangesAsync();
-
+            var history = new HistoryDto
+            {
+                UserId = order.UserId,
+                Message = "Order created_" + orderIdByUser.OrderId,
+                Status = HistoryStatus.OrderPending,
+                StatusMessage = nameof(HistoryStatus.OrderPending)
+            };
+            // get payment 
+            var paymentId = await _paymentService.GetPaymentByOrderIdAsync(orderIdByUser.OrderId);
+            await _historyService.AddHistoryAsync(new History
+            {
+                CreateAt = DateTime.UtcNow.Date,
+                Message = history.Message,
+                Status = history.Status,
+                StatusMessage = history.StatusMessage,
+                PaymentId = paymentId.PaymentId
+            });
+            await _unitOfWork.SaveChangesAsync();
             return new ApiResponse<int>
             {
                 Data = orderIdByUser.OrderId,
@@ -257,19 +277,27 @@ namespace ecommerce.Services
                     payment.PaymentMethod = order.PaymentMethod;
                     payment.PaymentMethodText = payment.PaymentMethod.ToString();
                     payment.UpdatedAt = DateTime.UtcNow;
-                    if (payment.PaymentStatus == PaymentStatus.Failed || payment.PaymentStatus == PaymentStatus.Completed)
+
+                    if (order.OrderStatus == OrderStatus.Delivered)
                     {
-                        // add table history
-                        var history = new HistoryDto
-                        {
-                            UserId = order.UserId,
-                            Message = "Order " + payment.PaymentStatus.ToString() + "_" + order.OrderId,
-                            PaymentId = payment.PaymentId,
-                            Status = HistoryStatus.OrderCancelled,
-                            StatusMessage = nameof(HistoryStatus.OrderCancelled)
-                        };
-                        await _historyService.AddHistoryAsync(history);
+                       // add revenue report
+                       var revenue = new RevenueReportAddDto
+                       {
+                            TotalRevenue = payment.Amount
+                       };
+                       await _revenueReportService.AddRevenueReportAsync(revenue);  
                     }
+    
+                    // add table history
+                    var historyStatus = GetHistoryStatus(order.OrderStatus);
+                    await _historyService.AddHistoryAsync(new History
+                    {
+                        CreateAt = DateTime.UtcNow.Date,
+                        Message = historyStatus.ToString() + "_" + order.OrderId,
+                        Status = historyStatus,
+                        StatusMessage = historyStatus.ToString(),
+                        PaymentId = payment.PaymentId
+                    });
                 }
                 await _unitOfWork.SaveChangesAsync();
 
@@ -310,9 +338,29 @@ namespace ecommerce.Services
             }
             return order.OrderStatus;
         }
+        // Get History status for Order Status
+        public HistoryStatus GetHistoryStatus(OrderStatus orderStatus)
+        {
+            switch (orderStatus)
+            {
+                case OrderStatus.Pending:
+                    return HistoryStatus.OrderPending;
+                case OrderStatus.Processing:
+                    return HistoryStatus.OrderProcessing;
+                case OrderStatus.Shipped:
+                    return HistoryStatus.OrderShipped;
+                case OrderStatus.Delivered:
+                    return HistoryStatus.OrderDelivered;
+                case OrderStatus.Cancelled:
+                    return HistoryStatus.OrderCancelled;
+                default:
+                    return HistoryStatus.OrderPending;
+            }
+        }
         // Add Payment
         public async Task AddPaymentAsync(PaymentDto payment, int orderId, OrderStatus orderStatus)
         {
+            
             await _paymentService.AddPaymentAsync(payment);
         }
 
@@ -335,6 +383,8 @@ namespace ecommerce.Services
                 Status = false
             };
         }
+     
+                     
 
     }
 }

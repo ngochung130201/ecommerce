@@ -37,18 +37,18 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<Cart>> GetAllCartsAsync()
         {
-            return await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).ToListAsync();
+            return await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category).ToListAsync();
         }
 
         public async Task<Cart> GetCartByIdAsync(int id)
         {
-            var cart = await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).FirstOrDefaultAsync(c => c.CartId == id);
+            var cart = await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category).FirstOrDefaultAsync(c => c.CartId == id);
             return cart;
         }
 
         public async Task<Cart> GetCartsByUserIdAsync(int userId)
         {
-            var carts = await _context.Carts.Include(u => u.CartItems).ThenInclude(k => k.Product).FirstOrDefaultAsync(c => c.UserId == userId);
+            var carts = await _context.Carts.Include(u => u.CartItems).ThenInclude(k => k.Product).ThenInclude(u=>u.Category).FirstOrDefaultAsync(c => c.UserId == userId);
             return carts;
         }
 

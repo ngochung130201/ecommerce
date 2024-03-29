@@ -63,5 +63,16 @@ namespace ecommerce.Controllers
             }
             return BadRequest(result);
         }
+             // Get payment by order id
+        [HttpGet("order/{orderId}")]
+        public async Task<IActionResult> GetPaymentByOrderIdAsync(int orderId)
+        {
+            var payment = await _paymentService.GetPaymentByOrderIdAsync(orderId);
+            if (payment != null)
+            {
+                return Ok(payment);
+            }
+            return BadRequest(payment);
+        }
     }
 }

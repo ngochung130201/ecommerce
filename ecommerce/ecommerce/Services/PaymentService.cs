@@ -3,6 +3,7 @@ using ecommerce.DTO;
 using ecommerce.Models;
 using ecommerce.Repository;
 using ecommerce.Services.Interface;
+using ecommerce.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Services
@@ -11,10 +12,12 @@ namespace ecommerce.Services
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly EcommerceContext _context;
-        public PaymentService(IPaymentRepository paymentRepository, EcommerceContext context)
+        private readonly IUnitOfWork _unitOfWork;
+        public PaymentService(IPaymentRepository paymentRepository, EcommerceContext context, IUnitOfWork unitOfWork)
         {
             _paymentRepository = paymentRepository;
             _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ApiResponse<int>> AddPaymentAsync(PaymentDto payment)
@@ -32,6 +35,7 @@ namespace ecommerce.Services
             try
             {
                 await _paymentRepository.AddPaymentAsync(newPayment);
+                await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int> { Data = 0, Message = "Payment added", Status = true };
             }
             catch (Exception ex)
@@ -51,6 +55,7 @@ namespace ecommerce.Services
             try
             {
                 await _paymentRepository.DeletePaymentAsync(id);
+                await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int> { Data = id, Message = "Payment deleted", Status = true };
             }
             catch (Exception ex)
@@ -118,17 +123,15 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<int>> UpdatePaymentAsync(int id, PaymentDto payment)
         {
-            var paymentToUpdate = new Payment
-            {
-                PaymentMethod = payment.PaymentMethod,
-                PaymentStatus = payment.PaymentStatus,
-                Amount = payment.Amount,
-                OrderId = payment.OrderId,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var paymentEx = await _paymentRepository.GetPaymentByIdAsync(id);
             try
             {
-                await _paymentRepository.UpdatePaymentAsync(id, paymentToUpdate);
+                paymentEx.PaymentMethod = payment.PaymentMethod;
+                paymentEx.PaymentStatus = payment.PaymentStatus;
+                payment.Amount = payment.Amount;
+                payment.UpdatedAt = DateTime.UtcNow.Date;
+                await _paymentRepository.UpdatePaymentAsync(id, paymentEx);
+                await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int> { Data = 0, Message = "Payment updated", Status = true };
             }
             catch (Exception ex)

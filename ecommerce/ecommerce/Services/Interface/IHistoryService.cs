@@ -1,4 +1,5 @@
 ﻿using ecommerce.DTO;
+using ecommerce.Models;
 
 namespace ecommerce.Services.Interface
 {
@@ -6,7 +7,7 @@ namespace ecommerce.Services.Interface
     {
         Task<ApiResponse<IEnumerable<HistoryDto>>> GetAllHistoriesAsync();
         Task<ApiResponse<HistoryDto>> GetHistoryByIdAsync(int id);
-        Task<ApiResponse<int>> AddHistoryAsync(HistoryDto history);
+        Task<ApiResponse<int>> AddHistoryAsync(History history);
         Task<ApiResponse<int>> DeleteHistoryAsync(int id);
         Task<ApiResponse<int>> UpdateHistoryAsync(int id, HistoryDto history);
     }

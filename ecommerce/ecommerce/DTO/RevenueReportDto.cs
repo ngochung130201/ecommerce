@@ -8,4 +8,9 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
     }
+     public class RevenueReportAddDto
+    {
+        public DateTime Date { get; set; }
+        public decimal TotalRevenue { get; set; }
+    }
 }

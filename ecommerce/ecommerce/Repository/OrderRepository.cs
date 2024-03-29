@@ -59,7 +59,7 @@ namespace ecommerce.Repository
 
         public async Task<Order> GetOrderByIdAsync(int id)
         {
-            var order = await _context.Orders.Include(u => u.OrderItems).Include(x => x.User).ThenInclude(x => x.Carts).ThenInclude(u => u.CartItems).FirstOrDefaultAsync(x => x.OrderId == id);
+            var order = await _repositoryBase.FindByIdAsync(id);
             if (order == null)
             {
                 throw new CustomException("Order not found", 404);
@@ -67,7 +67,7 @@ namespace ecommerce.Repository
             return order;
         }
 
-        public async Task<Order> GetOrderByUserIdAsync(int userId)
+         public async Task<Order> GetOrderByUserIdAsync(int userId)
         {
             var order = await _context.Orders.Include(u => u.OrderItems).Include(x => x.User).ThenInclude(x => x.Carts).ThenInclude(u => u.CartItems).FirstOrDefaultAsync(x => x.UserId == userId);
             if (order != null)
@@ -76,8 +76,6 @@ namespace ecommerce.Repository
             }
             return null;
         }
-
-
         public async Task UpdateOrderAsync(int id, Order orderToUpdate)
         {
             if (orderToUpdate == null)

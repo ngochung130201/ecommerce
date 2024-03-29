@@ -7,6 +7,6 @@
         public int ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; }
-        public virtual ProductDto Product { get; set; }
+        public virtual ProductAllDto Product { get; set; }
     }
 }
