@@ -1,9 +1,11 @@
-﻿using ecommerce.DTO;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Enums;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
 using ecommerce.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Services
 {
@@ -11,29 +13,33 @@ namespace ecommerce.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderItemService _orderItemService;
-        private readonly ICartService _cartItemService;
+        private readonly ICartService _cartService;
         private readonly IPaymentService _paymentService;
         private readonly IHistoryService _historyService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly EcommerceContext _context;
         private readonly IRevenueReportService _revenueReportService;
         public OrderService(IOrderRepository orderRepository,
         IPaymentService paymentService, IOrderItemService orderItemService,
-        ICartService cartItemService, IHistoryService historyService,
+        ICartService cartService, IHistoryService historyService,
         IRevenueReportService revenueReportService,
+        EcommerceContext context,
         IUnitOfWork unitOfWork)
         {
             _orderRepository = orderRepository;
             _paymentService = paymentService;
             _orderItemService = orderItemService;
-            _cartItemService = cartItemService;
+            _cartService = cartService;
             _historyService = historyService;
             _unitOfWork = unitOfWork;
             _revenueReportService = revenueReportService;
+            _context = context;
         }
         public async Task<ApiResponse<int>> ProcessOrderAsync(OrderRequestDto order)
         {
             var orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
-            if (orderIdByUser.User.Carts == null)
+            var getCartByIdAsync = await _context.Carts.Where(u => u.UserId == order.UserId).Include(u => u.CartItems).ThenInclude(u => u.Product).FirstOrDefaultAsync();
+            if (getCartByIdAsync == null)
             {
                 return new ApiResponse<int>
                 {
@@ -42,13 +48,14 @@ namespace ecommerce.Services
                     Status = false
                 };
             }
-            var cartItemsToProcess = orderIdByUser.User.Carts.CartItems.ToList();
+            var cartItemsToProcess = getCartByIdAsync.CartItems.ToList();
+            var products = cartItemsToProcess.Select(u => u.Product).ToList();
             var productIds = cartItemsToProcess.Select(u => u.ProductId).ToList();
             var isDupProduct = productIds.Any(u => order.ProductIds.Contains(u));
             // khac ngay hom nay van tao order moi
-            var isToday = orderIdByUser.CreatedAt.Date == DateTime.UtcNow.Date;
+            var isToday = getCartByIdAsync.CreatedAt.Date == DateTime.UtcNow.Date;
             // Create a new order if it doesn't exist
-            if (!isDupProduct || !isToday)
+            if (!isDupProduct || !isToday || orderIdByUser == null)
             {
                 var newOrder = new Order
                 {
@@ -61,6 +68,7 @@ namespace ecommerce.Services
                 await _unitOfWork.SaveChangesAsync();
                 // add table history
             }
+            orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
             foreach (var cartItem in cartItemsToProcess)
             {
                 var productExist = order.ProductIds.Contains(cartItem.ProductId);
@@ -78,8 +86,9 @@ namespace ecommerce.Services
                 else
                 {
                     var orderItem = orderIdByUser.OrderItems.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
+                    var product = products.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
                     orderItem.Quantity += cartItem.Quantity;
-                    orderItem.PriceAtTimeOfOrder += cartItem.TotalPrice;
+                    orderItem.PriceAtTimeOfOrder = product.PriceSale;
                     await _orderItemService.UpdateOrderItemAsync(orderItem.OrderItemId, new OrderItemDto
                     {
                         PriceAtTimeOfOrder = orderItem.PriceAtTimeOfOrder,
@@ -90,8 +99,8 @@ namespace ecommerce.Services
             orderIdByUser.TotalPrice = orderIdByUser.OrderItems.Sum(u => u.PriceAtTimeOfOrder);
 
             // Delete processed cart items and possibly the cart
-            await _cartItemService.DeleteListCartItemAsync(cartItemsToProcess);
-            await _cartItemService.DeleteCartAsync(orderIdByUser.User.Carts.CartId);
+            await _cartService.DeleteListCartItemAsync(cartItemsToProcess);
+            await _cartService.DeleteCartAsync(orderIdByUser.User.Carts.CartId);
             // Add payment
             await AddPaymentAsync(payment: new PaymentDto
             {
@@ -148,8 +157,8 @@ namespace ecommerce.Services
                 await _orderItemService.DeleteOrderItemByOrderIdAsync(id);
                 await _orderRepository.DeleteOrderAsync(id);
                 // remove cart and cart item
-                await _cartItemService.DeleteListCartItemAsync(order.User.Carts.CartItems.ToList());
-                await _cartItemService.DeleteCartAsync(order.UserId);
+                await _cartService.DeleteListCartItemAsync(order.User.Carts.CartItems.ToList());
+                await _cartService.DeleteCartAsync(order.UserId);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ApiResponse<int>
@@ -249,6 +258,7 @@ namespace ecommerce.Services
                 await _unitOfWork.SaveChangesAsync();
 
                 var payment = await _paymentService.GetPaymentByOrderIdAsync(order.OrderId);
+                var productIds = orderExist.OrderItems.Select(u => u.ProductId).ToList();
                 if (orderToPayment.Contains(orderExist.OrderStatus) && payment != null)
                 {
                     if (order.OrderStatus == OrderStatus.Pending)
@@ -280,14 +290,21 @@ namespace ecommerce.Services
 
                     if (order.OrderStatus == OrderStatus.Delivered)
                     {
-                       // add revenue report
-                       var revenue = new RevenueReportAddDto
-                       {
+                        // add revenue report
+                        var revenue = new RevenueReportAddDto
+                        {
                             TotalRevenue = payment.Amount
-                       };
-                       await _revenueReportService.AddRevenueReportAsync(revenue);  
+                        };
+                        await _revenueReportService.AddRevenueReportAsync(revenue);
+                        // remove quantity product
+                        var listProduct = await _context.Products.Where(u => productIds.Contains(u.ProductId)).ToListAsync();
+                        foreach (var product in listProduct)
+                        {
+                            product.InventoryCount -= 1;
+                        }
+
                     }
-    
+
                     // add table history
                     var historyStatus = GetHistoryStatus(order.OrderStatus);
                     await _historyService.AddHistoryAsync(new History
@@ -360,7 +377,7 @@ namespace ecommerce.Services
         // Add Payment
         public async Task AddPaymentAsync(PaymentDto payment, int orderId, OrderStatus orderStatus)
         {
-            
+
             await _paymentService.AddPaymentAsync(payment);
         }
 
@@ -383,8 +400,8 @@ namespace ecommerce.Services
                 Status = false
             };
         }
-     
-                     
+
+
 
     }
 }

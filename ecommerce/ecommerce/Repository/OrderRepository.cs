@@ -67,9 +67,9 @@ namespace ecommerce.Repository
             return order;
         }
 
-         public async Task<Order> GetOrderByUserIdAsync(int userId)
+        public async Task<Order> GetOrderByUserIdAsync(int userId)
         {
-            var order = await _context.Orders.Include(u => u.OrderItems).Include(x => x.User).ThenInclude(x => x.Carts).ThenInclude(u => u.CartItems).FirstOrDefaultAsync(x => x.UserId == userId);
+            var order = await _context.Orders.Include(u => u.OrderItems).Include(x => x.User).ThenInclude(x => x.Carts).ThenInclude(u => u.CartItems).ThenInclude(u => u.Product).FirstOrDefaultAsync(x => x.UserId == userId);
             if (order != null)
             {
                 return order;

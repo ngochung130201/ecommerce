@@ -10,5 +10,7 @@ namespace ecommerce.Repository.Interface
         Task DeleteOrderAsync(int id);
         Task UpdateOrderAsync(int id, Order orderToUpdate);
         Task<Order> GetOrderByUserIdAsync(int userId);
+        // Get Cart by userId
+        Task<Order> GetCartByUserIdAsync(int userId);
     }
 }

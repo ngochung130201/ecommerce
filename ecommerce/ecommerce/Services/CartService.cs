@@ -185,7 +185,8 @@ namespace ecommerce.Services
                     Quantity = ci.Quantity,
                     TotalPrice = ci.TotalPrice,
                     CartId = ci.CartId,
-                    Product = new ProductAllDto {
+                    Product = new ProductAllDto
+                    {
                         CategoryId = ci.Product.CategoryId,
                         Description = ci.Product.Description,
                         Image = ci.Product.Image,
