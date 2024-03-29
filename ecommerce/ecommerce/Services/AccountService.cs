@@ -672,5 +672,31 @@ namespace ecommerce.Services
                 Status = true
             };
         }
+
+        public async Task<ApiResponse<List<UserDto>>> GetListUserAsync()
+        {
+            var users = await _context.Users.ToListAsync();
+            if (users == null)
+            {
+                return new ApiResponse<List<UserDto>>
+                {
+                    Data = null,
+                    Message = "Users not found",
+                    Status = false
+                };
+            }
+            return new ApiResponse<List<UserDto>>
+            {
+                Data = users.Select(u => new UserDto
+                {
+                    UserId = u.UserId,
+                    Username = u.Username,
+                    Email = u.Email
+                }).ToList(),
+                Message = "Users found",
+                Status = true
+            };
+        }
+
     }
 }
