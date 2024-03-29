@@ -1,5 +1,7 @@
 ﻿using ecommerce.DTO;
+using ecommerce.Enums;
 using ecommerce.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ecommerce.Controllers
@@ -41,8 +43,27 @@ namespace ecommerce.Controllers
             return Ok(response);
         }
         // POST: api/account/register-admin only admin can access
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("register-admin")]
         public async Task<IActionResult> RegisterAdminAsync([FromBody] RegisterAdminDto register)
+        {
+            // check token role
+            var token = Request.Headers["Authorization"];
+            var responseToken = await _accountService.GetRoleAsync(token, AdminRole.SuperAdmin);
+            if (!responseToken.Status)
+            {
+                return BadRequest(responseToken);
+            }
+            if (register.Password != register.ConfirmPassword)
+            {
+                return BadRequest("Password and Confirm Password do not match");
+            }
+            var response = await _accountService.RegisterAsync(username: register.Name, email: register.Email, password: register.Password, adminRole: register.Role, isAdmin: true);
+            return Ok(response);
+        }
+        // Api test register-admin
+        [HttpPost("register-admin-test")]
+        public async Task<IActionResult> RegisterAdminTestAsync([FromBody] RegisterAdminDto register)
         {
             if (register.Password != register.ConfirmPassword)
             {
@@ -77,13 +98,80 @@ namespace ecommerce.Controllers
         [HttpPost("reset-password-email")]
         public async Task<IActionResult> ResetPasswordEmailAsync([FromBody] ResetPasswordEmailRequest resetPassword)
         {
-            var response = await _accountService.ResetPasswordEmailAsync(resetPassword.Email,resetPassword.NewPassword);
+            var response = await _accountService.ResetPasswordEmailAsync(resetPassword.Email, resetPassword.NewPassword);
             if (response.Status)
             {
                 return Ok(response);
             }
             return BadRequest(response);
         }
+        // Get Account Role
+        [HttpGet("role")]
+        public async Task<IActionResult> GetRoleAsync(string email, AdminRole role)
+        {
+            var response = await _accountService.GetRoleAsync(email, role);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        // Get List of Account Role
+        [HttpGet("role-list")]
+        public async Task<IActionResult> GetListRoleAsync(AdminRole role)
+        {
+            var response = await _accountService.GetListRoleAsync(role);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        // Get Full List of Account Role
+        [HttpGet("role-list-all")]
+        public async Task<IActionResult> GetListRoleAsync()
+        {
+            var response = await _accountService.GetListRoleAsync();
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        // Add Account Role
+        [HttpPost("role-add")]
+        public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleRequest addRole)
+        {
+            var response = await _accountService.AddRoleAsync(addRole.Email, addRole.Role);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        // Update Account Role
+        [HttpPut("role-update")]
+        public async Task<IActionResult> UpdateRoleAsync([FromBody] AddRoleRequest addRole)
+        {
+            var response = await _accountService.UpdateRoleAsync(addRole.Email, addRole.Role);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        // Delete Account Role
+        [HttpDelete("role-delete")]
+        public async Task<IActionResult> DeleteRoleAsync([FromBody] AddRoleRequest addRole)
+        {
+            var response = await _accountService.DeleteRoleAsync(addRole.Email, addRole.Role);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
 
     }
 }

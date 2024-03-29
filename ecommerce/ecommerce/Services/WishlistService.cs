@@ -137,7 +137,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<WishlistDto>>> GetWishlistByProductIdAsync(int productId)
         {
-            var  wishlist = await _wishlistRepository.GetWishListByProductIdAsync(productId);
+            var wishlist = await _wishlistRepository.GetWishListByProductIdAsync(productId);
             if (wishlist == null)
             {
                 return new ApiResponse<IEnumerable<WishlistDto>>
@@ -163,7 +163,7 @@ namespace ecommerce.Services
         }
         public async Task<ApiResponse<IEnumerable<WishlistDto>>> GetWishListByUserIdAsync(int userId)
         {
-        var wishlist = await _wishlistRepository.GetWishListsByUserIdAsync(userId);
+            var wishlist = await _wishlistRepository.GetWishListsByUserIdAsync(userId);
             if (wishlist == null)
             {
                 return new ApiResponse<IEnumerable<WishlistDto>>
