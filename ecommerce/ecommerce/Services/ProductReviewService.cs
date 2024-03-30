@@ -1,8 +1,10 @@
-﻿using ecommerce.DTO;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
 using ecommerce.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Services
 {
@@ -10,10 +12,12 @@ namespace ecommerce.Services
     {
         private readonly IProductReviewRepository _productReviewRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public ProductReviewService(IProductReviewRepository productReviewRepository, IUnitOfWork unitOfWork)
+        private readonly EcommerceContext  _context;
+        public ProductReviewService(IProductReviewRepository productReviewRepository, IUnitOfWork unitOfWork, EcommerceContext  context)
         {
             _productReviewRepository = productReviewRepository;
             _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<ApiResponse<int>> AddProductReviewAsync(ProductReviewDto productReview)
@@ -97,7 +101,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync()
         {
-            var productReviews = await _productReviewRepository.GetAllProductReviewsAsync();
+            var productReviews = await _context.ProductReviews.Include(u=>u.User).Take(3).OrderByDescending(u=>u.CreatedAt).ToListAsync();
             if (productReviews == null)
             {
                 return new ApiResponse<IEnumerable<ProductReviewAllDto>>
@@ -117,7 +121,8 @@ namespace ecommerce.Services
                     CreatedAt = x.CreatedAt,
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
-                    UserId = x.UserId
+                    UserId = x.UserId,
+                    UserName = x.User.Username
                 }),
                 Message = "Product Reviews found",
                 Status = true
@@ -126,7 +131,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<ProductReviewAllDto>> GetProductReviewByIdAsync(int id)
         {
-            var productReview = await _productReviewRepository.GetProductReviewByIdAsync(id);
+            var productReview = await _context.ProductReviews.Include(u=>u.User).FirstOrDefaultAsync(x => x.ReviewId == id);
             if (productReview == null)
             {
                 return new ApiResponse<ProductReviewAllDto>
@@ -146,7 +151,8 @@ namespace ecommerce.Services
                     CreatedAt = productReview.CreatedAt,
                     UpdatedAt = productReview.UpdatedAt,
                     ReviewId = productReview.ReviewId,
-                    UserId = productReview.UserId
+                    UserId = productReview.UserId,
+                    UserName = productReview.User.Username
 
                 },
                 Message = "Product Review found",
@@ -156,7 +162,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByProductAsync(int productId)
         {
-            var productReviews = await _productReviewRepository.GetProductReviewsByProductAsync(productId);
+            var productReviews = await _context.ProductReviews.Include(u=>u.User).Where(x => x.ProductId == productId).ToListAsync();
             if (productReviews == null)
             {
                 return new ApiResponse<IEnumerable<ProductReviewAllDto>>
@@ -176,7 +182,8 @@ namespace ecommerce.Services
                     CreatedAt = x.CreatedAt,
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
-                    UserId = x.UserId
+                    UserId = x.UserId,
+                    UserName = x.User.Username
                 }),
                 Message = "Product Reviews found",
                 Status = true
@@ -186,7 +193,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByUserAsync(int userId)
         {
-            var productReviews = await _productReviewRepository.GetProductReviewsByUserAsync(userId);
+            var productReviews = await _context.ProductReviews.Include(u=>u.User).Where(x => x.UserId == userId).ToListAsync();
             if (productReviews == null)
             {
                 return new ApiResponse<IEnumerable<ProductReviewAllDto>>
@@ -206,7 +213,8 @@ namespace ecommerce.Services
                     CreatedAt = x.CreatedAt,
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
-                    UserId = x.UserId
+                    UserId = x.UserId,
+                    UserName = x.User.Username
                 }),
                 Message = "Product Reviews found",
                 Status = true
