@@ -50,9 +50,9 @@ namespace ecommerce.Services
             }
             var cartItemsToProcess = getCartByIdAsync.CartItems.ToList();
             var products = cartItemsToProcess.Select(u => u.Product).ToList(); // have db
-            var productInput = cartItemsToProcess.Select(u => u.Product).Where(u =>order.ProductIds.Contains(u.ProductId)).ToList();
+            var productInput = cartItemsToProcess.Select(u => u.Product).Where(u =>order.OrderProduct.Any(k=>k.ProductId == u.ProductId)).ToList();
             var productIds = cartItemsToProcess.Select(u => u.ProductId).ToList();
-            var isDupProduct = productIds.Any(u => order.ProductIds.Contains(u));
+            var isDupProduct = productIds.Any(u => order.OrderProduct.Any(k => k.ProductId == u));
             // khac ngay hom nay van tao order moi
             var isToday = getCartByIdAsync.CreatedAt.Date == DateTime.UtcNow.Date;
             // Create a new order if it doesn't exist
@@ -72,8 +72,8 @@ namespace ecommerce.Services
             orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
             foreach (var cartItem in cartItemsToProcess)
             {
-                var productExist = order.ProductIds.Contains(cartItem.ProductId);
-                if (!productExist)
+                var productExist = order.OrderProduct.FirstOrDefault(k => k.ProductId == cartItem.ProductId);
+                if (productExist == null)
                 {
                     continue;
                 }
@@ -81,23 +81,33 @@ namespace ecommerce.Services
                 {
                     OrderId = orderIdByUser.OrderId,
                     ProductId = cartItem.ProductId,
-                    Quantity = cartItem.Quantity,
+                    Quantity = productExist.Quantity,
                     PriceAtTimeOfOrder = cartItem.TotalPrice,
                 });
                 await _unitOfWork.SaveChangesAsync();
                 var orderItem = orderIdByUser.OrderItems.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
                 var product = products.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
-                orderItem.Quantity += cartItem.Quantity;
+                orderItem.Quantity += productExist.Quantity;
                 orderItem.PriceAtTimeOfOrder = product.PriceSale;
                 await _orderItemService.UpdateOrderItemAsync(orderItem.OrderItemId, new OrderItemDto
                 {
                     PriceAtTimeOfOrder = orderItem.PriceAtTimeOfOrder,
                 });
+                // if quantity input == quantity in cart, delete cart item
+                if (productExist.Quantity == cartItem.Quantity)
+                {
+                    await _cartService.DeleteCartItemAsync(cartId: getCartByIdAsync.CartId, cartItemId: cartItem.CartItemId);
+                }
+                else
+                {
+                    // update cart item
+                    await _cartService.UpdateCartItemQuantityAsync(cartId: getCartByIdAsync.CartId, cartItemId: cartItem.CartItemId, quantity: cartItem.Quantity - productExist.Quantity);
+                }
             }
             orderIdByUser.TotalPrice = orderIdByUser.OrderItems.Sum(u => u.PriceAtTimeOfOrder);
 
             // Delete processed cart items and possibly the cart
-            await _cartService.DeleteListCartItemAsync(cartItemsToProcess);
+
             var getCartItemDb = await _context.Carts.Where(u => u.UserId == order.UserId).Include(u => u.CartItems).FirstOrDefaultAsync();
             if(productInput.Count == products.Count)
             {

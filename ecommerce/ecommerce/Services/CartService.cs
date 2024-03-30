@@ -1,8 +1,10 @@
-﻿using ecommerce.DTO;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
 using ecommerce.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Services
 {
@@ -14,9 +16,10 @@ namespace ecommerce.Services
         private readonly IAccountRepository<User> _accountRepository;
         private readonly IProductRepository _productRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly EcommerceContext _context;
         public CartService(ICartRepository cartRepository,
         ICartItemService cartItemService, ICartItemRepository cartItemRepository,
-        IAccountRepository<User> accountRepository, IUnitOfWork unitOfWork,
+        IAccountRepository<User> accountRepository, IUnitOfWork unitOfWork,EcommerceContext context,
         IProductRepository productRepository)
         {
             _cartRepository = cartRepository;
@@ -25,6 +28,7 @@ namespace ecommerce.Services
             _cartItemRepository = cartItemRepository;
             _productRepository = productRepository;
             _accountRepository = accountRepository;
+            _context = context;
         }
 
         public async Task<ApiResponse<int>> AddCartAsync(CartDto cart)
@@ -284,5 +288,18 @@ namespace ecommerce.Services
             _cartRepository.UpdateCart(newCart, cartExist);
             return new ApiResponse<int> { Message = "Cart updated successfully", Status = true };
         }
+
+        public async Task UpdateCartItemQuantityAsync(int cartId, int cartItemId, int quantity)
+        {
+            var cartItem = await _context.CartItems.Include(u=>u.Product).FirstOrDefaultAsync(x => x.CartId == cartId && x.CartItemId == cartItemId);
+            if (cartItem == null)
+            {
+               return;
+            }
+
+            cartItem.Quantity = quantity;
+            cartItem.TotalPrice = cartItem.Product.PriceSale * quantity;
+        }
+
     }
 }
