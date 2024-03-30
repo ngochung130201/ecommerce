@@ -49,7 +49,8 @@ namespace ecommerce.Services
                 };
             }
             var cartItemsToProcess = getCartByIdAsync.CartItems.ToList();
-            var products = cartItemsToProcess.Select(u => u.Product).ToList();
+            var products = cartItemsToProcess.Select(u => u.Product).ToList(); // have db
+            var productInput = cartItemsToProcess.Select(u => u.Product).Where(u =>order.ProductIds.Contains(u.ProductId)).ToList();
             var productIds = cartItemsToProcess.Select(u => u.ProductId).ToList();
             var isDupProduct = productIds.Any(u => order.ProductIds.Contains(u));
             // khac ngay hom nay van tao order moi
@@ -97,7 +98,11 @@ namespace ecommerce.Services
 
             // Delete processed cart items and possibly the cart
             await _cartService.DeleteListCartItemAsync(cartItemsToProcess);
-            await _cartService.DeleteCartAsync(orderIdByUser.User.Carts.CartId);
+            var getCartItemDb = await _context.Carts.Where(u => u.UserId == order.UserId).Include(u => u.CartItems).FirstOrDefaultAsync();
+            if(productInput.Count == products.Count)
+            {
+                await _cartService.DeleteCartAsync(orderIdByUser.User.Carts.CartId);
+            }
             // Add payment
             await AddPaymentAsync(payment: new PaymentDto
             {

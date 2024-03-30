@@ -18,7 +18,7 @@ namespace ecommerce.Models
         [Column("slug", TypeName = "nvarchar(255)")]
         public string Slug { get; set; }
 
-        [Column("description", TypeName = "nvarchar(255)")]
+        [Column("description", TypeName = "nvarchar(max)")]
         public string? Description { get; set; } = null;
 
         [Column("price", TypeName = "DECIMAL(20,7)")]

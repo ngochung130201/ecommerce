@@ -153,31 +153,31 @@ namespace ecommerce.Services
             };
         }
 
-        public async Task<ApiResponse<int>> UpdateCartItemAsync(int id, CartItemDto cartItem)
+        public Task<ApiResponse<int>> UpdateCartItemAsync(int id, CartItemDto cartItem)
         {
-            var cartItemModel = new CartItem
-            {
-                ProductId = cartItem.ProductId,
-                Quantity = cartItem.Quantity,
-                CartId = cartItem.CartId
-            };
-            var cartItemToUpdate = await _cartItemRepository.GetCartItemByIdAsync(id);
-            if (cartItemToUpdate == null)
-            {
-                return new ApiResponse<int>
-                {
-                    Data = id,
-                    Message = "No Cart Item found",
-                    Status = false
-                };
-            }
-            _cartItemRepository.UpdateCartItem(cartItemToUpdate, cartItemModel);
-            return new ApiResponse<int>
-            {
-                Data = id,
-                Message = "Cart Item updated",
-                Status = true
-            };
+            throw new NotImplementedException();
         }
+
+        // public async Task<ApiResponse<int>> UpdateCartItemAsync(CartItemDto cartItem)
+        // {
+        //     var cartItemToUpdate = await _cartItemRepository.GetCartItemByIdAsync(id);
+        //     if (cartItemToUpdate == null)
+        //     {
+        //         return new ApiResponse<int>
+        //         {
+        //             Data = id,
+        //             Message = "No Cart Item found",
+        //             Status = false
+        //         };
+        //     }
+        //     cartItemToUpdate.Quantity = cartItem.Quantity;
+        //     await _
+        //     return new ApiResponse<int>
+        //     {
+        //         Data = id,
+        //         Message = "Cart Item updated",
+        //         Status = true
+        //     };
+        // }
     }
 }

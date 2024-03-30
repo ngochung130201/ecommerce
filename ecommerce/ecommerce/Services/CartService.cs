@@ -246,6 +246,19 @@ namespace ecommerce.Services
                     Quantity = ci.Quantity,
                     TotalPrice = ci.TotalPrice,
                     CartId = ci.CartId,
+                    Product = new ProductAllDto
+                    {
+                        CategoryId = ci.Product.CategoryId,
+                        Description = ci.Product.Description,
+                        Image = ci.Product.Image,
+                        Price = ci.Product.Price,
+                        PriceSale = ci.Product.PriceSale,
+                        ProductId = ci.Product.ProductId,
+                        CreatedAt = ci.Product.CreatedAt,
+                        UpdatedAt = ci.Product.UpdatedAt,
+                        Name = ci.Product.Name,
+                        CategoryName = ci.Product.Category.Name,
+                    }
                 }).ToList()
 
             };

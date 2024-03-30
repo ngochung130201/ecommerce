@@ -10,5 +10,6 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<int>> DeleteOrderAsync(int id);
         Task<ApiResponse<int>> UpdateOrderAsync(OrderUpdate order);
         Task<ApiResponse<bool>> DeleteOrderItemsAsync(OrderItemDeleteDto orderItemDeleteDto);
+        // Update order status
     }
 }
