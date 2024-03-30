@@ -24,12 +24,19 @@ namespace ecommerce.DTO
         public int UserId { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.DirectPayment;
-        public List<int> ProductIds { get; set; }
+        public List<OrderProductDto> OrderProduct { get; set; }
+
     }
 
     public class OrderItemDeleteDto
     {
         public List<int>? OrderItemIds { get; set; } = null;
         public int OrderId { get; set; }
+    }
+    // Order Product
+    public class OrderProductDto
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
     }
 }

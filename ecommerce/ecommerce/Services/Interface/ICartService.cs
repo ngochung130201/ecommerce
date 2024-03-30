@@ -15,5 +15,7 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<int>> DeleteCartItemAsync(int cartId, int cartItemId);
         Task<ApiResponse<int>> DeleteListCartItemAsync(List<CartItem> cartItems);
         Task<ApiResponse<int>> DeleteCartItemsByCartIdAsync(int cartId, List<int> cartItemId);
+        // Update cart item quantity
+        Task UpdateCartItemQuantityAsync(int cartId, int cartItemId, int quantity);
     }
 }
