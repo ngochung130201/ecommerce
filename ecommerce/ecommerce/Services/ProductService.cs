@@ -200,6 +200,7 @@ namespace ecommerce.Services
             {
                 return new ApiResponse<List<ProductAllDto>> { Message = "Products not found", Status = false };
             }
+              var newProductDtos = new List<ProductAllDto>();
             var productDtos = product.Select(p => new ProductAllDto
             {
                 ProductId = p.ProductId,
@@ -219,7 +220,21 @@ namespace ecommerce.Services
                 Sale = p.Sale,
                 PriceSale = p.PriceSale
             }).ToList();
-            return new ApiResponse<List<ProductAllDto>> { Data = productDtos, Status = true };
+             foreach (var item in productDtos.ToList())
+            {
+                if (!string.IsNullOrEmpty(item.Image))
+                {
+                    item.Image = _uploadFilesService.GetFilePath(item.Image, Contains.ProductImageFolder);
+                }
+                if (!string.IsNullOrEmpty(item.Gallery))
+                {
+                    var gallery = item.Gallery.Split(",").ToList();
+                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, Contains.ProductGalleryFolder));
+                    item.Gallery = string.Join(",", galleryUrls);
+                }
+                newProductDtos.Add(item);
+            }
+            return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Status = true };
         }
 
 
