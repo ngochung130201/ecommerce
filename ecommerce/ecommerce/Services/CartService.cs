@@ -233,7 +233,7 @@ namespace ecommerce.Services
             var cart = await _cartRepository.GetCartsByUserIdAsync(userId);
             if (cart == null)
             {
-                return null;
+                return new ApiResponse<CartAllDto> { Message = "Cart not found", Status = false };
             }
             var cartDto = new CartAllDto
             {
