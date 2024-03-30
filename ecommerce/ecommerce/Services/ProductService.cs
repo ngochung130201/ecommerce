@@ -217,6 +217,7 @@ namespace ecommerce.Services
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
+                PriceSale = p.PriceSale
             }).ToList();
             return new ApiResponse<List<ProductAllDto>> { Data = productDtos, Status = true };
         }
