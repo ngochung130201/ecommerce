@@ -22,6 +22,9 @@ namespace ecommerce.Context
         public virtual DbSet<Wishlist> Wishlists { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
         public virtual DbSet<History> Histories { get; set; }
+        public virtual DbSet<Blog> Blogs { get; set; }
+        public virtual DbSet<BlogDetail> BlogDetails { get; set; }
+        public virtual DbSet<BlogCategory> BlogCategories { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Order>().Property(p => p.TotalPrice).HasColumnType("decimal(20,7)");

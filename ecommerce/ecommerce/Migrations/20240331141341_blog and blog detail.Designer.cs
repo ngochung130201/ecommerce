@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ecommerce.Context;
 
@@ -11,9 +12,10 @@ using ecommerce.Context;
 namespace ecommerce.Migrations
 {
     [DbContext(typeof(EcommerceContext))]
-    partial class EcommerceContextModelSnapshot : ModelSnapshot
+    [Migration("20240331141341_blog and blog detail")]
+    partial class blogandblogdetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -359,17 +361,9 @@ namespace ecommerce.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"), 1L, 1);
 
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("address");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("note");
 
                     b.Property<int>("OrderStatus")
                         .HasColumnType("int")
@@ -378,10 +372,6 @@ namespace ecommerce.Migrations
                     b.Property<string>("OrderStatusMessage")
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("order_status_message");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("phone_number");
 
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(20,7)")

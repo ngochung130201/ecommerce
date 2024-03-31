@@ -64,6 +64,9 @@ namespace ecommerce.Services
                     OrderStatus = OrderStatus.Pending,
                     OrderStatusMessage = nameof(OrderStatus.Pending),
                     CreatedAt = DateTime.UtcNow,
+                    Address = order.Address,
+                    Note = order.Note,
+                    PhoneNumber = order.PhoneNumber,
                 };
                 await _orderRepository.AddOrderAsync(newOrder);
                 await _unitOfWork.SaveChangesAsync();
@@ -212,7 +215,10 @@ namespace ecommerce.Services
                     CreatedAt = order.CreatedAt,
                     OrderId = order.OrderId,
                     UpdatedAt = order.UpdatedAt,
-                    TotalPrice = order.TotalPrice
+                    TotalPrice = order.TotalPrice,
+                    Address = order.Address,
+                    Note = order.Note,
+                    PhoneNumber = order.PhoneNumber,
                 }),
                 Message = "Orders retrieved",
                 Status = true
@@ -240,7 +246,10 @@ namespace ecommerce.Services
                     CreatedAt = order.CreatedAt,
                     OrderId = order.OrderId,
                     UpdatedAt = order.UpdatedAt,
-                    TotalPrice = order.TotalPrice
+                    TotalPrice = order.TotalPrice,
+                    Address = order.Address,
+                    Note = order.Note,
+                    PhoneNumber = order.PhoneNumber,
                 },
                 Message = "Order found",
                 Status = true
@@ -272,6 +281,9 @@ namespace ecommerce.Services
                 orderExist.OrderStatus = order.OrderStatus;
                 orderExist.OrderStatusMessage = nameof(order.OrderStatus);
                 orderExist.UpdatedAt = DateTime.UtcNow;
+                orderExist.Address = order.Address;
+                orderExist.Note = order.Note;
+                orderExist.PhoneNumber = order.PhoneNumber;
                 await _orderRepository.UpdateOrderAsync(order.OrderId, orderExist);
                 await _unitOfWork.SaveChangesAsync();
 

@@ -23,6 +23,17 @@ namespace ecommerce.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; } = null;
+
+
+        // shipping address
+        [Column("address")]
+        public string? Address { get; set; } = null;
+        // phone number
+        [Column("phone_number")]
+        public string? PhoneNumber { get; set; } = null;
+        // Note 
+        [Column("note")]
+        public string? Note { get; set; } = null;
         // Navigation properties
         public virtual User User { get; set; }
         public virtual ICollection<OrderItem> OrderItems { get; set; }
