@@ -64,7 +64,7 @@ namespace ecommerce.Services
             {
                 return new ApiResponse<bool> { Data = false };
             }
-            var existingBlog = await _context.Blogs.FindAsync(blog.Id);
+            var existingBlog = await _context.Blogs.FindAsync(id);
             await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
             if (existingBlog != null)
             {

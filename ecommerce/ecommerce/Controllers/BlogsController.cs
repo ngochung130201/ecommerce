@@ -54,10 +54,6 @@ namespace ecommerce.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBlog(int id, BlogDto blog)
         {
-            if (id != blog.Id)
-            {
-                return BadRequest();
-            }
 
            var result = await _blogService.UpdateBlogAsync(id,blog);
             if (result.Status)
