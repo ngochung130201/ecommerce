@@ -1,5 +1,6 @@
 ﻿using ecommerce.Context;
 using ecommerce.DTO;
+using ecommerce.Helpers;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
@@ -17,10 +18,11 @@ namespace ecommerce.Services
         private readonly IProductRepository _productRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly EcommerceContext _context;
+        private readonly IUploadFilesService _uploadFilesService;
         public CartService(ICartRepository cartRepository,
         ICartItemService cartItemService, ICartItemRepository cartItemRepository,
         IAccountRepository<User> accountRepository, IUnitOfWork unitOfWork,EcommerceContext context,
-        IProductRepository productRepository)
+        IProductRepository productRepository, IUploadFilesService uploadFilesService)
         {
             _cartRepository = cartRepository;
             _cartItemService = cartItemService;
@@ -29,6 +31,7 @@ namespace ecommerce.Services
             _productRepository = productRepository;
             _accountRepository = accountRepository;
             _context = context;
+            _uploadFilesService = uploadFilesService;
         }
 
         public async Task<ApiResponse<int>> AddCartAsync(CartDto cart)
@@ -55,7 +58,7 @@ namespace ecommerce.Services
                 }
                 else
                 {
-                    cartItemExistByProductId.Quantity += cart.Quantity;
+                    cartItemExistByProductId.Quantity = cart.Quantity;
                     cartItemExistByProductId.TotalPrice = product.Price * cartItemExistByProductId.Quantity;
 
                 }
@@ -93,7 +96,7 @@ namespace ecommerce.Services
                 }
                 else
                 {
-                    cartItemExist.Quantity += cart.Quantity;
+                    cartItemExist.Quantity = cart.Quantity;
                     cartItemExist.TotalPrice = product.PriceSale * cartItemExist.Quantity;
                 }
             }
@@ -193,7 +196,7 @@ namespace ecommerce.Services
                     {
                         CategoryId = ci.Product.CategoryId,
                         Description = ci.Product.Description,
-                        Image = ci.Product.Image,
+                        Image = _uploadFilesService.GetFilePath(ci.Product.Image, Contains.ProductImageFolder),
                         Price = ci.Product.Price,
                         PriceSale = ci.Product.PriceSale,
                         ProductId = ci.Product.ProductId,
@@ -201,6 +204,11 @@ namespace ecommerce.Services
                         UpdatedAt = ci.Product.UpdatedAt,
                         Name = ci.Product.Name,
                         CategoryName = ci.Product.Category.Name,
+                        InventoryCount = ci.Product.InventoryCount,
+                        Popular = ci.Product.Popular,
+                        PopularText = ci.Product.PopularText,
+                        Sale = ci.Product.Sale,
+                        Slug = ci.Product.Slug
                     }
 
                 }).ToList()
@@ -227,6 +235,24 @@ namespace ecommerce.Services
                     Quantity = ci.Quantity,
                     TotalPrice = ci.TotalPrice,
                     CartId = ci.CartId,
+                    Product = new ProductAllDto
+                    {
+                        CategoryId = ci.Product.CategoryId,
+                        Description = ci.Product.Description,
+                        Image = _uploadFilesService.GetFilePath(ci.Product.Image, Contains.ProductImageFolder),
+                        Price = ci.Product.Price,
+                        PriceSale = ci.Product.PriceSale,
+                        ProductId = ci.Product.ProductId,
+                        CreatedAt = ci.Product.CreatedAt,
+                        UpdatedAt = ci.Product.UpdatedAt,
+                        Name = ci.Product.Name,
+                        CategoryName = ci.Product.Category.Name,
+                        InventoryCount = ci.Product.InventoryCount,
+                        Popular = ci.Product.Popular,
+                        PopularText = ci.Product.PopularText,
+                        Sale = ci.Product.Sale,
+                        Slug = ci.Product.Slug
+                    }
                 }).ToList()
             };
             return new ApiResponse<CartAllDto> { Data = cartDto, Status = true };
@@ -254,7 +280,7 @@ namespace ecommerce.Services
                     {
                         CategoryId = ci.Product.CategoryId,
                         Description = ci.Product.Description,
-                        Image = ci.Product.Image,
+                        Image = _uploadFilesService.GetFilePath(ci.Product.Image, Contains.ProductImageFolder),
                         Price = ci.Product.Price,
                         PriceSale = ci.Product.PriceSale,
                         ProductId = ci.Product.ProductId,
@@ -262,10 +288,16 @@ namespace ecommerce.Services
                         UpdatedAt = ci.Product.UpdatedAt,
                         Name = ci.Product.Name,
                         CategoryName = ci.Product.Category.Name,
+                        InventoryCount = ci.Product.InventoryCount,
+                        Popular = ci.Product.Popular,
+                        PopularText = ci.Product.PopularText,
+                        Sale = ci.Product.Sale,
+                        Slug = ci.Product.Slug
                     }
                 }).ToList()
 
             };
+
             return new ApiResponse<CartAllDto> { Data = cartDto, Status = true };
         }
 
