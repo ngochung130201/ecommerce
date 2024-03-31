@@ -40,7 +40,7 @@ namespace ecommerce.Controllers
 
         // POST: api/Blog
         [HttpPost]
-        public async Task<IActionResult> CreateBlog(BlogDto blogDto)
+        public async Task<IActionResult> CreateBlog([FromForm] BlogDto blogDto)
         {
             var result = await _blogService.CreateBlogAsync(blogDto);
             if (result.Status)

@@ -44,7 +44,7 @@ namespace ecommerce.Services
 
             foreach (var categoryId in blogDto.CategoryIds)
             {
-                var category = await _context.BlogCategories.FindAsync(categoryId);
+                var category = await _context.BlogCategories.FirstOrDefaultAsync(x => x.CategoryId == categoryId);
                 if (category != null)
                 {
                     newBlog.Categories.Add(category);
@@ -64,7 +64,7 @@ namespace ecommerce.Services
             {
                 return new ApiResponse<bool> { Data = false };
             }
-            var existingBlog = await _context.Blogs.FindAsync(id);
+            var existingBlog = await _context.Blogs.FirstOrDefaultAsync(x => x.BlogId == id);
             await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
             if (existingBlog != null)
             {
@@ -209,7 +209,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<bool>> CreateBlogDetailAsync(int blogId, BlogDetailDto detail)
         {
-            var blog = await _context.Blogs.FindAsync(blogId);
+            var blog = await _context.Blogs.FirstOrDefaultAsync(X=>X.BlogId == blogId);
             if (blog != null)
             {
                 var newDetail = new BlogDetail
@@ -228,7 +228,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<bool>> UpdateBlogDetailAsync(int id,BlogDetailDto detail)
         {
-            var existingDetail = await _context.BlogDetails.FindAsync(id);
+            var existingDetail = await _context.BlogDetails.FirstOrDefaultAsync(x => x.BlogDetailId == id);
             if (existingDetail != null)
             {
                 existingDetail.Content = detail.Content;
@@ -242,7 +242,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<bool>> DeleteBlogDetailAsync(int id)
         {
-            var detailToDelete = await _context.BlogDetails.FindAsync(id);
+            var detailToDelete = await _context.BlogDetails.FirstOrDefaultAsync(x => x.BlogDetailId == id);
             if (detailToDelete != null)
             {
                 _context.BlogDetails.Remove(detailToDelete);
@@ -271,7 +271,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<bool>> UpdateBlogCategoryAsync(int id,BlogCategoryDto category)
         {
-            var existingCategory = await _context.BlogCategories.FindAsync(id);
+            var existingCategory = await _context.BlogCategories.FirstOrDefaultAsync(x => x.CategoryId == id);
             if (existingCategory != null)
             {
                 existingCategory.Name = category.Name;
@@ -284,7 +284,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<bool>> DeleteBlogCategoryAsync(int id)
         {
-            var categoryToDelete = await _context.BlogCategories.FindAsync(id);
+            var categoryToDelete = await _context.BlogCategories.FirstOrDefaultAsync(x => x.CategoryId == id);
             if (categoryToDelete != null)
             {
                 _context.BlogCategories.Remove(categoryToDelete);
@@ -312,7 +312,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<BlogCategoryAllDto>> GetBlogCategoryByIdAsync(int id)
         {
-            var category = await _context.BlogCategories.FindAsync(id);
+            var category = await _context.BlogCategories.FirstOrDefaultAsync(x=>x.CategoryId == id);
             if (category == null)
             {
                 return new ApiResponse<BlogCategoryAllDto> { Data = null };

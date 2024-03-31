@@ -1,4 +1,5 @@
 ﻿using ecommerce.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ecommerce.DTO
 {
@@ -10,6 +11,9 @@ namespace ecommerce.DTO
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
         public decimal TotalPrice { get; set; }
+        public string? Address { get; set; } = null;
+        public string? PhoneNumber { get; set; } = null;
+        public string? Note { get; set; } = null;
         public virtual ICollection<OrderItemDto> OrderItems { get; set; }
     }
     public class OrderUpdate
@@ -18,6 +22,9 @@ namespace ecommerce.DTO
         public int UserId { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
+        public string? Address { get; set; } = null;
+        public string? PhoneNumber { get; set; } = null;
+        public string? Note { get; set; } = null;
     }
     public class OrderRequestDto
     {
@@ -25,6 +32,10 @@ namespace ecommerce.DTO
         public OrderStatus OrderStatus { get; set; }
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.DirectPayment;
         public List<OrderProductDto> OrderProduct { get; set; }
+
+        public string? Address { get; set; } = null;
+        public string? PhoneNumber { get; set; } = null;
+        public string? Note { get; set; } = null;
 
     }
 
