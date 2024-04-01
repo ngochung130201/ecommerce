@@ -26,6 +26,6 @@ namespace ecommerce.Models
         [Column("image")]
         public string? Image { get; set; } = null;
         public List<BlogCategory> Categories { get; set; } = new List<BlogCategory>();
-        public List<BlogDetail> Details { get; set; } = new List<BlogDetail>();
+        public virtual BlogDetail Details { get; set; } = new BlogDetail();
     }
 }

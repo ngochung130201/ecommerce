@@ -14,7 +14,7 @@ namespace ecommerce.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUploadFilesService _uploadFilesService;
 
-        public BlogService(EcommerceContext context, IUnitOfWork unitOfWork,IUploadFilesService uploadFilesService)
+        public BlogService(EcommerceContext context, IUnitOfWork unitOfWork, IUploadFilesService uploadFilesService)
         {
             _context = context;
             _unitOfWork = unitOfWork;
@@ -39,7 +39,14 @@ namespace ecommerce.Services
                 CreatedBy = blogDto.CreatedBy,
                 UpdatedBy = blogDto.UpdatedBy,
                 Image = imagePath.Data,
-                Slug = StringHelper.GenerateSlug(blogDto.Title)
+                Slug = StringHelper.GenerateSlug(blogDto.Title),
+                Details = new BlogDetail
+                {
+                    Content = blogDto.Details.Content,
+                    Description = blogDto.Details.Description,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                }
             };
 
             foreach (var categoryId in blogDto.CategoryIds)
@@ -53,10 +60,10 @@ namespace ecommerce.Services
 
             await _context.Blogs.AddAsync(newBlog);
             await _unitOfWork.SaveChangesAsync();
-            return new ApiResponse<bool> { Data = true, Status = true  };
+            return new ApiResponse<bool> { Data = true, Status = true };
         }
 
-        public async Task<ApiResponse<bool>> UpdateBlogAsync(int id,BlogDto blog)
+        public async Task<ApiResponse<bool>> UpdateBlogAsync(int id, BlogDto blog)
         {
             // update the image path
             var imagePath = await _uploadFilesService.UploadFileAsync(blog.Image, Contains.BlogImageFolder);
@@ -76,10 +83,10 @@ namespace ecommerce.Services
 
                 // remove image when the image is updated
                 await _unitOfWork.SaveChangesAsync();
-               
+
                 return new ApiResponse<bool> { Data = true, Status = true };
             }
-            return new ApiResponse<bool> { Data = true, Status = true  };
+            return new ApiResponse<bool> { Data = true, Status = true };
         }
 
         public async Task<ApiResponse<bool>> DeleteBlogAsync(int id)
@@ -93,7 +100,7 @@ namespace ecommerce.Services
                 // remove image when the blog is deleted
                 await _uploadFilesService.RemoveFileAsync(blogToDelete.Image, Contains.BlogImageFolder);
             }
-            return new ApiResponse<bool> { Data = true , Status = true };
+            return new ApiResponse<bool> { Data = true, Status = true };
         }
 
         public async Task<ApiResponse<bool>> DeleteAllBlogsAsync()
@@ -106,8 +113,8 @@ namespace ecommerce.Services
             {
                 await _uploadFilesService.RemoveFileAsync(blog.Image, Contains.BlogImageFolder);
             }
-            
-            return new ApiResponse<bool> { Data = true, Status = true  };
+
+            return new ApiResponse<bool> { Data = true, Status = true };
         }
 
         public async Task<ApiResponse<bool>> DeleteMultipleBlogsAsync(List<int> ids)
@@ -125,7 +132,7 @@ namespace ecommerce.Services
                 }
                 return new ApiResponse<bool> { Data = true, Status = true };
             }
-            return new ApiResponse<bool> { Data = false , Status = true };
+            return new ApiResponse<bool> { Data = false, Status = true };
         }
 
         public async Task<ApiResponse<List<BlogAllDto>>> GetAllBlogsAsync(int pageNumber, int pageSize)
@@ -154,12 +161,12 @@ namespace ecommerce.Services
                 CreatedAt = blog.CreatedAt,
                 UpdatedAt = blog.UpdatedAt
             }).ToList();
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true  };
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true };
         }
 
         public async Task<ApiResponse<BlogAllDto>> GetBlogByIdAsync(int id)
         {
-            var blog = await _context.Blogs.Include(u=>u.Categories).FirstOrDefaultAsync(x=>x.BlogId==id);
+            var blog = await _context.Blogs.Include(u => u.Categories).FirstOrDefaultAsync(x => x.BlogId == id);
             blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
             var blogDto = new BlogAllDto
             {
@@ -173,7 +180,7 @@ namespace ecommerce.Services
                 CreatedAt = blog.CreatedAt,
                 UpdatedAt = blog.UpdatedAt
             };
-            return new ApiResponse<BlogAllDto> { Data = blogDto, Status = true  };
+            return new ApiResponse<BlogAllDto> { Data = blogDto, Status = true };
         }
 
         public async Task<ApiResponse<List<BlogAllDto>>> SearchBlogsAsync(string searchTerm, int pageNumber, int pageSize)
@@ -202,14 +209,14 @@ namespace ecommerce.Services
                 UpdatedAt = blog.UpdatedAt
             }).ToList();
 
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos , Status = true };
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true };
         }
 
 
 
         public async Task<ApiResponse<bool>> CreateBlogDetailAsync(int blogId, BlogDetailDto detail)
         {
-            var blog = await _context.Blogs.FirstOrDefaultAsync(X=>X.BlogId == blogId);
+            var blog = await _context.Blogs.FirstOrDefaultAsync(X => X.BlogId == blogId);
             if (blog != null)
             {
                 var newDetail = new BlogDetail
@@ -219,14 +226,14 @@ namespace ecommerce.Services
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
-                blog.Details.Add(newDetail);
+                blog.Details = newDetail;
                 await _unitOfWork.SaveChangesAsync();
-                return new ApiResponse<bool> { Data = true, Status = true  };
+                return new ApiResponse<bool> { Data = true, Status = true };
             }
-            return new ApiResponse<bool> { Data = false, Status = false  };
+            return new ApiResponse<bool> { Data = false, Status = false };
         }
 
-        public async Task<ApiResponse<bool>> UpdateBlogDetailAsync(int id,BlogDetailDto detail)
+        public async Task<ApiResponse<bool>> UpdateBlogDetailAsync(int id, BlogDetailDto detail)
         {
             var existingDetail = await _context.BlogDetails.FirstOrDefaultAsync(x => x.BlogDetailId == id);
             if (existingDetail != null)
@@ -235,9 +242,9 @@ namespace ecommerce.Services
                 existingDetail.Description = detail.Description;
                 existingDetail.UpdatedAt = DateTime.Now;
                 await _unitOfWork.SaveChangesAsync();
-                return new ApiResponse<bool> { Data = true , Status = true };
+                return new ApiResponse<bool> { Data = true, Status = true };
             }
-            return new ApiResponse<bool> { Data = false, Status = false  };
+            return new ApiResponse<bool> { Data = false, Status = false };
         }
 
         public async Task<ApiResponse<bool>> DeleteBlogDetailAsync(int id)
@@ -247,7 +254,7 @@ namespace ecommerce.Services
             {
                 _context.BlogDetails.Remove(detailToDelete);
                 await _unitOfWork.SaveChangesAsync();
-                return new ApiResponse<bool> { Data = true , Status = true };
+                return new ApiResponse<bool> { Data = true, Status = true };
             }
             return new ApiResponse<bool> { Data = false, Status = false };
         }
@@ -266,10 +273,10 @@ namespace ecommerce.Services
             };
             await _context.BlogCategories.AddAsync(newCategory);
             await _unitOfWork.SaveChangesAsync();
-            return new ApiResponse<bool> { Data = true, Status = true  };
+            return new ApiResponse<bool> { Data = true, Status = true };
         }
 
-        public async Task<ApiResponse<bool>> UpdateBlogCategoryAsync(int id,BlogCategoryDto category)
+        public async Task<ApiResponse<bool>> UpdateBlogCategoryAsync(int id, BlogCategoryDto category)
         {
             var existingCategory = await _context.BlogCategories.FirstOrDefaultAsync(x => x.CategoryId == id);
             if (existingCategory != null)
@@ -277,9 +284,9 @@ namespace ecommerce.Services
                 existingCategory.Name = category.Name;
                 existingCategory.UpdatedAt = DateTime.Now;
                 await _unitOfWork.SaveChangesAsync();
-                return new ApiResponse<bool> { Data = true, Status = true  };
+                return new ApiResponse<bool> { Data = true, Status = true };
             }
-            return new ApiResponse<bool> { Data = false , Status = false };
+            return new ApiResponse<bool> { Data = false, Status = false };
         }
 
         public async Task<ApiResponse<bool>> DeleteBlogCategoryAsync(int id)
@@ -289,9 +296,9 @@ namespace ecommerce.Services
             {
                 _context.BlogCategories.Remove(categoryToDelete);
                 await _unitOfWork.SaveChangesAsync();
-                return new ApiResponse<bool> { Data = true, Status = true  };
+                return new ApiResponse<bool> { Data = true, Status = true };
             }
-            return new ApiResponse<bool> { Data = false , Status = false };
+            return new ApiResponse<bool> { Data = false, Status = false };
         }
 
         public async Task<ApiResponse<List<BlogCategoryAllDto>>> GetAllBlogCategoriesAsync()
@@ -307,15 +314,15 @@ namespace ecommerce.Services
                 CreatedAt = category.CreatedAt,
                 UpdatedAt = category.UpdatedAt
             }).ToList();
-            return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtos , Status = true };
+            return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtos, Status = true };
         }
 
         public async Task<ApiResponse<BlogCategoryAllDto>> GetBlogCategoryByIdAsync(int id)
         {
-            var category = await _context.BlogCategories.FirstOrDefaultAsync(x=>x.CategoryId == id);
+            var category = await _context.BlogCategories.FirstOrDefaultAsync(x => x.CategoryId == id);
             if (category == null)
             {
-                return new ApiResponse<BlogCategoryAllDto> { Data = null, Status =false };
+                return new ApiResponse<BlogCategoryAllDto> { Data = null, Status = false };
             }
             var categoryDto = new BlogCategoryAllDto
             {
@@ -338,7 +345,7 @@ namespace ecommerce.Services
             {
                 _context.BlogCategories.RemoveRange(categoriesToDelete);
                 await _unitOfWork.SaveChangesAsync();
-                return new ApiResponse<bool> { Data = true, Status = true  };
+                return new ApiResponse<bool> { Data = true, Status = true };
             }
             return new ApiResponse<bool> { Data = false };
         }
@@ -351,14 +358,14 @@ namespace ecommerce.Services
             {
                 _context.BlogCategories.RemoveRange(categoriesToDelete);
                 await _unitOfWork.SaveChangesAsync();
-                return new ApiResponse<bool> { Data = true , Status = true };
+                return new ApiResponse<bool> { Data = true, Status = true };
             }
             return new ApiResponse<bool> { Data = false };
         }
 
         public async Task<ApiResponse<BlogAllDto>> GetBlogBySlugAsync(string slug)
         {
-            var blog = await _context.Blogs.Include(u=>u.Categories).FirstOrDefaultAsync(blog => blog.Slug == slug);
+            var blog = await _context.Blogs.Include(u => u.Categories).FirstOrDefaultAsync(blog => blog.Slug == slug);
             if (blog != null)
             {
                 blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
@@ -374,9 +381,9 @@ namespace ecommerce.Services
                     CreatedAt = blog.CreatedAt,
                     UpdatedAt = blog.UpdatedAt
                 };
-                return new ApiResponse<BlogAllDto> { Data = blogDto, Status = true  };
+                return new ApiResponse<BlogAllDto> { Data = blogDto, Status = true };
             }
-            return new ApiResponse<BlogAllDto> { Data = null , Status = false };
+            return new ApiResponse<BlogAllDto> { Data = null, Status = false };
         }
 
         public async Task<ApiResponse<BlogDetailAllDto>> GetBlogDetailByIdAsync(int id)
@@ -390,7 +397,7 @@ namespace ecommerce.Services
                 CreatedAt = blogDetail.CreatedAt,
                 UpdatedAt = blogDetail.UpdatedAt
             };
-            return new ApiResponse<BlogDetailAllDto> { Data = blogDetailDto, Status = true  };
+            return new ApiResponse<BlogDetailAllDto> { Data = blogDetailDto, Status = true };
 
         }
     }
