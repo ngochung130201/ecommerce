@@ -14,9 +14,9 @@ namespace ecommerce.Controllers
             _productReviewService = productReviewService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllProductReviewsAsync()
+        public async Task<IActionResult> GetAllProductReviewsAsync(int page = 1, int pageSize = 3)
         {
-            var productReviews = await _productReviewService.GetAllProductReviewsAsync();
+            var productReviews = await _productReviewService.GetAllProductReviewsAsync(page, pageSize);
             if (productReviews.Status)
             {
                 return Ok(productReviews);
@@ -90,6 +90,17 @@ namespace ecommerce.Controllers
         public async Task<IActionResult> DeleteProductReviewsAsync(List<int> ids)
         {
             var result = await _productReviewService.DeleteProductReviewsAsync(ids);
+            if (result.Status)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        // GET: api/product-review/count
+        [HttpGet("count")]
+        public async Task<IActionResult> GetProductReviewCountByRatingAsync()
+        {
+            var result = await _productReviewService.GetProductReviewCountByRatingAsync();
             if (result.Status)
             {
                 return Ok(result);

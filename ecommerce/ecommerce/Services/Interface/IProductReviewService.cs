@@ -4,7 +4,7 @@ namespace ecommerce.Services.Interface
 {
     public interface IProductReviewService
     {
-        Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync();
+        Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync(int page, int pageSize);
         Task<ApiResponse<ProductReviewAllDto>> GetProductReviewByIdAsync(int id);
         Task<ApiResponse<int>> AddProductReviewAsync(ProductReviewDto productReview);
         Task<ApiResponse<int>> DeleteProductReviewAsync(int id);
@@ -13,6 +13,8 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByUserAsync(int userId);
         // delete product reviews
         Task<ApiResponse<int>> DeleteProductReviewsAsync(List<int> ids);
+        // thống kê số lượng review theo rating
+        Task<ApiResponse<object>> GetProductReviewCountByRatingAsync();
 
     }
 }
