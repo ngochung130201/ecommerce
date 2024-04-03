@@ -16,7 +16,7 @@ namespace ecommerce.Controllers
             _accountService = accountService;
         }
         [HttpPost]
-        public async Task<IActionResult> GetAllAccountsAsync([FromQuery] bool isAdmin = false, [FromBody] Paging? paging = null)
+        public async Task<IActionResult> GetAllAccountsAsync([FromQuery] bool isAdmin = false, [FromBody] PagingForUser? paging = null)
         {
             if (isAdmin)
             {

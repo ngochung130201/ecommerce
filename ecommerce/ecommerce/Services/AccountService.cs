@@ -647,7 +647,7 @@ namespace ecommerce.Services
             };
         }
 
-        public async Task<ApiResponse<List<AdminDto>>> GetListRoleAsync(Paging? paging = null)
+        public async Task<ApiResponse<List<AdminDto>>> GetListRoleAsync(PagingForUser? paging = null)
         {
             // paging
             if (paging == null)
@@ -676,7 +676,7 @@ namespace ecommerce.Services
                 };
             }
            var admins = await _context.Admins.Where(x =>
-                string.IsNullOrEmpty(paging.Search) || x.Username.Contains(paging.Search) || x.Email.Contains(paging.Search)
+                string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
             ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
             if (admins == null)
             {
@@ -701,7 +701,7 @@ namespace ecommerce.Services
             };
         }
 
-        public async Task<ApiResponse<List<UserDto>>> GetListUserAsync(Paging paging)
+        public async Task<ApiResponse<List<UserDto>>> GetListUserAsync(PagingForUser paging)
          {
             //          (string.IsNullOrEmpty(filterDto.Name) || p.Name.Contains(filterDto.Name)) &&
             //         (filterDto.MinPrice == 0 || p.Price >= filterDto.MinPrice) &&
@@ -712,7 +712,7 @@ namespace ecommerce.Services
             //         ).Skip(itemsToSkip)
             //         .Take(filterDto.PageSize).OrderByDescending(u => u.CreatedAt).ToListAsync();
             var users = await _context.Users.Where(x =>
-                string.IsNullOrEmpty(paging.Search) || x.Username.Contains(paging.Search) || x.Email.Contains(paging.Search)
+                string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
             ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
             //
             if (users == null)

@@ -56,9 +56,9 @@ namespace ecommerce.Repository
             {
                 return await payments.ToListAsync();
             }
-            if (!string.IsNullOrEmpty(paging.Search))
+            if (!string.IsNullOrEmpty(paging.UserName))
             {
-                payments = payments.Where(u => u.Order.User.Email.Contains(paging.Search) || u.Order.User.Username.Contains(paging.Search));
+                payments = payments.Where(u => u.Order.User.Email.Contains(paging.UserName) || u.Order.User.Username.Contains(paging.UserName));
             }
             if (paging.MinTotalPrice > 0)
             {
