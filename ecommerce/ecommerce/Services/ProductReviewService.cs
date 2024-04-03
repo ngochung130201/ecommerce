@@ -202,7 +202,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<ProductReviewAllDto>> GetProductReviewByIdAsync(int id)
         {
-            var productReview = await _context.ProductReviews.Include(u=>u.User).FirstOrDefaultAsync(x => x.ReviewId == id);
+            var productReview = await _context.ProductReviews.Include(u => u.User).FirstOrDefaultAsync(x => x.ReviewId == id);
             if (productReview == null)
             {
                 return new ApiResponse<ProductReviewAllDto>
@@ -244,9 +244,46 @@ namespace ecommerce.Services
             };
         }
 
+        public async Task<ApiResponse<object>> GetProductReviewCountByRatingAsync()
+        {
+            var productReviews = await _context.ProductReviews.GroupBy(x => x.Rating).Select(x => new ProductReviewCountDto
+            {
+                Rating = x.Key,
+                Count = x.Count(),
+            }).ToListAsync();
+
+            // Phần trăm số lượng review theo rating
+            var objectReviews = productReviews.Select(x => new
+            {
+                Rating = x.Rating,
+                Count = x.Count,
+            });
+
+            // phần trăm số lượng review theo rating dưới dạng số nguyên 4.5 -> 5
+            var totalCount = objectReviews.Select(x => x.Count).Sum();
+            var totalRating = productReviews.Sum(x => x.Rating);
+            // Làm tròn lên
+            var percent = Math.Ceiling((double)totalRating / totalCount);
+            var objectResult = new
+            {
+                ObjectReviews = objectReviews,
+                percent = percent,
+                totalCount = totalCount
+
+            };
+
+            return new ApiResponse<object>
+            {
+                Data = objectResult,
+                Message = "Product Review count by rating",
+                Status = true
+            };
+
+        }
+
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByProductAsync(int productId)
         {
-            var productReviews = await _context.ProductReviews.Include(u=>u.User).Where(x => x.ProductId == productId).ToListAsync();
+            var productReviews = await _context.ProductReviews.Include(u => u.User).Where(x => x.ProductId == productId).ToListAsync();
             if (productReviews == null)
             {
                 return new ApiResponse<IEnumerable<ProductReviewAllDto>>
@@ -291,7 +328,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByUserAsync(int userId)
         {
-            var productReviews = await _context.ProductReviews.Include(u=>u.User).Where(x => x.UserId == userId).ToListAsync();
+            var productReviews = await _context.ProductReviews.Include(u => u.User).Where(x => x.UserId == userId).ToListAsync();
             if (productReviews == null)
             {
                 return new ApiResponse<IEnumerable<ProductReviewAllDto>>

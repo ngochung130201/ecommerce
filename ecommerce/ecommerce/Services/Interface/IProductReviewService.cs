@@ -13,6 +13,8 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByUserAsync(int userId);
         // delete product reviews
         Task<ApiResponse<int>> DeleteProductReviewsAsync(List<int> ids);
+        // thống kê số lượng review theo rating
+        Task<ApiResponse<object>> GetProductReviewCountByRatingAsync();
 
     }
 }
