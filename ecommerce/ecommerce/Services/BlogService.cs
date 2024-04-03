@@ -186,7 +186,7 @@ namespace ecommerce.Services
         public async Task<ApiResponse<List<BlogAllDto>>> SearchBlogsAsync(string searchTerm, int pageNumber, int pageSize)
         {
             var blogs = await _context.Blogs
-                .Where(blog => blog.Title.Contains(searchTerm))
+                .Where(blog => blog.Title.Contains(searchTerm) || string.IsNullOrEmpty(searchTerm))
                 .OrderByDescending(blog => blog.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -301,9 +301,39 @@ namespace ecommerce.Services
             return new ApiResponse<bool> { Data = false, Status = false };
         }
 
-        public async Task<ApiResponse<List<BlogCategoryAllDto>>> GetAllBlogCategoriesAsync()
+        public async Task<ApiResponse<List<BlogCategoryAllDto>>> GetAllBlogCategoriesAsync(PagingForBlogCategory? paging = null)
         {
-            var categories = await _context.BlogCategories.ToListAsync();
+            if(paging == null){
+                // get all categories
+                var categoriesNotPaging = await _context.BlogCategories.ToListAsync();
+                var categoryDtoNotPagings = categoriesNotPaging.Select(category => new BlogCategoryAllDto
+                {
+                    Name = category.Name,
+                    Description = category.Description,
+                    CreatedBy = category.CreatedBy,
+                    UpdatedBy = category.UpdatedBy,
+                    CategoryId = category.CategoryId,
+                    CreatedAt = category.CreatedAt,
+                    UpdatedAt = category.UpdatedAt
+                }).ToList();
+                return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtoNotPagings , Status = true };
+            }
+            var categories = _context.BlogCategories.AsQueryable();
+            if (!string.IsNullOrEmpty(paging.Search) || !string.IsNullOrWhiteSpace(paging.Name))
+            {
+                categories = categories.Where(category => category.Name.Contains(paging.Search) || category.Name.Contains(paging.Name));
+            }
+            if(paging.SortByDate){
+                categories = categories.OrderBy(category => category.CreatedAt);
+            }
+            else
+            {
+                categories = categories.OrderByDescending(category => category.CreatedAt);
+            }
+            if (paging.PageSize > 0)
+            {
+                categories = categories.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
+            }
             var categoryDtos = categories.Select(category => new BlogCategoryAllDto
             {
                 Name = category.Name,

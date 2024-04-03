@@ -72,9 +72,41 @@ namespace ecommerce.Services
             }
         }
 
-        public async Task<ApiResponse<IEnumerable<HistoryDto>>> GetAllHistoriesAsync()
+        public async Task<ApiResponse<IEnumerable<HistoryDto>>> GetAllHistoriesAsync(PagingForHistory? pagingForHistory = null)
         {
-            var histories = await _historyRepository.GetAllHistoriesAsync();
+            var histories = _context.Histories.AsQueryable();
+            if (pagingForHistory != null)
+            {
+                if (!string.IsNullOrEmpty(pagingForHistory.Search))
+                {
+                    histories = histories.Where(c => string.IsNullOrEmpty(c.Message) || c.Message.Contains(pagingForHistory.Search));
+                }
+                if (pagingForHistory.SortByDate)
+                {
+                    histories = histories.OrderBy(c => c.CreateAt);
+                }
+                else
+                {
+                    histories = histories.OrderByDescending(c => c.CreateAt);
+                }
+                if(pagingForHistory.HistoryStatus != null)
+                {
+                    histories = histories.Where(c => c.Status == pagingForHistory.HistoryStatus);
+                }
+                histories = histories.Skip((pagingForHistory.Page - 1) * pagingForHistory.PageSize).Take(pagingForHistory.PageSize);
+                return new ApiResponse<IEnumerable<HistoryDto>>
+                {
+                    Data = new List<HistoryDto>(histories.Select(x => new HistoryDto
+                    {
+                        Message = x.Message,
+                        PaymentId = x.PaymentId,
+                        Status = x.Status,
+                        StatusMessage = x.StatusMessage,
+                    })),
+                    Message = "Histories found",
+                    Status = true
+                };
+            }
             if (histories == null)
             {
                 return new ApiResponse<IEnumerable<HistoryDto>>

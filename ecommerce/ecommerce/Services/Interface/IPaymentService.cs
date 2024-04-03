@@ -5,7 +5,7 @@ namespace ecommerce.Services.Interface
 {
     public interface IPaymentService
     {
-        Task<ApiResponse<IEnumerable<PaymentDto>>> GetAllPaymentsAsync();
+        Task<ApiResponse<IEnumerable<PaymentDto>>> GetAllPaymentsAsync(PagingForPayment? paging = null);
         Task<ApiResponse<PaymentDto>> GetPaymentByIdAsync(int id);
         Task<ApiResponse<int>> AddPaymentAsync(PaymentDto payment);
         Task<ApiResponse<int>> DeletePaymentAsync(int id);

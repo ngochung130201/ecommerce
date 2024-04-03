@@ -95,9 +95,9 @@ namespace ecommerce.Services
             }
         }
 
-        public async Task<ApiResponse<IEnumerable<CategoryAllDto>>> GetAllCategoriesAsync()
+        public async Task<ApiResponse<IEnumerable<CategoryAllDto>>> GetAllCategoriesAsync(Paging? paging = null)
         {
-            var categories = await _categoryRepository.GetAllCategoriesAsync();
+            var categories = await _categoryRepository.GetAllCategoriesAsync(paging);
             if (categories == null)
             {
                 return new ApiResponse<IEnumerable<CategoryAllDto>>

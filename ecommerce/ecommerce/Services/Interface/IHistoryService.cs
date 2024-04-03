@@ -5,7 +5,7 @@ namespace ecommerce.Services.Interface
 {
     public interface IHistoryService
     {
-        Task<ApiResponse<IEnumerable<HistoryDto>>> GetAllHistoriesAsync();
+        Task<ApiResponse<IEnumerable<HistoryDto>>> GetAllHistoriesAsync(PagingForHistory? pagingForHistory = null);
         Task<ApiResponse<HistoryDto>> GetHistoryByIdAsync(int id);
         Task<ApiResponse<int>> AddHistoryAsync(History history);
         Task<ApiResponse<int>> DeleteHistoryAsync(int id);

@@ -4,7 +4,7 @@ namespace ecommerce.Services.Interface
 {
     public interface IWishlistService
     {
-        Task<ApiResponse<IEnumerable<WishlistDto>>> GetAllWishlistsAsync();
+        Task<ApiResponse<IEnumerable<WishlistDto>>> GetAllWishlistsAsync(PagingForWishlist? paging = null);
         Task<ApiResponse<WishlistDto>> GetWishlistByIdAsync(int id);
         Task<ApiResponse<int>> AddWishlistAsync(WishlistRequestDto wishlist);
         Task<ApiResponse<int>> DeleteWishlistAsync(int id);

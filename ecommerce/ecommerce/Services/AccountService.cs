@@ -647,9 +647,37 @@ namespace ecommerce.Services
             };
         }
 
-        public async Task<ApiResponse<List<AdminDto>>> GetListRoleAsync()
+        public async Task<ApiResponse<List<AdminDto>>> GetListRoleAsync(Paging? paging = null)
         {
-            var admins = await _context.Admins.ToListAsync();
+            // paging
+            if (paging == null)
+            {
+                var adminsNotPaging = await _context.Admins.ToListAsync();
+                if (adminsNotPaging == null)
+                {
+                    return new ApiResponse<List<AdminDto>>
+                    {
+                        Data = null,
+                        Message = "Admins not found",
+                        Status = false
+                    };
+                }
+                return new ApiResponse<List<AdminDto>>
+                {
+                    Data = adminsNotPaging.Select(a => new AdminDto
+                    {
+                        AdminId = a.AdminId,
+                        Username = a.Username,
+                        Email = a.Email,
+                        AdminRole = a.Role
+                    }).ToList(),
+                    Message = "Admins found",
+                    Status = true
+                };
+            }
+           var admins = await _context.Admins.Where(x =>
+                string.IsNullOrEmpty(paging.Search) || x.Username.Contains(paging.Search) || x.Email.Contains(paging.Search)
+            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
             if (admins == null)
             {
                 return new ApiResponse<List<AdminDto>>
@@ -673,9 +701,20 @@ namespace ecommerce.Services
             };
         }
 
-        public async Task<ApiResponse<List<UserDto>>> GetListUserAsync()
-        {
-            var users = await _context.Users.ToListAsync();
+        public async Task<ApiResponse<List<UserDto>>> GetListUserAsync(Paging paging)
+         {
+            //          (string.IsNullOrEmpty(filterDto.Name) || p.Name.Contains(filterDto.Name)) &&
+            //         (filterDto.MinPrice == 0 || p.Price >= filterDto.MinPrice) &&
+            //         (filterDto.MaxPrice == 0 || p.Price <= filterDto.MaxPrice) &&
+            //         (filterDto.CategoryId == 0 || p.CategoryId == filterDto.CategoryId) &&
+            //         (filterDto.Popular == 0 || p.Popular == filterDto.Popular) &&
+            //         (filterDto.InventoryCount == 0 || p.InventoryCount >= filterDto.InventoryCount)
+            //         ).Skip(itemsToSkip)
+            //         .Take(filterDto.PageSize).OrderByDescending(u => u.CreatedAt).ToListAsync();
+            var users = await _context.Users.Where(x =>
+                string.IsNullOrEmpty(paging.Search) || x.Username.Contains(paging.Search) || x.Email.Contains(paging.Search)
+            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
+            //
             if (users == null)
             {
                 return new ApiResponse<List<UserDto>>

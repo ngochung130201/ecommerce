@@ -1,4 +1,6 @@
-﻿using ecommerce.Middleware;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
+using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 
@@ -7,9 +9,11 @@ namespace ecommerce.Repository
     public class CategoryRepository : ICategoryRepository
     {
         private readonly IRepositoryBase<Category> _repositoryBase;
-        public CategoryRepository(IRepositoryBase<Category> repositoryBase)
+        private readonly EcommerceContext _context;
+        public CategoryRepository(IRepositoryBase<Category> repositoryBase, EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
+            _context = context;
         }
 
         public void AddCategory(Category category)
@@ -57,9 +61,25 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        public async Task<IEnumerable<Category>> GetAllCategoriesAsync(Paging? paging = null)
         {
-            var categories = await _repositoryBase.FindAllAsync();
+            var categories = _context.Categories.AsQueryable();
+            if (paging != null)
+            {
+            //    search
+                if (!string.IsNullOrEmpty(paging.Search))
+                {
+                    categories = categories.Where(c => c.Name.Contains(paging.Search) || c.Description.Contains(paging.Search));
+                }
+                // sort
+                if (paging.SortByDate)
+                {
+                    categories = categories.OrderBy(c => c.CreatedAt);
+                }
+                // pagination
+                categories = categories.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
+                return  categories.ToList();
+            }
             if (categories == null)
             {
                 throw new CustomException("No Category found", 404);

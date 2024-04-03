@@ -28,7 +28,17 @@ namespace ecommerce.Controllers
           }
             return BadRequest(categories);
         }
-
+        // filter by PagingForBlogCategory
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetBlogCategoriesByFilterAsync(PagingForBlogCategory? paging = null)
+        {
+            var categories = await _blogService.GetAllBlogCategoriesAsync(paging);
+            if (categories.Status)
+            {
+                return Ok(categories);
+            }
+            return BadRequest(categories);
+        }
         // GET: api/BlogCategory/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BlogCategory>> GetBlogCategoryById(int id)

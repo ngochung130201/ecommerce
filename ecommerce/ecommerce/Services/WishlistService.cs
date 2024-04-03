@@ -80,9 +80,9 @@ namespace ecommerce.Services
             }
         }
 
-        public async Task<ApiResponse<IEnumerable<WishlistDto>>> GetAllWishlistsAsync()
+        public async Task<ApiResponse<IEnumerable<WishlistDto>>> GetAllWishlistsAsync(PagingForWishlist? paging = null)
         {
-            var wishlists = await _wishlistRepository.GetAllWishListsAsync();
+            var wishlists = await _wishlistRepository.GetAllWishListsAsync(paging);
             if (wishlists == null)
             {
                 return new ApiResponse<IEnumerable<WishlistDto>>

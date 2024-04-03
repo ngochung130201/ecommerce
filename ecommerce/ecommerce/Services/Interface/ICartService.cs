@@ -6,7 +6,7 @@ namespace ecommerce.Services.Interface
 {
     public interface ICartService
     {
-        Task<ApiResponse<IEnumerable<CartAllDto>>> GetAllCartsAsync();
+        Task<ApiResponse<IEnumerable<CartAllDto>>> GetAllCartsAsync(PagingForCart? paging = null);
         Task<ApiResponse<CartAllDto>> GetCartByIdAsync(int id);
         Task<ApiResponse<CartAllDto>> GetCartsByUserIdAsync(int userId);
         Task<ApiResponse<int>> AddCartAsync(CartDto cart);

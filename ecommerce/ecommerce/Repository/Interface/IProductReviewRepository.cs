@@ -1,10 +1,11 @@
-﻿using ecommerce.Models;
+﻿using ecommerce.DTO;
+using ecommerce.Models;
 
 namespace ecommerce.Repository.Interface
 {
     public interface IProductReviewRepository
     {
-        Task<IEnumerable<ProductReview>> GetAllProductReviewsAsync();
+        Task<IEnumerable<ProductReview>> GetAllProductReviewsAsync(PagingForProductReview? paging = null);
         Task<ProductReview> GetProductReviewByIdAsync(int id);
         Task AddProductReviewAsync(ProductReview productReview);
         Task DeleteProductReviewAsync(int id);

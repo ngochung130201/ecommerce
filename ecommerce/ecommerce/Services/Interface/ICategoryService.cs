@@ -4,7 +4,7 @@ namespace ecommerce.Services.Interface
 {
     public interface ICategoryService
     {
-        Task<ApiResponse<IEnumerable<CategoryAllDto>>> GetAllCategoriesAsync();
+        Task<ApiResponse<IEnumerable<CategoryAllDto>>> GetAllCategoriesAsync(Paging? paging = null);
         Task<ApiResponse<CategoryAllDto>> GetCategoryByIdAsync(int id);
         Task<ApiResponse<CategoryAllDto>> GetCategoryBySlugAsync(string slug);
         Task<ApiResponse<int>> AddCategoryAsync(CategoryDto category);

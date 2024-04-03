@@ -1,7 +1,9 @@
 ﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
 {
@@ -52,14 +54,41 @@ namespace ecommerce.Repository
         }
 
 
-        public async Task<IEnumerable<ProductReview>> GetAllProductReviewsAsync()
+        public async Task<IEnumerable<ProductReview>> GetAllProductReviewsAsync(PagingForProductReview? paging = null)
         {
-            var productReviews = await _repositoryBase.FindAllAsync();
-            if (productReviews == null)
+            var productReviews = _context.ProductReviews.Include(u=>u.User).Include(k=>k.Product).AsQueryable();
+            if (paging == null)
             {
-                throw new CustomException("No Product Review found", 404);
+                return await productReviews.ToListAsync();
             }
-            return productReviews;
+            if (!string.IsNullOrEmpty(paging.Search) || !string.IsNullOrEmpty(paging.UserName))
+            {
+                productReviews = productReviews.Where(p => p.User.Username.Contains(paging.Search) || p.User.Email.Contains(paging.Search));
+            }
+            if (!string.IsNullOrEmpty(paging.ProductName))
+            {
+                productReviews = productReviews.Where(p => p.Product.Name.Contains(paging.ProductName));
+            }
+            if (paging.MinRating != 0)
+            {
+                productReviews = productReviews.Where(p => p.Rating >= paging.Rating);
+            }
+            if (paging.MaxRating != 0)
+            {
+                productReviews = productReviews.Where(p => p.Rating <= paging.Rating);
+            }
+            if (paging.Rating != 0)
+            {
+                productReviews = productReviews.Where(p => p.Rating == paging.Rating);
+            }
+
+            if (paging.SortByDate)
+            {
+                productReviews = productReviews.OrderBy(p => p.CreatedAt);
+            }else{
+                productReviews = productReviews.OrderByDescending(p => p.CreatedAt);
+            }
+            return await productReviews.ToListAsync();
         }
 
         public async Task<ProductReview> GetProductReviewByIdAsync(int id)
