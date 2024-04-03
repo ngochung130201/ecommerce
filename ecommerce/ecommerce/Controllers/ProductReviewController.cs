@@ -14,9 +14,9 @@ namespace ecommerce.Controllers
             _productReviewService = productReviewService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllProductReviewsAsync(int page = 1, int pageSize = 3)
+        public async Task<IActionResult> GetAllProductReviewsAsync()
         {
-            var productReviews = await _productReviewService.GetAllProductReviewsAsync(page, pageSize);
+            var productReviews = await _productReviewService.GetAllProductReviewsAsync();
             if (productReviews.Status)
             {
                 return Ok(productReviews);
