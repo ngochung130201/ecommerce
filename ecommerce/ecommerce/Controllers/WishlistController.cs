@@ -24,6 +24,17 @@ namespace ecommerce.Controllers
             }
             return BadRequest(wishlists);
         }
+        // filter by PagingForWishlist
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetWishlistsByFilterAsync(PagingForWishlist? paging = null)
+        {
+            var wishlists = await _wishlistService.GetAllWishlistsAsync(paging);
+            if (wishlists.Status)
+            {
+                return Ok(wishlists);
+            }
+            return BadRequest(wishlists);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetWishlistByIdAsync(int id)
         {

@@ -10,14 +10,28 @@ namespace ecommerce.Controllers
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
-        public CartController(ICartService cartService)
+        private readonly ICartItemService _cartItemService;
+        public CartController(ICartService cartService, ICartItemService cartItemService)
         {
             _cartService = cartService;
+            _cartItemService = cartItemService;
+            
         }
         [HttpGet]
         public async Task<IActionResult> GetAllCartsAsync()
         {
             var carts = await _cartService.GetAllCartsAsync();
+            if (carts.Status)
+            {
+                return Ok(carts);
+            }
+            return BadRequest(carts);
+        }
+        // filter cart by paging
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetAllCartsAsync(PagingForCart? paging = null)
+        {
+            var carts = await _cartService.GetAllCartsAsync(paging);
             if (carts.Status)
             {
                 return Ok(carts);
@@ -88,5 +102,17 @@ namespace ecommerce.Controllers
             }
             return BadRequest(result);
         }
+        //// update cart item by cart item id
+        //[HttpPut("{cartId}/cartItem/{cartItemId}")]
+        //public async Task<IActionResult> UpdateCartItemAsync(CartItemDto cartItemDto)
+        //{
+        //    // var result = await _cartItemService.UpdateCartItemAsync(cartItemDto);
+        //    // if (result.Status)
+        //    // {
+        //    //     return Ok(result);
+        //    // }
+        //    // return BadRequest(result);
+        //    return Ok();
+        //}
     }
 }

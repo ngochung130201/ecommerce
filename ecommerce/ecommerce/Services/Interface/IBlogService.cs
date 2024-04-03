@@ -25,7 +25,7 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<bool>> CreateBlogCategoryAsync(BlogCategoryDto category);
         Task<ApiResponse<bool>> UpdateBlogCategoryAsync(int id,BlogCategoryDto category);
         Task<ApiResponse<bool>> DeleteBlogCategoryAsync(int id);
-        Task<ApiResponse<List<BlogCategoryAllDto>>> GetAllBlogCategoriesAsync();
+        Task<ApiResponse<List<BlogCategoryAllDto>>> GetAllBlogCategoriesAsync(PagingForBlogCategory? paging = null);
         Task<ApiResponse<BlogCategoryAllDto>> GetBlogCategoryByIdAsync(int id);
         Task<ApiResponse<bool>> DeleteMultipleBlogCategoriesAsync(List<int> ids);
         Task<ApiResponse<bool>> DeleteAllBlogCategoriesAsync();

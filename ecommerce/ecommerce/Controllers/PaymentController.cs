@@ -23,6 +23,17 @@ namespace ecommerce.Controllers
             }
             return BadRequest(payments);
         }
+        // filter payment by PagingForPayment
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetPaymentsByFilterAsync(PagingForPayment? paging = null)
+        {
+            var payments = await _paymentService.GetAllPaymentsAsync(paging);
+            if (payments.Status)
+            {
+                return Ok(payments);
+            }
+            return BadRequest(payments);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPaymentByIdAsync(int id)
         {

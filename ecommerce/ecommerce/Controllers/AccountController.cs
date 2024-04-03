@@ -15,12 +15,12 @@ namespace ecommerce.Controllers
         {
             _accountService = accountService;
         }
-        [HttpGet]
-        public async Task<IActionResult> GetAllAccountsAsync(bool isAdmin = false)
+        [HttpPost]
+        public async Task<IActionResult> GetAllAccountsAsync([FromQuery] bool isAdmin = false, [FromBody] Paging? paging = null)
         {
             if (isAdmin)
             {
-                var response = await _accountService.GetListRoleAsync();
+                var response = await _accountService.GetListRoleAsync(paging);
                 if (response.Status)
                 {
                     return Ok(response);
@@ -29,7 +29,7 @@ namespace ecommerce.Controllers
             }
             else
             {
-                var response = await _accountService.GetListUserAsync();
+                var response = await _accountService.GetListUserAsync(paging);
                 if (response.Status)
                 {
                     return Ok(response);
@@ -143,17 +143,17 @@ namespace ecommerce.Controllers
             }
             return BadRequest(response);
         }
-        // Get Full List of Account Role
-        [HttpGet("role-list-all")]
-        public async Task<IActionResult> GetListRoleAsync()
-        {
-            var response = await _accountService.GetListRoleAsync();
-            if (response.Status)
-            {
-                return Ok(response);
-            }
-            return BadRequest(response);
-        }
+        // // Get Full List of Account Role
+        // [HttpGet("role-list-all")]
+        // public async Task<IActionResult> GetListRoleAsync(Paging paging)
+        // {
+        //     var response = await _accountService.GetListRoleAsync(paging);
+        //     if (response.Status)
+        //     {
+        //         return Ok(response);
+        //     }
+        //     return BadRequest(response);
+        // }
         // Add Account Role
         [HttpPost("role-add")]
         public async Task<IActionResult> AddRoleAsync([FromBody] AddRoleRequest addRole)

@@ -16,7 +16,8 @@
         public string Comment { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
-        public string UserName { get; set; }
+        public ProductAllDto? Product { get; set; } = null;
+        public UserDto? User { get; set; } = null;
     }
     public class ProductReviewUpdateDto
     {

@@ -1,4 +1,5 @@
 ﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
@@ -47,9 +48,40 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task<IEnumerable<Order>> GetAllOrdersAsync()
+        public async Task<IEnumerable<Order>> GetAllOrdersAsync(PagingForOrder? paging = null)
         {
-            var orders = await _repositoryBase.FindAllAsync();
+            // if paging is null, return all orders
+            if (paging == null)
+            {
+                return await _context.Orders.Include(u => u.OrderItems).Include(x => x.User).ToListAsync();
+            }
+            // if paging is not null, return orders based on paging
+            var orders = _context.Orders.Include(u=> u.OrderItems).ThenInclude(i=>i.Product).Include(k=>k.User).AsQueryable();
+            if (!string.IsNullOrEmpty(paging.Search))
+            {
+               orders = orders.Where(u=> u.User.Username.Contains(paging.Search) || u.User.Email.Contains(paging.Search));
+            }
+            if (paging.MinTotalPrice != 0)
+            {
+                orders = orders.Where(u => u.TotalPrice >= paging.MinTotalPrice);
+            }
+            if (paging.MaxTotalPrice != 0)
+            {
+                orders = orders.Where(u => u.TotalPrice <= paging.MaxTotalPrice);
+            }
+            if (paging.SortByDate)
+            {
+                orders = orders.OrderBy(u => u.CreatedAt);
+            }
+            else
+            {
+                orders = orders.OrderByDescending(u => u.CreatedAt);
+            }
+            if(paging.OrderStatus != null)
+            {
+                orders = orders.Where(u => u.OrderStatus == paging.OrderStatus);
+            }
+            orders = orders.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
             if (orders == null)
             {
                 throw new CustomException("No Order found", 404);

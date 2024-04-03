@@ -33,6 +33,17 @@ namespace ecommerce.Controllers
             }
             return BadRequest(productReview);
         }
+        // filter by PagingForProductReview
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetProductReviewsByFilterAsync(PagingForProductReview? paging = null)
+        {
+            var productReviews = await _productReviewService.GetAllProductReviewsAsync(paging);
+            if (productReviews.Status)
+            {
+                return Ok(productReviews);
+            }
+            return BadRequest(productReviews);
+        }
         [HttpPost]
         public async Task<IActionResult> AddProductReviewAsync(ProductReviewDto productReview)
         {

@@ -171,12 +171,12 @@ namespace ecommerce.Services
             }
         }
 
-        public async Task<ApiResponse<IEnumerable<CartAllDto>>> GetAllCartsAsync()
+        public async Task<ApiResponse<IEnumerable<CartAllDto>>> GetAllCartsAsync(PagingForCart? paging)
         {
             // if userId == 0 then get all carts with role admin
             // else get all carts with userId with role user
 
-            var carts = await _cartRepository.GetAllCartsAsync();
+            var carts = await _cartRepository.GetAllCartsAsync(paging);
             if (carts == null)
             {
                 return new ApiResponse<IEnumerable<CartAllDto>> { Message = "No carts found", Status = false };
@@ -195,7 +195,6 @@ namespace ecommerce.Services
                     Product = new ProductAllDto
                     {
                         CategoryId = ci.Product.CategoryId,
-                        Description = ci.Product.Description,
                         Image = _uploadFilesService.GetFilePath(ci.Product.Image, Contains.ProductImageFolder),
                         Price = ci.Product.Price,
                         PriceSale = ci.Product.PriceSale,

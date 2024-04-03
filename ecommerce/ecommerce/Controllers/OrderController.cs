@@ -23,6 +23,28 @@ namespace ecommerce.Controllers
             }
             return BadRequest(orders);
         }
+        // filter order by paging
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetAllOrdersAsync(PagingForOrder? paging = null)
+        {
+            var orders = await _orderService.GetAllOrdersAsync(paging);
+            if (orders.Status)
+            {
+                return Ok(orders);
+            }
+            return BadRequest(orders);
+        }
+        //  get order by user id
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetOrdersByUserIdAsync(int userId)
+        {
+            var orders = await _orderService.GetOrdersByUserIdAsync(userId);
+            if (orders.Status)
+            {
+                return Ok(orders);
+            }
+            return BadRequest(orders);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderByIdAsync(int id)
         {
@@ -74,6 +96,17 @@ namespace ecommerce.Controllers
             }
             return BadRequest(result);
         }
+        // update order item by order item id
+        // [HttpPut("{orderId}/orderItem/{orderItemId}")]
+        // public async Task<IActionResult> UpdateOrderItemAsync(OrderItemDto orderItemDto)
+        // {
+        //     var result = await _orderService.UpdateOrderItemAsync(orderItemDto);
+        //     if (result.Status)
+        //     {
+        //         return Ok(result);
+        //     }
+        //     return BadRequest(result);
+        // }
 
 
     }

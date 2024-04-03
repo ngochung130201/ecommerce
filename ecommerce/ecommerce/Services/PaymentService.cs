@@ -65,9 +65,9 @@ namespace ecommerce.Services
 
         }
 
-        public async Task<ApiResponse<IEnumerable<PaymentDto>>> GetAllPaymentsAsync()
+        public async Task<ApiResponse<IEnumerable<PaymentDto>>> GetAllPaymentsAsync(PagingForPayment? paging = null)
         {
-            var payments = await _paymentRepository.GetAllPaymentsAsync();
+            var payments = await _paymentRepository.GetAllPaymentsAsync(paging);
             if (payments == null)
             {
                 return new ApiResponse<IEnumerable<PaymentDto>> { Data = null, Message = "No Payment found", Status = false };
@@ -80,7 +80,8 @@ namespace ecommerce.Services
                     PaymentStatus = x.PaymentStatus,
                     CreatedAt = x.CreatedAt,
                     Amount = x.Amount,
-                    OrderId = x.OrderId
+                    OrderId = x.OrderId,
+                    UserName = x.Order.User.Email ?? x.Order.User.Username
                 }),
                 Message = "Payment found",
                 Status = true
@@ -102,7 +103,8 @@ namespace ecommerce.Services
                     PaymentStatus = payment.PaymentStatus,
                     CreatedAt = payment.CreatedAt,
                     Amount = payment.Amount,
-                    OrderId = payment.OrderId
+                    OrderId = payment.OrderId,
+                    UserName = payment.Order.User.Username ?? payment.Order.User.Email
                 },
                 Message = "Payment found",
                 Status = true

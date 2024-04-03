@@ -11,5 +11,6 @@ namespace ecommerce.DTO
         public PaymentMethod PaymentMethod { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
+        public string? UserName { get; set; } = null;
     }
 }

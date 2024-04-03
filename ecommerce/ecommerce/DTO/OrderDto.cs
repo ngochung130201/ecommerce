@@ -14,6 +14,7 @@ namespace ecommerce.DTO
         public string? Address { get; set; } = null;
         public string? PhoneNumber { get; set; } = null;
         public string? Note { get; set; } = null;
+        public virtual UserDto User { get; set; }
         public virtual ICollection<OrderItemDto> OrderItems { get; set; }
     }
     public class OrderUpdate

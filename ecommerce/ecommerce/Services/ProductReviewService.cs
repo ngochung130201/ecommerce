@@ -1,5 +1,6 @@
 ﻿using ecommerce.Context;
 using ecommerce.DTO;
+using ecommerce.Helpers;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
@@ -12,12 +13,14 @@ namespace ecommerce.Services
     {
         private readonly IProductReviewRepository _productReviewRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IUploadFilesService _uploadFilesService;
         private readonly EcommerceContext  _context;
-        public ProductReviewService(IProductReviewRepository productReviewRepository, IUnitOfWork unitOfWork, EcommerceContext  context)
+        public ProductReviewService(IProductReviewRepository productReviewRepository, IUnitOfWork unitOfWork, EcommerceContext  context, IUploadFilesService uploadFilesService)
         {
             _productReviewRepository = productReviewRepository;
             _unitOfWork = unitOfWork;
             _context = context;
+            _uploadFilesService = uploadFilesService;
         }
 
         public async Task<ApiResponse<int>> AddProductReviewAsync(ProductReviewDto productReview)
@@ -99,21 +102,76 @@ namespace ecommerce.Services
         }
 
 
-        public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync()
+        public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync(PagingForProductReview? paging = null)
         {
-            var productReviews = await _context.ProductReviews.Include(u=>u.User).Take(3).OrderByDescending(u=>u.CreatedAt).ToListAsync();
-            if (productReviews == null)
+            if(paging == null)
             {
+                var productReviews = await _context.ProductReviews.Include(u=>u.User).Include(u=>u.Product).ToListAsync();
+                if (productReviews == null)
+                {
+                    return new ApiResponse<IEnumerable<ProductReviewAllDto>>
+                    {
+                        Data = null,
+                        Message = "No Product Review found",
+                        Status = false
+                    };
+                }
                 return new ApiResponse<IEnumerable<ProductReviewAllDto>>
                 {
-                    Data = null,
-                    Message = "No Product Review found",
-                    Status = false
+                    Data = productReviews.Select(x => new ProductReviewAllDto
+                    {
+                        ProductId = x.ProductId,
+                        Rating = x.Rating,
+                        Comment = x.Comment,
+                        CreatedAt = x.CreatedAt,
+                        UpdatedAt = x.UpdatedAt,
+                        ReviewId = x.ReviewId,
+                        UserId = x.UserId,
+                        User = new UserDto
+                        {
+                            Email = x.User.Email,
+                            Username = x.User.Username
+                        },
+                        Product = new ProductAllDto
+                        {
+                            Name = x.Product.Name,
+                            Price = x.Product.Price,
+                            PriceSale = x.Product.PriceSale,
+                            Description = x.Product.Description,
+                            Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
+                            ProductId = x.Product.ProductId,
+
+                        }
+                    }),
+                    Message = "Product Reviews found",
+                    Status = true
                 };
             }
+            var productReviewsPaging = _context.ProductReviews.Include(u=>u.User).AsQueryable();
+            if (!string.IsNullOrEmpty(paging.Search))
+            {
+                productReviewsPaging = productReviewsPaging.Where(u => u.User.Username.Contains(paging.Search) || u.User.Email.Contains(paging.Search));
+            }
+            if (paging.MinRating > 0)
+            {
+                productReviewsPaging = productReviewsPaging.Where(u => u.Rating >= paging.MinRating);
+            }
+            if (paging.MaxRating > 0)
+            {
+                productReviewsPaging = productReviewsPaging.Where(u => u.Rating <= paging.MaxRating);
+            }
+            if (paging.SortByDate)
+            {
+                productReviewsPaging = productReviewsPaging.OrderBy(u => u.CreatedAt);
+            }
+            else
+            {
+                productReviewsPaging = productReviewsPaging.OrderByDescending(u => u.CreatedAt);
+            }
+            productReviewsPaging = productReviewsPaging.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
             return new ApiResponse<IEnumerable<ProductReviewAllDto>>
             {
-                Data = productReviews.Select(x => new ProductReviewAllDto
+                Data = productReviewsPaging.Select(x => new ProductReviewAllDto
                 {
                     ProductId = x.ProductId,
                     Rating = x.Rating,
@@ -122,7 +180,20 @@ namespace ecommerce.Services
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
                     UserId = x.UserId,
-                    UserName = x.User.Username
+                    User = new UserDto
+                    {
+                        Email = x.User.Email,
+                        Username = x.User.Username
+                    },
+                    Product = new ProductAllDto
+                    {
+                            Name = x.Product.Name,
+                            Price = x.Product.Price,
+                            PriceSale = x.Product.PriceSale,
+                            Description = x.Product.Description,
+                            Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
+                            ProductId = x.Product.ProductId,
+                    }
                 }),
                 Message = "Product Reviews found",
                 Status = true
@@ -152,7 +223,20 @@ namespace ecommerce.Services
                     UpdatedAt = productReview.UpdatedAt,
                     ReviewId = productReview.ReviewId,
                     UserId = productReview.UserId,
-                    UserName = productReview.User.Username
+                    User = new UserDto
+                    {
+                        Email = productReview.User.Email,
+                        Username = productReview.User.Username
+                    },
+                    Product = new ProductAllDto
+                    {
+                        Name = productReview.Product.Name,
+                        Price = productReview.Product.Price,
+                        PriceSale = productReview.Product.PriceSale,
+                        Description = productReview.Product.Description,
+                        Image = _uploadFilesService.GetFilePath(productReview.Product.Image, Contains.ProductImageFolder),
+                        ProductId = productReview.Product.ProductId,
+                    }
 
                 },
                 Message = "Product Review found",
@@ -183,7 +267,21 @@ namespace ecommerce.Services
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
                     UserId = x.UserId,
-                    UserName = x.User.Username
+                    Product = new ProductAllDto
+                    {
+                        Name = x.Product.Name,
+                        Price = x.Product.Price,
+                        PriceSale = x.Product.PriceSale,
+                        Description = x.Product.Description,
+                        Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
+                        ProductId = x.Product.ProductId,
+                    },
+                    User = new UserDto
+                    {
+                        Email = x.User.Email,
+                        Username = x.User.Username,
+                        UserId = x.User.UserId
+                    }
                 }),
                 Message = "Product Reviews found",
                 Status = true
@@ -214,7 +312,21 @@ namespace ecommerce.Services
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
                     UserId = x.UserId,
-                    UserName = x.User.Username
+                    Product = new ProductAllDto
+                    {
+                        Name = x.Product.Name,
+                        Price = x.Product.Price,
+                        PriceSale = x.Product.PriceSale,
+                        Description = x.Product.Description,
+                        Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
+                        ProductId = x.Product.ProductId,
+                    },
+                    User = new UserDto
+                    {
+                        Email = x.User.Email,
+                        Username = x.User.Username,
+                        UserId = x.User.UserId
+                    }
                 }),
                 Message = "Product Reviews found",
                 Status = true

@@ -1,6 +1,7 @@
 ﻿using ecommerce.Context;
 using ecommerce.DTO;
 using ecommerce.Enums;
+using ecommerce.Helpers;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
@@ -17,6 +18,7 @@ namespace ecommerce.Services
         private readonly EcommerceContext _context;
         private readonly IPaymentService _paymentService;
         private readonly IHistoryService _historyService;
+        private readonly IUploadFilesService _uploadFilesService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRevenueReportService _revenueReportService;
         public OrderService(IOrderRepository orderRepository,
@@ -24,6 +26,7 @@ namespace ecommerce.Services
         EcommerceContext context,
         ICartService  cartService, IHistoryService historyService,
         IRevenueReportService revenueReportService,
+        IUploadFilesService uploadFilesService,
         IUnitOfWork unitOfWork)
         {
             _orderRepository = orderRepository;
@@ -34,6 +37,7 @@ namespace ecommerce.Services
             _unitOfWork = unitOfWork;
             _revenueReportService = revenueReportService;
             _context = context;
+            _uploadFilesService = uploadFilesService;
         }
         public async Task<ApiResponse<int>> ProcessOrderAsync(OrderRequestDto order)
         {
@@ -194,7 +198,7 @@ namespace ecommerce.Services
             }
         }
 
-        public async Task<ApiResponse<IEnumerable<OrderDto>>> GetAllOrdersAsync()
+        public async Task<ApiResponse<IEnumerable<OrderDto>>> GetAllOrdersAsync(PagingForOrder? paging = null)
         {
             var orders = await _orderRepository.GetAllOrdersAsync();
             if (orders == null)
@@ -218,7 +222,30 @@ namespace ecommerce.Services
                     TotalPrice = order.TotalPrice,
                     Address = order.Address,
                     Note = order.Note,
+                    User = new UserDto
+                    {
+                        UserId = order.User.UserId,
+                        Username = order.User.Username,
+                        Email = order.User.Email,
+                        CreatedAt = order.User.CreatedAt,
+                        UpdatedAt = order.User.UpdatedAt,
+                    },
                     PhoneNumber = order.PhoneNumber,
+                    OrderItems = order.OrderItems.Select(u => new OrderItemDto
+                    {
+                        OrderId = u.OrderId,
+                        ProductId = u.ProductId,
+                        Quantity = u.Quantity,
+                        PriceAtTimeOfOrder = u.PriceAtTimeOfOrder,
+                        Product = new ProductAllDto
+                        {
+                            Price = u.Product.Price,
+                            PriceSale = u.Product.PriceSale,
+                            Name = u.Product.Name,
+                            ProductId = u.Product.ProductId,
+                            Image = _uploadFilesService.GetFilePath(u.Product.Image, Contains.ProductImageFolder),
+                        }
+                    }).ToList()
                 }),
                 Message = "Orders retrieved",
                 Status = true
@@ -227,7 +254,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<OrderDto>> GetOrderByIdAsync(int id)
         {
-            var order = await _orderRepository.GetOrderByIdAsync(id);
+            var order = await _context.Orders.Include(u => u.User).Include(u => u.OrderItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category).FirstOrDefaultAsync(u => u.OrderId == id);
             if (order == null)
             {
                 return new ApiResponse<OrderDto>
@@ -250,6 +277,30 @@ namespace ecommerce.Services
                     Address = order.Address,
                     Note = order.Note,
                     PhoneNumber = order.PhoneNumber,
+                    User = new UserDto
+                    {
+                        UserId = order.User.UserId,
+                        Username = order.User.Username,
+                        Email = order.User.Email,
+                        CreatedAt = order.User.CreatedAt,
+                        UpdatedAt = order.User.UpdatedAt,
+                    },
+                    OrderItems = order.OrderItems.Select(u => new OrderItemDto
+                    {
+                        OrderId = u.OrderId,
+                        ProductId = u.ProductId,
+                        Quantity = u.Quantity,
+                        PriceAtTimeOfOrder = u.PriceAtTimeOfOrder,
+                        Product = new ProductAllDto
+                        {
+                            Price = u.Product.Price,
+                            PriceSale = u.Product.PriceSale,
+                            Name = u.Product.Name,
+                            ProductId = u.Product.ProductId,
+                            Image = _uploadFilesService.GetFilePath(u.Product.Image, Contains.ProductImageFolder),
+                            CategoryName = u.Product.Category.Name
+                        }
+                    }).ToList()
                 },
                 Message = "Order found",
                 Status = true
@@ -422,8 +473,116 @@ namespace ecommerce.Services
                 Status = false
             };
         }
-     
-                     
 
+        public async Task<ApiResponse<IEnumerable<OrderDto>>> GetOrdersByUserIdAsync(int userId, PagingForOrder? paging = null)
+        {
+            var orders = await _context.Orders.Include(x=>x.OrderItems).ThenInclude(x=>x.Product).ThenInclude(i=>i.Category).Where(x => x.UserId == userId).ToListAsync();
+            if(paging == null){
+                return new ApiResponse<IEnumerable<OrderDto>>
+                {
+                    Data = orders.Select(order => new OrderDto
+                    {
+                        OrderStatus = order.OrderStatus,
+                        UserId = order.UserId,
+                        CreatedAt = order.CreatedAt,
+                        OrderId = order.OrderId,
+                        UpdatedAt = order.UpdatedAt,
+                        TotalPrice = order.TotalPrice,
+                        Address = order.Address,
+                        Note = order.Note,
+                        PhoneNumber = order.PhoneNumber,
+                        User = new UserDto
+                        {
+                            UserId = order.User.UserId,
+                            Username = order.User.Username,
+                            Email = order.User.Email,
+                            CreatedAt = order.User.CreatedAt,
+                            UpdatedAt = order.User.UpdatedAt,
+                        },
+                        OrderItems = order.OrderItems.Select(u => new OrderItemDto
+                        {
+                            OrderId = u.OrderId,
+                            ProductId = u.ProductId,
+                            Quantity = u.Quantity,
+                            PriceAtTimeOfOrder = u.PriceAtTimeOfOrder,
+                            Product = new ProductAllDto
+                            {
+                                Price = u.Product.Price,
+                                PriceSale = u.Product.PriceSale,
+                                Name = u.Product.Name,
+                                ProductId = u.Product.ProductId,
+                                Image = _uploadFilesService.GetFilePath(u.Product.Image, Contains.ProductImageFolder),
+                                CategoryName = u.Product.Category.Name
+                            }
+                        }).ToList()
+                    }),
+                    Message = "Orders retrieved",
+                    Status = true
+                };
+            }
+            if(!string.IsNullOrEmpty(paging.Search)){
+                orders = orders.Where(x=>x.User.Username.Contains(paging.Search) || x.User.Email.Contains(paging.Search) ).ToList();
+            }
+            if(paging.MinTotalPrice > 0){
+                orders = orders.Where(x=>x.TotalPrice >= paging.MinTotalPrice).ToList();
+            }
+            if(paging.MaxTotalPrice > 0){
+                orders = orders.Where(x=>x.TotalPrice <= paging.MaxTotalPrice).ToList();
+            }
+            if(paging.SortByDate){
+                orders = orders.OrderBy(x=>x.CreatedAt).ToList();
+            }
+            else{
+                orders = orders.OrderByDescending(x=>x.CreatedAt).ToList();
+            }
+            if(paging.OrderStatus != null){
+                orders = orders.Where(x=>x.OrderStatus == paging.OrderStatus).ToList();
+            }
+            if(paging.Page > 0 && paging.PageSize > 0){
+                orders = orders.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToList();
+            }
+            return new ApiResponse<IEnumerable<OrderDto>>
+            {
+                Data = orders.Select(order => new OrderDto
+                {
+                    OrderStatus = order.OrderStatus,
+                    UserId = order.UserId,
+                    CreatedAt = order.CreatedAt,
+                    OrderId = order.OrderId,
+                    UpdatedAt = order.UpdatedAt,
+                    TotalPrice = order.TotalPrice,
+                    Address = order.Address,
+                    Note = order.Note,
+                    PhoneNumber = order.PhoneNumber,
+                    User = new UserDto
+                    {
+                        UserId = order.User.UserId,
+                        Username = order.User.Username,
+                        Email = order.User.Email,
+                        CreatedAt = order.User.CreatedAt,
+                        UpdatedAt = order.User.UpdatedAt,
+                    },
+                    OrderItems = order.OrderItems.Select(u => new OrderItemDto
+                    {
+                        OrderId = u.OrderId,
+                        ProductId = u.ProductId,
+                        Quantity = u.Quantity,
+                        PriceAtTimeOfOrder = u.PriceAtTimeOfOrder,
+                        Product = new ProductAllDto
+                        {
+                            Price = u.Product.Price,
+                            PriceSale = u.Product.PriceSale,
+                            Name = u.Product.Name,
+                            ProductId = u.Product.ProductId,
+                            Image = _uploadFilesService.GetFilePath(u.Product.Image, Contains.ProductImageFolder),
+                            CategoryName = u.Product.Category.Name
+                        }
+                    }).ToList()
+                }),
+                Message = "Orders retrieved",
+                Status = true
+            };
+
+        }
     }
 }

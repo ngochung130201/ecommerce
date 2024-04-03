@@ -1,16 +1,22 @@
-﻿using ecommerce.Middleware;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
+using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
 {
     public class PaymentRepository : IPaymentRepository
     {
         private readonly IRepositoryBase<Payment> _repositoryBase;
-        public PaymentRepository(IRepositoryBase<Payment> repositoryBase)
+        private readonly EcommerceContext _context;
+        public PaymentRepository(IRepositoryBase<Payment> repositoryBase, EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
+            _context = context;
         }
+    
 
         public async Task AddPaymentAsync(Payment payment)
         {
@@ -43,14 +49,42 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task<IEnumerable<Payment>> GetAllPaymentsAsync()
+        public async Task<IEnumerable<Payment>> GetAllPaymentsAsync(PagingForPayment? paging = null)
         {
-            var payments = await _repositoryBase.FindAllAsync();
-            if (payments == null)
+            var payments = _context.Payments.Include(u=>u.Order).ThenInclude(u=>u.User).AsQueryable();
+            if (paging == null)
             {
-                throw new CustomException("No Payment found", 404);
+                return await payments.ToListAsync();
             }
-            return payments;
+            if (!string.IsNullOrEmpty(paging.Search))
+            {
+                payments = payments.Where(u => u.Order.User.Email.Contains(paging.Search) || u.Order.User.Username.Contains(paging.Search));
+            }
+            if (paging.MinTotalPrice > 0)
+            {
+                payments = payments.Where(u => u.Amount >= paging.MinTotalPrice);
+            }
+            if (paging.MaxTotalPrice > 0)
+            {
+                payments = payments.Where(u => u.Amount <= paging.MaxTotalPrice);
+            }
+            if (paging.SortByDate)
+            {
+                payments = payments.OrderBy(u => u.CreatedAt);
+            }
+            else
+            {
+                payments = payments.OrderByDescending(u => u.CreatedAt);
+            }
+            if(paging.PaymentStatus != null)
+            {
+                payments = payments.Where(u => u.PaymentStatus == paging.PaymentStatus);
+            }
+            if(paging.PaymentMethod != null)
+            {
+                payments = payments.Where(u => u.PaymentMethod == paging.PaymentMethod);
+            }
+            return await payments.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
         }
 
         public async Task<Payment> GetPaymentByIdAsync(int id)

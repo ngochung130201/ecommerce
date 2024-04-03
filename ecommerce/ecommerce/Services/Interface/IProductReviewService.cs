@@ -4,7 +4,7 @@ namespace ecommerce.Services.Interface
 {
     public interface IProductReviewService
     {
-        Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync();
+        Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync(PagingForProductReview? paging = null);
         Task<ApiResponse<ProductReviewAllDto>> GetProductReviewByIdAsync(int id);
         Task<ApiResponse<int>> AddProductReviewAsync(ProductReviewDto productReview);
         Task<ApiResponse<int>> DeleteProductReviewAsync(int id);

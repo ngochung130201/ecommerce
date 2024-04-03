@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ecommerce.DTO;
 using ecommerce.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,17 @@ namespace ecommerce.Controllers
         public async Task<IActionResult> GetAllHistoriesAsync()
         {
             var response = await _historyService.GetAllHistoriesAsync();
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        // filter history by paging
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetAllHistoriesAsync(PagingForHistory? paging = null)
+        {
+            var response = await _historyService.GetAllHistoriesAsync(paging);
             if (response.Status)
             {
                 return Ok(response);

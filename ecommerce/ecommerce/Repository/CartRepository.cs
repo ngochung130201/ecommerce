@@ -1,4 +1,5 @@
 ﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
@@ -35,9 +36,24 @@ namespace ecommerce.Repository
             _repositoryBase.Delete(cart);
         }
 
-        public async Task<IEnumerable<Cart>> GetAllCartsAsync()
+        public async Task<IEnumerable<Cart>> GetAllCartsAsync(PagingForCart? paging)
         {
-            return await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category).ToListAsync();
+            if (paging == null)
+            {
+                return await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category).ToListAsync();
+            }
+            var carts = await _context.Carts.Include(i=>i.User).Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category)
+                .Where(u => (paging.MinTotalPrice == 0 || u.TotalPrice >= paging.MinTotalPrice) 
+                        && (paging.MaxTotalPrice == 0 || u.TotalPrice <= paging.MaxTotalPrice) &&
+                            (string.IsNullOrEmpty(paging.Search) || u.User.Username.Contains(paging.Search) || u.User.Email.Contains(paging.Search))
+                        )
+                .Skip((paging.Page - 1) * paging.PageSize)
+                .Take(paging.PageSize).OrderByDescending(x=>x.CreatedAt).ToListAsync();
+            if(paging.SortByDate)
+            {
+                carts = carts.OrderBy(u => u.CreatedAt).ToList();
+            }
+            return carts;
         }
 
         public async Task<Cart> GetCartByIdAsync(int id)

@@ -1,15 +1,20 @@
-﻿using ecommerce.Middleware;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
+using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
 {
     public class WishListRepository : IWishListRepository
     {
         private readonly IRepositoryBase<Wishlist> _repositoryBase;
-        public WishListRepository(IRepositoryBase<Wishlist> repositoryBase)
+        private readonly EcommerceContext _context;
+        public WishListRepository(IRepositoryBase<Wishlist> repositoryBase, EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
+            _context = context;
         }
         public async Task AddWishListAsync(Wishlist wishList)
         {
@@ -33,9 +38,35 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task<IEnumerable<Wishlist>> GetAllWishListsAsync()
+        public async Task<IEnumerable<Wishlist>> GetAllWishListsAsync(PagingForWishlist? paging = null)
         {
-            var wishLists = await _repositoryBase.FindAllAsync();
+            var wishLists = _context.Wishlists.Include(k=>k.User).Include(u=>u.Product).AsQueryable();
+            if (paging == null)
+            {
+                return wishLists;
+            }
+            if (!string.IsNullOrEmpty(paging.Search) || !string.IsNullOrEmpty(paging.UserName))
+            {
+                wishLists = wishLists.Where(x =>  x.User.Username.Contains(paging.UserName) || x.User.Email.Contains(paging.UserName));
+            }
+            {
+                wishLists = wishLists.Where(x => x.Product.Name.Contains(paging.Search));
+            }
+            if(!string.IsNullOrEmpty(paging.ProductName))
+            {
+                wishLists = wishLists.Where(x => x.Product.Name.Contains(paging.ProductName));
+            }
+            if(paging.SortByDate){
+                wishLists = wishLists.OrderBy(x => x.CreatedAt);
+            }
+            else
+            {
+                wishLists = wishLists.OrderByDescending(x => x.CreatedAt);
+            }
+            if(paging.PageSize > 0)
+            {
+                wishLists = wishLists.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
+            }
             if (wishLists == null)
             {
                 throw new CustomException("No WishList found", 404);

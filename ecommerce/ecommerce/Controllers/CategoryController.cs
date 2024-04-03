@@ -23,6 +23,17 @@ namespace ecommerce.Controllers
             }
             return BadRequest(categories);
         }
+        // filter category by paging
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetAllCategoriesAsync(Paging? paging = null)
+        {
+            var categories = await _categoryService.GetAllCategoriesAsync(paging);
+            if (categories.Status)
+            {
+                return Ok(categories);
+            }
+            return BadRequest(categories);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCategoryByIdAsync(int id)
         {
