@@ -25,7 +25,7 @@ namespace ecommerce.Controllers
         }
         // filter category by paging
         [HttpPost("filter")]
-        public async Task<IActionResult> GetAllCategoriesAsync(Paging? paging = null)
+        public async Task<IActionResult> GetAllCategoriesAsync(PagingForBlogCategory? paging = null)
         {
             var categories = await _categoryService.GetAllCategoriesAsync(paging);
             if (categories.Status)

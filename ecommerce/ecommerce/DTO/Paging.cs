@@ -6,18 +6,23 @@ namespace ecommerce.DTO
     {
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 10;
-        public string Search { get; set; } = "";
         // date
         public bool SortByDate { get; set; } = false; // sap xep theo ngay cu nhat hoac moi nhat
+    }
+    public class PagingForUser : Paging
+    {
+        public string? UserName { get; set; } = null;
     }
     public class PagingForCart : Paging
     {
         // min TotalPrice and max TotalPrice
         public decimal MinTotalPrice { get; set; } = 0;
         public decimal MaxTotalPrice { get; set; } = 0;
+        public string? UserName { get; set; } = null;
     }
     public class PagingForHistory : Paging {
         public HistoryStatus? HistoryStatus { get; set; } = null;
+        public string? Message { get; set; } = null;
     }
     // order paging 
     public class PagingForOrder : Paging
@@ -26,6 +31,7 @@ namespace ecommerce.DTO
         // min TotalPrice and max TotalPrice
         public decimal MinTotalPrice { get; set; } = 0;
         public decimal MaxTotalPrice { get; set; } = 0;
+         public string? UserName { get; set; } = null;
         // user name
 
     }
@@ -36,6 +42,7 @@ namespace ecommerce.DTO
         public decimal MinTotalPrice { get; set; } = 0;
         public decimal MaxTotalPrice { get; set; } = 0;
         public PaymentMethod? PaymentMethod { get; set; } = null;
+        public string? UserName { get; set; } = null;
     }
     // paging product review
     public class PagingForProductReview : Paging

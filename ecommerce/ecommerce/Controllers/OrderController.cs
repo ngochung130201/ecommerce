@@ -35,7 +35,7 @@ namespace ecommerce.Controllers
             return BadRequest(orders);
         }
         //  get order by user id
-        [HttpGet("{userId}")]
+        [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetOrdersByUserIdAsync(int userId)
         {
             var orders = await _orderService.GetOrdersByUserIdAsync(userId);

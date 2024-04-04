@@ -53,13 +53,13 @@ namespace ecommerce.Repository
             // if paging is null, return all orders
             if (paging == null)
             {
-                return await _context.Orders.Include(u => u.OrderItems).Include(x => x.User).ToListAsync();
+                return await _context.Orders.Include(u => u.OrderItems).ThenInclude(i=>i.Product).Include(x => x.User).ToListAsync();
             }
             // if paging is not null, return orders based on paging
             var orders = _context.Orders.Include(u=> u.OrderItems).ThenInclude(i=>i.Product).Include(k=>k.User).AsQueryable();
-            if (!string.IsNullOrEmpty(paging.Search))
+            if (!string.IsNullOrEmpty(paging.UserName))
             {
-               orders = orders.Where(u=> u.User.Username.Contains(paging.Search) || u.User.Email.Contains(paging.Search));
+               orders = orders.Where(u=> u.User.Username.Contains(paging.UserName) || u.User.Email.Contains(paging.UserName));
             }
             if (paging.MinTotalPrice != 0)
             {

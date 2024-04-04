@@ -148,9 +148,9 @@ namespace ecommerce.Services
                 };
             }
             var productReviewsPaging = _context.ProductReviews.Include(u=>u.User).AsQueryable();
-            if (!string.IsNullOrEmpty(paging.Search))
+            if (!string.IsNullOrEmpty(paging.UserName))
             {
-                productReviewsPaging = productReviewsPaging.Where(u => u.User.Username.Contains(paging.Search) || u.User.Email.Contains(paging.Search));
+                productReviewsPaging = productReviewsPaging.Where(u => u.User.Username.Contains(paging.UserName) || u.User.Email.Contains(paging.UserName));
             }
             if (paging.MinRating > 0)
             {

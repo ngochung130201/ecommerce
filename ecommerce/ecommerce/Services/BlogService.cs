@@ -319,9 +319,9 @@ namespace ecommerce.Services
                 return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtoNotPagings , Status = true };
             }
             var categories = _context.BlogCategories.AsQueryable();
-            if (!string.IsNullOrEmpty(paging.Search) || !string.IsNullOrWhiteSpace(paging.Name))
+            if (!string.IsNullOrEmpty(paging.Name))
             {
-                categories = categories.Where(category => category.Name.Contains(paging.Search) || category.Name.Contains(paging.Name));
+                categories = categories.Where(category => category.Name.Contains(paging.Name));
             }
             if(paging.SortByDate){
                 categories = categories.OrderBy(category => category.CreatedAt);

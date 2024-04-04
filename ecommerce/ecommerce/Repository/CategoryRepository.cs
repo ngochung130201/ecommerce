@@ -61,15 +61,15 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task<IEnumerable<Category>> GetAllCategoriesAsync(Paging? paging = null)
+        public async Task<IEnumerable<Category>> GetAllCategoriesAsync(PagingForBlogCategory? paging = null)
         {
             var categories = _context.Categories.AsQueryable();
             if (paging != null)
             {
             //    search
-                if (!string.IsNullOrEmpty(paging.Search))
+                if (!string.IsNullOrEmpty(paging.Name))
                 {
-                    categories = categories.Where(c => c.Name.Contains(paging.Search) || c.Description.Contains(paging.Search));
+                    categories = categories.Where(c => c.Name.Contains(paging.Name));
                 }
                 // sort
                 if (paging.SortByDate)

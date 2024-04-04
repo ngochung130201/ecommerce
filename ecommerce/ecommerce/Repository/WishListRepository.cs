@@ -45,12 +45,9 @@ namespace ecommerce.Repository
             {
                 return wishLists;
             }
-            if (!string.IsNullOrEmpty(paging.Search) || !string.IsNullOrEmpty(paging.UserName))
+            if (!string.IsNullOrEmpty(paging.UserName))
             {
                 wishLists = wishLists.Where(x =>  x.User.Username.Contains(paging.UserName) || x.User.Email.Contains(paging.UserName));
-            }
-            {
-                wishLists = wishLists.Where(x => x.Product.Name.Contains(paging.Search));
             }
             if(!string.IsNullOrEmpty(paging.ProductName))
             {

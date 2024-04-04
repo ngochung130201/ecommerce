@@ -45,7 +45,7 @@ namespace ecommerce.Repository
             var carts = await _context.Carts.Include(i=>i.User).Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category)
                 .Where(u => (paging.MinTotalPrice == 0 || u.TotalPrice >= paging.MinTotalPrice) 
                         && (paging.MaxTotalPrice == 0 || u.TotalPrice <= paging.MaxTotalPrice) &&
-                            (string.IsNullOrEmpty(paging.Search) || u.User.Username.Contains(paging.Search) || u.User.Email.Contains(paging.Search))
+                            (string.IsNullOrEmpty(paging.UserName) || u.User.Username.Contains(paging.UserName) || u.User.Email.Contains(paging.UserName))
                         )
                 .Skip((paging.Page - 1) * paging.PageSize)
                 .Take(paging.PageSize).OrderByDescending(x=>x.CreatedAt).ToListAsync();

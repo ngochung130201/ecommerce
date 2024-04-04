@@ -77,9 +77,9 @@ namespace ecommerce.Services
             var histories = _context.Histories.AsQueryable();
             if (pagingForHistory != null)
             {
-                if (!string.IsNullOrEmpty(pagingForHistory.Search))
+                if (!string.IsNullOrEmpty(pagingForHistory.Message))
                 {
-                    histories = histories.Where(c => string.IsNullOrEmpty(c.Message) || c.Message.Contains(pagingForHistory.Search));
+                    histories = histories.Where(c => string.IsNullOrEmpty(c.Message) || c.Message.Contains(pagingForHistory.Message));
                 }
                 if (pagingForHistory.SortByDate)
                 {

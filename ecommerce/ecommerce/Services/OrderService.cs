@@ -520,8 +520,8 @@ namespace ecommerce.Services
                     Status = true
                 };
             }
-            if(!string.IsNullOrEmpty(paging.Search)){
-                orders = orders.Where(x=>x.User.Username.Contains(paging.Search) || x.User.Email.Contains(paging.Search) ).ToList();
+            if(!string.IsNullOrEmpty(paging.UserName)){
+                orders = orders.Where(x=>x.User.Username.Contains(paging.UserName) || x.User.Email.Contains(paging.UserName) ).ToList();
             }
             if(paging.MinTotalPrice > 0){
                 orders = orders.Where(x=>x.TotalPrice >= paging.MinTotalPrice).ToList();

@@ -61,9 +61,9 @@ namespace ecommerce.Repository
             {
                 return await productReviews.ToListAsync();
             }
-            if (!string.IsNullOrEmpty(paging.Search) || !string.IsNullOrEmpty(paging.UserName))
+            if (!string.IsNullOrEmpty(paging.UserName))
             {
-                productReviews = productReviews.Where(p => p.User.Username.Contains(paging.Search) || p.User.Email.Contains(paging.Search));
+                productReviews = productReviews.Where(p => p.User.Email.Contains(paging.UserName) || p.User.Username.Contains(paging.UserName));
             }
             if (!string.IsNullOrEmpty(paging.ProductName))
             {
