@@ -1,4 +1,5 @@
 ﻿using ecommerce.DTO;
+using ecommerce.Helpers;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
@@ -10,10 +11,12 @@ namespace ecommerce.Services
     {
         private readonly IWishListRepository _wishlistRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public WishlistService(IWishListRepository wishlistRepository, IUnitOfWork unitOfWork)
+        private readonly IUploadFilesService _uploadFilesService;
+        public WishlistService(IWishListRepository wishlistRepository, IUnitOfWork unitOfWork, IUploadFilesService uploadFilesService)
         {
             _wishlistRepository = wishlistRepository;
             _unitOfWork = unitOfWork;
+            _uploadFilesService = uploadFilesService;
         }
 
         public async Task<ApiResponse<int>> AddWishlistAsync(WishlistRequestDto wishlist)
@@ -101,6 +104,28 @@ namespace ecommerce.Services
                     WishlistId = x.WishlistId,
                     CreatedAt = x.CreatedAt,
                     UpdatedAt = x.UpdatedAt,
+                    Product = new ProductAllDto
+                    {
+                        Slug = x.Product.Slug,
+                        ProductId = x.Product.ProductId,
+                        Name = x.Product.Name,
+                        CategoryId = x.Product.CategoryId,
+                        Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
+                        Price = x.Product.Price,
+                        PriceSale = x.Product.PriceSale,
+                        Sale = x.Product.Sale,
+                        CategoryName = x.Product.Category.Name,
+                        Popular = x.Product.Popular,
+                        InventoryCount = x.Product.InventoryCount,
+                    },
+                    User = new UserDto
+                    {
+                        UserId = x.User.UserId,
+                        Username = x.User.Username,
+                        Email = x.User.Email,
+                        CreatedAt = x.User.CreatedAt,
+                        UpdatedAt = x.User.UpdatedAt,
+                    }
                 }),
                 Message = "Wishlist found",
                 Status = true
@@ -128,7 +153,29 @@ namespace ecommerce.Services
                     ProductId = wishlist.ProductId,
                     CreatedAt = wishlist.CreatedAt,
                     UpdatedAt = wishlist.UpdatedAt,
-                    WishlistId = wishlist.WishlistId
+                    WishlistId = wishlist.WishlistId,
+                    Product = new ProductAllDto
+                    {
+                        Slug = wishlist.Product.Slug,
+                        ProductId = wishlist.Product.ProductId,
+                        Name = wishlist.Product.Name,
+                        CategoryId = wishlist.Product.CategoryId,
+                        Image = _uploadFilesService.GetFilePath(wishlist.Product.Image, Contains.ProductImageFolder),
+                        Price = wishlist.Product.Price,
+                        PriceSale = wishlist.Product.PriceSale,
+                        Sale = wishlist.Product.Sale,
+                        CategoryName = wishlist.Product.Category.Name,
+                        Popular = wishlist.Product.Popular,
+                        InventoryCount = wishlist.Product.InventoryCount,
+                    },
+                    User = new UserDto
+                    {
+                        UserId = wishlist.User.UserId,
+                        Username = wishlist.User.Username,
+                        Email = wishlist.User.Email,
+                        CreatedAt = wishlist.User.CreatedAt,
+                        UpdatedAt = wishlist.User.UpdatedAt,
+                    }
                 },
                 Message = "Wishlist found",
                 Status = true

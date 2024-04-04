@@ -21,7 +21,7 @@ namespace ecommerce.Services
         private readonly IUploadFilesService _uploadFilesService;
         public CartService(ICartRepository cartRepository,
         ICartItemService cartItemService, ICartItemRepository cartItemRepository,
-        IAccountRepository<User> accountRepository, IUnitOfWork unitOfWork,EcommerceContext context,
+        IAccountRepository<User> accountRepository, IUnitOfWork unitOfWork, EcommerceContext context,
         IProductRepository productRepository, IUploadFilesService uploadFilesService)
         {
             _cartRepository = cartRepository;
@@ -185,6 +185,14 @@ namespace ecommerce.Services
             {
                 CartId = c.CartId,
                 UserId = c.UserId,
+                User = new UserDto
+                {
+                    UserId = c.User.UserId,
+                    Username = c.User.Username,
+                    Email = c.User.Email,
+                    CreatedAt = c.User.CreatedAt,
+                    UpdatedAt = c.User.UpdatedAt
+                },
                 CartItems = c.CartItems.Select(ci => new CartItemDto
                 {
                     CartItemId = ci.CartItemId,
@@ -227,6 +235,14 @@ namespace ecommerce.Services
             {
                 CartId = cart.CartId,
                 UserId = cart.UserId,
+                User = new UserDto
+                {
+                    UserId = cart.User.UserId,
+                    Username = cart.User.Username,
+                    Email = cart.User.Email,
+                    CreatedAt = cart.User.CreatedAt,
+                    UpdatedAt = cart.User.UpdatedAt
+                },
                 CartItems = cart.CartItems.Select(ci => new CartItemDto
                 {
                     CartItemId = ci.CartItemId,
@@ -234,10 +250,10 @@ namespace ecommerce.Services
                     Quantity = ci.Quantity,
                     TotalPrice = ci.TotalPrice,
                     CartId = ci.CartId,
+
                     Product = new ProductAllDto
                     {
                         CategoryId = ci.Product.CategoryId,
-                        Description = ci.Product.Description,
                         Image = _uploadFilesService.GetFilePath(ci.Product.Image, Contains.ProductImageFolder),
                         Price = ci.Product.Price,
                         PriceSale = ci.Product.PriceSale,
@@ -250,7 +266,8 @@ namespace ecommerce.Services
                         Popular = ci.Product.Popular,
                         PopularText = ci.Product.PopularText,
                         Sale = ci.Product.Sale,
-                        Slug = ci.Product.Slug
+                        Slug = ci.Product.Slug,
+
                     }
                 }).ToList()
             };
@@ -268,6 +285,14 @@ namespace ecommerce.Services
             {
                 CartId = cart.CartId,
                 UserId = cart.UserId,
+                User = new UserDto
+                {
+                    UserId = cart.User.UserId,
+                    Username = cart.User.Username,
+                    Email = cart.User.Email,
+                    CreatedAt = cart.User.CreatedAt,
+                    UpdatedAt = cart.User.UpdatedAt
+                },
                 CartItems = cart.CartItems.Select(ci => new CartItemDto
                 {
                     CartItemId = ci.CartItemId,
@@ -278,7 +303,6 @@ namespace ecommerce.Services
                     Product = new ProductAllDto
                     {
                         CategoryId = ci.Product.CategoryId,
-                        Description = ci.Product.Description,
                         Image = _uploadFilesService.GetFilePath(ci.Product.Image, Contains.ProductImageFolder),
                         Price = ci.Product.Price,
                         PriceSale = ci.Product.PriceSale,
@@ -322,10 +346,10 @@ namespace ecommerce.Services
 
         public async Task UpdateCartItemQuantityAsync(int cartId, int cartItemId, int quantity)
         {
-            var cartItem = await _context.CartItems.Include(u=>u.Product).FirstOrDefaultAsync(x => x.CartId == cartId && x.CartItemId == cartItemId);
+            var cartItem = await _context.CartItems.Include(u => u.Product).FirstOrDefaultAsync(x => x.CartId == cartId && x.CartItemId == cartItemId);
             if (cartItem == null)
             {
-               return;
+                return;
             }
 
             cartItem.Quantity = quantity;

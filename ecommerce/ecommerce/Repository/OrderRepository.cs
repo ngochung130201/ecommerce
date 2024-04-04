@@ -53,13 +53,13 @@ namespace ecommerce.Repository
             // if paging is null, return all orders
             if (paging == null)
             {
-                return await _context.Orders.Include(u => u.OrderItems).ThenInclude(i=>i.Product).Include(x => x.User).ToListAsync();
+                return await _context.Orders.Include(u => u.OrderItems).ThenInclude(i => i.Product).ThenInclude(u => u.Category).Include(x => x.User).ToListAsync();
             }
             // if paging is not null, return orders based on paging
-            var orders = _context.Orders.Include(u=> u.OrderItems).ThenInclude(i=>i.Product).Include(k=>k.User).AsQueryable();
+            var orders = _context.Orders.Include(u => u.OrderItems).ThenInclude(i => i.Product).ThenInclude(u => u.Category).Include(k => k.User).AsQueryable();
             if (!string.IsNullOrEmpty(paging.UserName))
             {
-               orders = orders.Where(u=> u.User.Username.Contains(paging.UserName) || u.User.Email.Contains(paging.UserName));
+                orders = orders.Where(u => u.User.Username.Contains(paging.UserName) || u.User.Email.Contains(paging.UserName));
             }
             if (paging.MinTotalPrice != 0)
             {
@@ -77,7 +77,7 @@ namespace ecommerce.Repository
             {
                 orders = orders.OrderByDescending(u => u.CreatedAt);
             }
-            if(paging.OrderStatus != null)
+            if (paging.OrderStatus != null)
             {
                 orders = orders.Where(u => u.OrderStatus == paging.OrderStatus);
             }

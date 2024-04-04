@@ -14,7 +14,7 @@ namespace ecommerce.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderItemService _orderItemService;
-        private readonly ICartService  _cartService;
+        private readonly ICartService _cartService;
         private readonly EcommerceContext _context;
         private readonly IPaymentService _paymentService;
         private readonly IHistoryService _historyService;
@@ -24,7 +24,7 @@ namespace ecommerce.Services
         public OrderService(IOrderRepository orderRepository,
         IPaymentService paymentService, IOrderItemService orderItemService,
         EcommerceContext context,
-        ICartService  cartService, IHistoryService historyService,
+        ICartService cartService, IHistoryService historyService,
         IRevenueReportService revenueReportService,
         IUploadFilesService uploadFilesService,
         IUnitOfWork unitOfWork)
@@ -54,7 +54,7 @@ namespace ecommerce.Services
             }
             var cartItemsToProcess = getCartByIdAsync.CartItems.ToList();
             var products = cartItemsToProcess.Select(u => u.Product).ToList(); // have db
-            var productInput = cartItemsToProcess.Select(u => u.Product).Where(u =>order.OrderProduct.Any(k=>k.ProductId == u.ProductId)).ToList();
+            var productInput = cartItemsToProcess.Select(u => u.Product).Where(u => order.OrderProduct.Any(k => k.ProductId == u.ProductId)).ToList();
             var productIds = cartItemsToProcess.Select(u => u.ProductId).ToList();
             var isDupProduct = productIds.Any(u => order.OrderProduct.Any(k => k.ProductId == u));
             // khac ngay hom nay van tao order moi
@@ -116,7 +116,7 @@ namespace ecommerce.Services
             // Delete processed cart items and possibly the cart
 
             var getCartItemDb = await _context.Carts.Where(u => u.UserId == order.UserId).Include(u => u.CartItems).FirstOrDefaultAsync();
-            if(productInput.Count == products.Count)
+            if (productInput.Count == products.Count)
             {
                 await _cartService.DeleteCartAsync(orderIdByUser.User.Carts.CartId);
             }
@@ -200,7 +200,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<OrderDto>>> GetAllOrdersAsync(PagingForOrder? paging = null)
         {
-            var orders = await _orderRepository.GetAllOrdersAsync();
+            var orders = await _orderRepository.GetAllOrdersAsync(paging);
             if (orders == null)
             {
                 return new ApiResponse<IEnumerable<OrderDto>>
@@ -244,6 +244,13 @@ namespace ecommerce.Services
                             Name = u.Product.Name,
                             ProductId = u.Product.ProductId,
                             Image = _uploadFilesService.GetFilePath(u.Product.Image, Contains.ProductImageFolder),
+                            CategoryName = u.Product.Category.Name,
+                            CategoryId = u.Product.Category.CategoryId,
+                            Popular = u.Product.Popular,
+                            Slug = u.Product.Slug,
+                            InventoryCount = u.Product.InventoryCount,
+                            Sale = u.Product.Sale,
+
                         }
                     }).ToList()
                 }),
@@ -254,7 +261,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<OrderDto>> GetOrderByIdAsync(int id)
         {
-            var order = await _context.Orders.Include(u => u.User).Include(u => u.OrderItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category).FirstOrDefaultAsync(u => u.OrderId == id);
+            var order = await _context.Orders.Include(u => u.User).Include(u => u.OrderItems).ThenInclude(u => u.Product).ThenInclude(u => u.Category).FirstOrDefaultAsync(u => u.OrderId == id);
             if (order == null)
             {
                 return new ApiResponse<OrderDto>
@@ -298,7 +305,10 @@ namespace ecommerce.Services
                             Name = u.Product.Name,
                             ProductId = u.Product.ProductId,
                             Image = _uploadFilesService.GetFilePath(u.Product.Image, Contains.ProductImageFolder),
-                            CategoryName = u.Product.Category.Name
+                            CategoryName = u.Product.Category.Name,
+                            Slug = u.Product.Slug,
+                            InventoryCount = u.Product.InventoryCount,
+                            Sale = u.Product.Sale,
                         }
                     }).ToList()
                 },
@@ -370,14 +380,14 @@ namespace ecommerce.Services
 
                     if (order.OrderStatus == OrderStatus.Delivered)
                     {
-                       // add revenue report
-                       var revenue = new RevenueReportAddDto
-                       {
+                        // add revenue report
+                        var revenue = new RevenueReportAddDto
+                        {
                             TotalRevenue = payment.Amount
-                       };
-                       await _revenueReportService.AddRevenueReportAsync(revenue);  
+                        };
+                        await _revenueReportService.AddRevenueReportAsync(revenue);
                     }
-    
+
                     // add table history
                     var historyStatus = GetHistoryStatus(order.OrderStatus);
                     await _historyService.AddHistoryAsync(new History
@@ -450,7 +460,7 @@ namespace ecommerce.Services
         // Add Payment
         public async Task AddPaymentAsync(PaymentDto payment, int orderId, OrderStatus orderStatus)
         {
-            
+
             await _paymentService.AddPaymentAsync(payment);
         }
 
@@ -476,8 +486,9 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<OrderDto>>> GetOrdersByUserIdAsync(int userId, PagingForOrder? paging = null)
         {
-            var orders = await _context.Orders.Include(x=>x.OrderItems).ThenInclude(x=>x.Product).ThenInclude(i=>i.Category).Where(x => x.UserId == userId).ToListAsync();
-            if(paging == null){
+            var orders = await _context.Orders.Include(x => x.User).Include(u => u.OrderItems).ThenInclude(x => x.Product).ThenInclude(i => i.Category).Where(x => x.UserId == userId).ToListAsync();
+            if (paging == null)
+            {
                 return new ApiResponse<IEnumerable<OrderDto>>
                 {
                     Data = orders.Select(order => new OrderDto
@@ -512,7 +523,10 @@ namespace ecommerce.Services
                                 Name = u.Product.Name,
                                 ProductId = u.Product.ProductId,
                                 Image = _uploadFilesService.GetFilePath(u.Product.Image, Contains.ProductImageFolder),
-                                CategoryName = u.Product.Category.Name
+                                CategoryName = u.Product.Category.Name,
+                                Slug = u.Product.Slug,
+                                InventoryCount = u.Product.InventoryCount,
+                                Sale = u.Product.Sale,
                             }
                         }).ToList()
                     }),
@@ -520,25 +534,32 @@ namespace ecommerce.Services
                     Status = true
                 };
             }
-            if(!string.IsNullOrEmpty(paging.UserName)){
-                orders = orders.Where(x=>x.User.Username.Contains(paging.UserName) || x.User.Email.Contains(paging.UserName) ).ToList();
+            if (!string.IsNullOrEmpty(paging.UserName))
+            {
+                orders = orders.Where(x => x.User.Username.Contains(paging.UserName) || x.User.Email.Contains(paging.UserName)).ToList();
             }
-            if(paging.MinTotalPrice > 0){
-                orders = orders.Where(x=>x.TotalPrice >= paging.MinTotalPrice).ToList();
+            if (paging.MinTotalPrice > 0)
+            {
+                orders = orders.Where(x => x.TotalPrice >= paging.MinTotalPrice).ToList();
             }
-            if(paging.MaxTotalPrice > 0){
-                orders = orders.Where(x=>x.TotalPrice <= paging.MaxTotalPrice).ToList();
+            if (paging.MaxTotalPrice > 0)
+            {
+                orders = orders.Where(x => x.TotalPrice <= paging.MaxTotalPrice).ToList();
             }
-            if(paging.SortByDate){
-                orders = orders.OrderBy(x=>x.CreatedAt).ToList();
+            if (paging.SortByDate)
+            {
+                orders = orders.OrderBy(x => x.CreatedAt).ToList();
             }
-            else{
-                orders = orders.OrderByDescending(x=>x.CreatedAt).ToList();
+            else
+            {
+                orders = orders.OrderByDescending(x => x.CreatedAt).ToList();
             }
-            if(paging.OrderStatus != null){
-                orders = orders.Where(x=>x.OrderStatus == paging.OrderStatus).ToList();
+            if (paging.OrderStatus != null)
+            {
+                orders = orders.Where(x => x.OrderStatus == paging.OrderStatus).ToList();
             }
-            if(paging.Page > 0 && paging.PageSize > 0){
+            if (paging.Page > 0 && paging.PageSize > 0)
+            {
                 orders = orders.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToList();
             }
             return new ApiResponse<IEnumerable<OrderDto>>
@@ -575,7 +596,10 @@ namespace ecommerce.Services
                             Name = u.Product.Name,
                             ProductId = u.Product.ProductId,
                             Image = _uploadFilesService.GetFilePath(u.Product.Image, Contains.ProductImageFolder),
-                            CategoryName = u.Product.Category.Name
+                            CategoryName = u.Product.Category.Name,
+                            Slug = u.Product.Slug,
+                            InventoryCount = u.Product.InventoryCount,
+                            Sale = u.Product.Sale,
                         }
                     }).ToList()
                 }),

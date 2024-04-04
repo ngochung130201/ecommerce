@@ -1,7 +1,6 @@
 ﻿using ecommerce.DTO;
 using ecommerce.Models;
 using ecommerce.Services.Interface;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ecommerce.Controllers
@@ -55,7 +54,7 @@ namespace ecommerce.Controllers
         public async Task<IActionResult> UpdateBlog(int id, BlogDto blog)
         {
 
-           var result = await _blogService.UpdateBlogAsync(id,blog);
+            var result = await _blogService.UpdateBlogAsync(id, blog);
             if (result.Status)
             {
                 return Ok(result);
@@ -73,7 +72,7 @@ namespace ecommerce.Controllers
                 return NotFound();
             }
 
-           var result = await _blogService.DeleteBlogAsync(id);
+            var result = await _blogService.DeleteBlogAsync(id);
             if (result.Status)
             {
                 return Ok(result);
@@ -82,7 +81,7 @@ namespace ecommerce.Controllers
         }
         // search blog and pagination
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<Blog>>> SearchBlog(string keyword, int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<Blog>>> SearchBlog(string? keyword = null, int pageNumber = 1, int pageSize = 10)
         {
             var blogs = await _blogService.SearchBlogsAsync(keyword, pageNumber, pageSize);
             if (blogs == null || blogs.Status == false)
