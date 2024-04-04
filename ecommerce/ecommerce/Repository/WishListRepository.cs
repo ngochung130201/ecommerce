@@ -40,27 +40,28 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<Wishlist>> GetAllWishListsAsync(PagingForWishlist? paging = null)
         {
-            var wishLists = _context.Wishlists.Include(k=>k.User).Include(u=>u.Product).AsQueryable();
+            var wishLists = _context.Wishlists.Include(k => k.User).Include(u => u.Product).ThenInclude(k => k.Category).AsQueryable();
             if (paging == null)
             {
                 return wishLists;
             }
             if (!string.IsNullOrEmpty(paging.UserName))
             {
-                wishLists = wishLists.Where(x =>  x.User.Username.Contains(paging.UserName) || x.User.Email.Contains(paging.UserName));
+                wishLists = wishLists.Where(x => x.User.Username.Contains(paging.UserName) || x.User.Email.Contains(paging.UserName));
             }
-            if(!string.IsNullOrEmpty(paging.ProductName))
+            if (!string.IsNullOrEmpty(paging.ProductName))
             {
                 wishLists = wishLists.Where(x => x.Product.Name.Contains(paging.ProductName));
             }
-            if(paging.SortByDate){
+            if (paging.SortByDate)
+            {
                 wishLists = wishLists.OrderBy(x => x.CreatedAt);
             }
             else
             {
                 wishLists = wishLists.OrderByDescending(x => x.CreatedAt);
             }
-            if(paging.PageSize > 0)
+            if (paging.PageSize > 0)
             {
                 wishLists = wishLists.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
             }
@@ -73,7 +74,7 @@ namespace ecommerce.Repository
 
         public async Task<Wishlist> GetWishListByIdAsync(int id)
         {
-            var wishList = await _repositoryBase.FindByIdAsync(id);
+            var wishList = await _context.Wishlists.Include(k => k.User).Include(u => u.Product).ThenInclude(u => u.Category).FirstOrDefaultAsync(x => x.WishlistId == id);
             if (wishList == null)
             {
                 throw new CustomException("WishList not found", 404);

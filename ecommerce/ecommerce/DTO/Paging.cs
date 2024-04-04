@@ -20,9 +20,10 @@ namespace ecommerce.DTO
         public decimal MaxTotalPrice { get; set; } = 0;
         public string? UserName { get; set; } = null;
     }
-    public class PagingForHistory : Paging {
+    public class PagingForHistory : Paging
+    {
         public HistoryStatus? HistoryStatus { get; set; } = null;
-        public string? Message { get; set; } = null;
+        public string? UserName { get; set; } = null;
     }
     // order paging 
     public class PagingForOrder : Paging
@@ -31,7 +32,7 @@ namespace ecommerce.DTO
         // min TotalPrice and max TotalPrice
         public decimal MinTotalPrice { get; set; } = 0;
         public decimal MaxTotalPrice { get; set; } = 0;
-         public string? UserName { get; set; } = null;
+        public string? UserName { get; set; } = null;
         // user name
 
     }
@@ -47,17 +48,17 @@ namespace ecommerce.DTO
     // paging product review
     public class PagingForProductReview : Paging
     {
-       public int MinRating { get; set; } = 0;
-       public int MaxRating { get; set; } = 0;
-       public int Rating { get; set; } = 0;
-       public string? UserName { get; set; } = null;
-       public string? ProductName { get; set; } = null;
+        public int MinRating { get; set; } = 0;
+        public int MaxRating { get; set; } = 0;
+        public int Rating { get; set; } = 0;
+        public string? UserName { get; set; } = null;
+        public string? ProductName { get; set; } = null;
     }
     //  paging wishlist
     public class PagingForWishlist : Paging
     {
-       public string? UserName { get; set; } = null;
-       public string? ProductName { get; set; } = null;
+        public string? UserName { get; set; } = null;
+        public string? ProductName { get; set; } = null;
     }
     // blog category
     public class PagingForBlogCategory : Paging

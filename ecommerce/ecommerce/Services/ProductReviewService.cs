@@ -14,8 +14,8 @@ namespace ecommerce.Services
         private readonly IProductReviewRepository _productReviewRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUploadFilesService _uploadFilesService;
-        private readonly EcommerceContext  _context;
-        public ProductReviewService(IProductReviewRepository productReviewRepository, IUnitOfWork unitOfWork, EcommerceContext  context, IUploadFilesService uploadFilesService)
+        private readonly EcommerceContext _context;
+        public ProductReviewService(IProductReviewRepository productReviewRepository, IUnitOfWork unitOfWork, EcommerceContext context, IUploadFilesService uploadFilesService)
         {
             _productReviewRepository = productReviewRepository;
             _unitOfWork = unitOfWork;
@@ -104,9 +104,9 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync(PagingForProductReview? paging = null)
         {
-            if(paging == null)
+            if (paging == null)
             {
-                var productReviews = await _context.ProductReviews.Include(u=>u.User).Include(u=>u.Product).ToListAsync();
+                var productReviews = await _context.ProductReviews.Include(u => u.User).Include(u => u.Product).ThenInclude(i => i.Category).ToListAsync();
                 if (productReviews == null)
                 {
                     return new ApiResponse<IEnumerable<ProductReviewAllDto>>
@@ -130,16 +130,23 @@ namespace ecommerce.Services
                         User = new UserDto
                         {
                             Email = x.User.Email,
-                            Username = x.User.Username
+                            Username = x.User.Username,
+                            UserId = x.UserId
                         },
                         Product = new ProductAllDto
                         {
                             Name = x.Product.Name,
                             Price = x.Product.Price,
                             PriceSale = x.Product.PriceSale,
-                            Description = x.Product.Description,
                             Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
                             ProductId = x.Product.ProductId,
+                            CategoryName = x.Product.Category.Name,
+                            CategoryId = x.Product.CategoryId,
+                            Sale = x.Product.Sale,
+                            InventoryCount = x.Product.InventoryCount,
+                            Popular = x.Product.Popular,
+                            Slug = x.Product.Slug,
+
 
                         }
                     }),
@@ -147,7 +154,7 @@ namespace ecommerce.Services
                     Status = true
                 };
             }
-            var productReviewsPaging = _context.ProductReviews.Include(u=>u.User).AsQueryable();
+            var productReviewsPaging = _context.ProductReviews.Include(u => u.User).Include(u => u.Product).ThenInclude(i => i.Category).AsQueryable();
             if (!string.IsNullOrEmpty(paging.UserName))
             {
                 productReviewsPaging = productReviewsPaging.Where(u => u.User.Username.Contains(paging.UserName) || u.User.Email.Contains(paging.UserName));
@@ -183,16 +190,22 @@ namespace ecommerce.Services
                     User = new UserDto
                     {
                         Email = x.User.Email,
-                        Username = x.User.Username
+                        Username = x.User.Username,
+                        UserId = x.UserId
                     },
                     Product = new ProductAllDto
                     {
-                            Name = x.Product.Name,
-                            Price = x.Product.Price,
-                            PriceSale = x.Product.PriceSale,
-                            Description = x.Product.Description,
-                            Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
-                            ProductId = x.Product.ProductId,
+                        Name = x.Product.Name,
+                        Price = x.Product.Price,
+                        PriceSale = x.Product.PriceSale,
+                        Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
+                        ProductId = x.Product.ProductId,
+                        CategoryName = x.Product.Category.Name,
+                        CategoryId = x.Product.CategoryId,
+                        Sale = x.Product.Sale,
+                        InventoryCount = x.Product.InventoryCount,
+                        Popular = x.Product.Popular,
+                        Slug = x.Product.Slug,
                     }
                 }),
                 Message = "Product Reviews found",
@@ -202,7 +215,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<ProductReviewAllDto>> GetProductReviewByIdAsync(int id)
         {
-            var productReview = await _context.ProductReviews.Include(u => u.User).FirstOrDefaultAsync(x => x.ReviewId == id);
+            var productReview = await _context.ProductReviews.Include(u => u.User).Include(u => u.Product).ThenInclude(i => i.Category).FirstOrDefaultAsync(x => x.ReviewId == id);
             if (productReview == null)
             {
                 return new ApiResponse<ProductReviewAllDto>
@@ -226,16 +239,22 @@ namespace ecommerce.Services
                     User = new UserDto
                     {
                         Email = productReview.User.Email,
-                        Username = productReview.User.Username
+                        Username = productReview.User.Username,
+                        UserId = productReview.UserId
                     },
                     Product = new ProductAllDto
                     {
                         Name = productReview.Product.Name,
                         Price = productReview.Product.Price,
                         PriceSale = productReview.Product.PriceSale,
-                        Description = productReview.Product.Description,
                         Image = _uploadFilesService.GetFilePath(productReview.Product.Image, Contains.ProductImageFolder),
                         ProductId = productReview.Product.ProductId,
+                        CategoryName = productReview.Product.Category.Name,
+                        CategoryId = productReview.Product.CategoryId,
+                        Sale = productReview.Product.Sale,
+                        InventoryCount = productReview.Product.InventoryCount,
+                        Popular = productReview.Product.Popular,
+                        Slug = productReview.Product.Slug,
                     }
 
                 },
@@ -283,7 +302,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByProductAsync(int productId)
         {
-            var productReviews = await _context.ProductReviews.Include(u => u.User).Where(x => x.ProductId == productId).ToListAsync();
+            var productReviews = await _context.ProductReviews.Include(u => u.User).Include(u => u.Product).ThenInclude(i => i.Category).Where(x => x.ProductId == productId).ToListAsync();
             if (productReviews == null)
             {
                 return new ApiResponse<IEnumerable<ProductReviewAllDto>>
@@ -309,9 +328,14 @@ namespace ecommerce.Services
                         Name = x.Product.Name,
                         Price = x.Product.Price,
                         PriceSale = x.Product.PriceSale,
-                        Description = x.Product.Description,
                         Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
                         ProductId = x.Product.ProductId,
+                        CategoryName = x.Product.Category.Name,
+                        CategoryId = x.Product.CategoryId,
+                        Sale = x.Product.Sale,
+                        InventoryCount = x.Product.InventoryCount,
+                        Popular = x.Product.Popular,
+                        Slug = x.Product.Slug,
                     },
                     User = new UserDto
                     {
@@ -328,7 +352,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetProductReviewsByUserAsync(int userId)
         {
-            var productReviews = await _context.ProductReviews.Include(u => u.User).Where(x => x.UserId == userId).ToListAsync();
+            var productReviews = await _context.ProductReviews.Include(u => u.User).Include(u => u.Product).ThenInclude(i => i.Category).Where(x => x.UserId == userId).ToListAsync();
             if (productReviews == null)
             {
                 return new ApiResponse<IEnumerable<ProductReviewAllDto>>
@@ -354,9 +378,14 @@ namespace ecommerce.Services
                         Name = x.Product.Name,
                         Price = x.Product.Price,
                         PriceSale = x.Product.PriceSale,
-                        Description = x.Product.Description,
                         Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
                         ProductId = x.Product.ProductId,
+                        CategoryName = x.Product.Category.Name,
+                        CategoryId = x.Product.CategoryId,
+                        Sale = x.Product.Sale,
+                        InventoryCount = x.Product.InventoryCount,
+                        Popular = x.Product.Popular,
+                        Slug = x.Product.Slug,
                     },
                     User = new UserDto
                     {

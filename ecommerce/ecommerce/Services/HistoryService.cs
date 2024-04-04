@@ -74,12 +74,12 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<HistoryDto>>> GetAllHistoriesAsync(PagingForHistory? pagingForHistory = null)
         {
-            var histories = _context.Histories.AsQueryable();
+            var histories = _context.Histories.Include(x => x.Payment).ThenInclude(k => k.Order).ThenInclude(k => k.User).AsQueryable();
             if (pagingForHistory != null)
             {
-                if (!string.IsNullOrEmpty(pagingForHistory.Message))
+                if (!string.IsNullOrEmpty(pagingForHistory.UserName))
                 {
-                    histories = histories.Where(c => string.IsNullOrEmpty(c.Message) || c.Message.Contains(pagingForHistory.Message));
+                    histories = histories.Where(c => c.Payment.Order.User.Username.Contains(pagingForHistory.UserName) || c.Payment.Order.User.Email.Contains(pagingForHistory.UserName));
                 }
                 if (pagingForHistory.SortByDate)
                 {
@@ -89,7 +89,7 @@ namespace ecommerce.Services
                 {
                     histories = histories.OrderByDescending(c => c.CreateAt);
                 }
-                if(pagingForHistory.HistoryStatus != null)
+                if (pagingForHistory.HistoryStatus != null)
                 {
                     histories = histories.Where(c => c.Status == pagingForHistory.HistoryStatus);
                 }
@@ -100,8 +100,28 @@ namespace ecommerce.Services
                     {
                         Message = x.Message,
                         PaymentId = x.PaymentId,
+                        HistoryId = x.HistoryId,
                         Status = x.Status,
+                        UserId = x.Payment.Order.UserId,
                         StatusMessage = x.StatusMessage,
+                        User = new UserDto
+                        {
+                            Email = x.Payment.Order.User.Email,
+                            Username = x.Payment.Order.User.Username,
+                            UserId = x.Payment.Order.UserId
+
+                        },
+                        Payment = new PaymentDto
+                        {
+                            OrderId = x.Payment.OrderId,
+                            PaymentId = x.PaymentId,
+                            PaymentMethod = x.Payment.PaymentMethod,
+                            PaymentStatus = x.Payment.PaymentStatus,
+                            UserName = x.Payment.Order.User.Username,
+                            CreatedAt = x.Payment.Order.CreatedAt,
+                            Amount = x.Payment.Amount,
+                            UpdatedAt = x.Payment.Order.UpdatedAt
+                        }
                     })),
                     Message = "Histories found",
                     Status = true
@@ -123,7 +143,27 @@ namespace ecommerce.Services
                     Message = x.Message,
                     PaymentId = x.PaymentId,
                     Status = x.Status,
+                    HistoryId = x.HistoryId,
+                    UserId = x.Payment.Order.UserId,
                     StatusMessage = x.StatusMessage,
+                    User = new UserDto
+                    {
+                        Email = x.Payment.Order.User.Email,
+                        Username = x.Payment.Order.User.Username,
+                        UserId = x.Payment.Order.UserId
+
+                    },
+                    Payment = new PaymentDto
+                    {
+                        OrderId = x.Payment.OrderId,
+                        PaymentId = x.PaymentId,
+                        PaymentMethod = x.Payment.PaymentMethod,
+                        PaymentStatus = x.Payment.PaymentStatus,
+                        UserName = x.Payment.Order.User.Username,
+                        CreatedAt = x.Payment.Order.CreatedAt,
+                        Amount = x.Payment.Amount,
+                        UpdatedAt = x.Payment.Order.UpdatedAt
+                    }
                 })),
                 Message = "Histories found",
                 Status = true
@@ -132,7 +172,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<HistoryDto>>> GetHistoriesByPaymentIdAsync(int paymentId)
         {
-            var histories = await _context.Histories.Where(x => x.PaymentId == paymentId).ToListAsync();
+            var histories = await _context.Histories.Where(x => x.PaymentId == paymentId).Include(u => u.Payment).ThenInclude(u => u.Order).ThenInclude(k => k.User).ToListAsync();
             if (histories == null)
             {
                 return new ApiResponse<IEnumerable<HistoryDto>>
@@ -149,7 +189,27 @@ namespace ecommerce.Services
                     Message = x.Message,
                     PaymentId = x.PaymentId,
                     Status = x.Status,
+                    HistoryId = x.HistoryId,
+                    UserId = x.Payment.Order.UserId,
                     StatusMessage = x.StatusMessage,
+                    User = new UserDto
+                    {
+                        Email = x.Payment.Order.User.Email,
+                        Username = x.Payment.Order.User.Username,
+                        UserId = x.Payment.Order.UserId
+
+                    },
+                    Payment = new PaymentDto
+                    {
+                        OrderId = x.Payment.OrderId,
+                        PaymentId = x.PaymentId,
+                        PaymentMethod = x.Payment.PaymentMethod,
+                        PaymentStatus = x.Payment.PaymentStatus,
+                        UserName = x.Payment.Order.User.Username,
+                        CreatedAt = x.Payment.Order.CreatedAt,
+                        Amount = x.Payment.Amount,
+                        UpdatedAt = x.Payment.Order.UpdatedAt
+                    }
                 })),
                 Message = "Histories found",
                 Status = true
@@ -176,7 +236,28 @@ namespace ecommerce.Services
                     Message = history.Message,
                     PaymentId = history.PaymentId,
                     Status = history.Status,
+                    HistoryId = history.HistoryId,
+                    UserId = history.Payment.Order.UserId,
                     StatusMessage = history.StatusMessage,
+                    User = new UserDto
+                    {
+                        Email = history.Payment.Order.User.Email,
+                        Username = history.Payment.Order.User.Username,
+                        UserId = history.Payment.Order.UserId
+
+                    },
+                    Payment = new PaymentDto
+                    {
+                        OrderId = history.Payment.OrderId,
+                        PaymentId = history.PaymentId,
+                        PaymentMethod = history.Payment.PaymentMethod,
+                        PaymentStatus = history.Payment.PaymentStatus,
+                        UserName = history.Payment.Order.User.Username,
+                        CreatedAt = history.Payment.Order.CreatedAt,
+                        Amount = history.Payment.Amount,
+                        UpdatedAt = history.Payment.Order.UpdatedAt
+
+                    },
                 },
                 Message = "History found",
                 Status = true

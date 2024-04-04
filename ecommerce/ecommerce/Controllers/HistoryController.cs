@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ecommerce.DTO;
 using ecommerce.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ecommerce.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/history")]
     public class HistoryController : ControllerBase
     {
         private readonly IHistoryService _historyService;

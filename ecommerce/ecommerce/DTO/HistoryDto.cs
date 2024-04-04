@@ -12,6 +12,8 @@ namespace ecommerce.DTO
         public string? Message { get; set; } = null;
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdateAt { get; set; } = null;
+        public PaymentDto Payment { get; set; } = new PaymentDto();
+        public UserDto User { get; set; } = new UserDto();
 
     }
 }

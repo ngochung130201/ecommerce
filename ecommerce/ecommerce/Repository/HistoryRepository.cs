@@ -1,15 +1,19 @@
-﻿using ecommerce.Middleware;
+﻿using ecommerce.Context;
+using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
 {
     public class HistoryRepository : IHistoryRepository
     {
         private readonly IRepositoryBase<History> _repositoryBase;
-        public HistoryRepository(IRepositoryBase<History> repositoryBase)
+        private readonly EcommerceContext _context;
+        public HistoryRepository(IRepositoryBase<History> repositoryBase, EcommerceContext context)
         {
             _repositoryBase = repositoryBase;
+            _context = context;
         }
         public async Task AddHistoriesAsync(List<History> histories)
         {
@@ -57,7 +61,7 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<History>> GetAllHistoriesAsync()
         {
-            var histories = await _repositoryBase.FindAllAsync();
+            var histories = await _context.Histories.Include(u => u.Payment).ThenInclude(u => u.Order).ThenInclude(u => u.User).ToListAsync();
             if (histories == null)
             {
                 throw new CustomException("No History found", 404);
@@ -67,7 +71,7 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<History>> GetHistoriesByUserIdAsync(int userId)
         {
-            var histories = await _repositoryBase.FindByConditionAsync(x => x.Payment.Order.UserId == userId);
+            var histories = await _context.Histories.Include(u => u.Payment).ThenInclude(u => u.Order).ThenInclude(u => u.User).Where(u => u.Payment.Order.UserId == userId).ToListAsync();
             if (histories == null)
             {
                 throw new CustomException("No History found", 404);
@@ -77,7 +81,7 @@ namespace ecommerce.Repository
 
         public async Task<History> GetHistoryByIdAsync(int id)
         {
-            var history = await _repositoryBase.FindByIdAsync(id);
+            var history = await _context.Histories.Include(u => u.Payment).ThenInclude(u => u.Order).ThenInclude(u => u.User).FirstOrDefaultAsync(u => u.HistoryId == id);
             return history;
         }
 

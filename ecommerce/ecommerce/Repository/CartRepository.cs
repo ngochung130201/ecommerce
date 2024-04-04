@@ -40,16 +40,16 @@ namespace ecommerce.Repository
         {
             if (paging == null)
             {
-                return await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category).ToListAsync();
+                return await _context.Carts.Include(u => u.User).Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u => u.Category).ToListAsync();
             }
-            var carts = await _context.Carts.Include(i=>i.User).Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category)
-                .Where(u => (paging.MinTotalPrice == 0 || u.TotalPrice >= paging.MinTotalPrice) 
+            var carts = await _context.Carts.Include(i => i.User).Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u => u.Category)
+                .Where(u => (paging.MinTotalPrice == 0 || u.TotalPrice >= paging.MinTotalPrice)
                         && (paging.MaxTotalPrice == 0 || u.TotalPrice <= paging.MaxTotalPrice) &&
                             (string.IsNullOrEmpty(paging.UserName) || u.User.Username.Contains(paging.UserName) || u.User.Email.Contains(paging.UserName))
                         )
                 .Skip((paging.Page - 1) * paging.PageSize)
-                .Take(paging.PageSize).OrderByDescending(x=>x.CreatedAt).ToListAsync();
-            if(paging.SortByDate)
+                .Take(paging.PageSize).OrderByDescending(x => x.CreatedAt).ToListAsync();
+            if (paging.SortByDate)
             {
                 carts = carts.OrderBy(u => u.CreatedAt).ToList();
             }
@@ -58,13 +58,13 @@ namespace ecommerce.Repository
 
         public async Task<Cart> GetCartByIdAsync(int id)
         {
-            var cart = await _context.Carts.Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u=>u.Category).FirstOrDefaultAsync(c => c.CartId == id);
+            var cart = await _context.Carts.Include(u => u.User).Include(u => u.CartItems).ThenInclude(u => u.Product).ThenInclude(u => u.Category).FirstOrDefaultAsync(c => c.CartId == id);
             return cart;
         }
 
         public async Task<Cart> GetCartsByUserIdAsync(int userId)
         {
-            var carts = await _context.Carts.Include(u => u.CartItems).ThenInclude(k => k.Product).ThenInclude(u=>u.Category).FirstOrDefaultAsync(c => c.UserId == userId);
+            var carts = await _context.Carts.Include(u => u.User).Include(u => u.CartItems).ThenInclude(k => k.Product).ThenInclude(u => u.Category).FirstOrDefaultAsync(c => c.UserId == userId);
             return carts;
         }
 
