@@ -202,6 +202,29 @@ namespace ecommerce.Services
                     ProductId = x.ProductId,
                     UpdatedAt = x.UpdatedAt,
                     CreatedAt = x.CreatedAt,
+                    Product = new ProductAllDto
+                    {
+                        Slug = x.Product.Slug,
+                        ProductId = x.Product.ProductId,
+                        Name = x.Product.Name,
+                        CategoryId = x.Product.CategoryId,
+                        Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
+                        Price = x.Product.Price,
+                        PriceSale = x.Product.PriceSale,
+                        Sale = x.Product.Sale,
+                        CategoryName = x.Product.Category.Name,
+                        Popular = x.Product.Popular,
+                        InventoryCount = x.Product.InventoryCount,
+
+                    },
+                    User = new UserDto
+                    {
+                        UserId = x.User.UserId,
+                        Username = x.User.Username,
+                        Email = x.User.Email,
+                        CreatedAt = x.User.CreatedAt,
+                        UpdatedAt = x.User.UpdatedAt,
+                    }
 
                 }),
                 Message = "Wishlist found",
@@ -229,6 +252,30 @@ namespace ecommerce.Services
                     WishlistId = x.WishlistId,
                     CreatedAt = x.CreatedAt,
                     UpdatedAt = x.UpdatedAt,
+                    Product = new ProductAllDto
+                    {
+                        Slug = x.Product.Slug,
+                        ProductId = x.Product.ProductId,
+                        Name = x.Product.Name,
+                        CategoryId = x.Product.CategoryId,
+                        Image = _uploadFilesService.GetFilePath(x.Product.Image, Contains.ProductImageFolder),
+                        Price = x.Product.Price,
+                        PriceSale = x.Product.PriceSale,
+                        Sale = x.Product.Sale,
+                        CategoryName = x.Product.Category.Name,
+                        Popular = x.Product.Popular,
+                        InventoryCount = x.Product.InventoryCount,
+
+                    },
+                    User = new UserDto
+                    {
+                        UserId = x.User.UserId,
+                        Username = x.User.Username,
+                        Email = x.User.Email,
+                        CreatedAt = x.User.CreatedAt,
+                        UpdatedAt = x.User.UpdatedAt,
+                    }
+
                 }),
                 Message = "Wishlist found",
                 Status = true

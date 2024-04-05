@@ -94,7 +94,7 @@ namespace ecommerce.Repository
 
         public async Task<IEnumerable<Wishlist>> GetWishListsByUserIdAsync(int userId)
         {
-            var wishLists = await _repositoryBase.FindByConditionAsync(x => x.UserId == userId);
+            var wishLists = await _context.Wishlists.Include(k => k.User).Include(u => u.Product).ThenInclude(k => k.Category).Where(x => x.UserId == userId).ToListAsync();
             if (wishLists == null)
             {
                 throw new CustomException("No WishList found", 404);
