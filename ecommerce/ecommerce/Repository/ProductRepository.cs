@@ -139,34 +139,40 @@ namespace ecommerce.Repository
         public async Task<List<Product>> GetProductsByFilterAsync(ProductFilterDto filterDto)
         {
             int itemsToSkip = (filterDto.Page - 1) * filterDto.PageSize;
-            var products = await _context.Products.Include(u => u.Category).Where(p =>
-                (string.IsNullOrEmpty(filterDto.Name) || p.Name.Contains(filterDto.Name)) &&
-                (filterDto.MinPrice == 0 || p.Price >= filterDto.MinPrice) &&
-                (filterDto.MaxPrice == 0 || p.Price <= filterDto.MaxPrice) &&
-                (filterDto.CategoryId == 0 || p.CategoryId == filterDto.CategoryId) &&
-                (filterDto.Popular == 0 || p.Popular == filterDto.Popular) &&
-                (filterDto.InventoryCount == 0 || p.InventoryCount >= filterDto.InventoryCount)
-                ).Skip(itemsToSkip)
-                .Take(filterDto.PageSize).OrderByDescending(u => u.CreatedAt).ToListAsync();
-            if (products == null || products.Count == 0)
+            var productsQuery = _context.Products.Include(u => u.Category).AsQueryable();
+            if (filterDto.CategoryId != 0)
             {
-                return null;
+                productsQuery = productsQuery.Where(p => p.CategoryId == filterDto.CategoryId);
             }
-            if (filterDto.IsSortPrice)
+            if (filterDto.Popular != 0)
             {
-                if (filterDto.SortPrice == "asc")
-                {
-                    products = products.OrderBy(p => p.Price).ThenBy(u => u.CreatedAt).ToList();
-                }
-                else
-                {
-                    products = products.OrderByDescending(p => p.Price).ThenBy(u => u.CreatedAt).ToList();
-                }
+                productsQuery = productsQuery.Where(p => p.Popular == filterDto.Popular);
             }
-            else if (filterDto.SortByDate)
+            if (filterDto.InventoryCount != 0)
             {
-                products = products.OrderBy(u => u.CreatedAt).ToList();
+                productsQuery = productsQuery.Where(p => p.InventoryCount >= filterDto.InventoryCount);
             }
+            if (!string.IsNullOrEmpty(filterDto.Name))
+            {
+                productsQuery = productsQuery.Where(p => p.Name.Contains(filterDto.Name));
+            }
+            if (filterDto.MinPrice != 0)
+            {
+                productsQuery = productsQuery.Where(p => p.Price >= filterDto.MinPrice);
+            }
+            if (filterDto.MaxPrice != 0)
+            {
+                productsQuery = productsQuery.Where(p => p.Price <= filterDto.MaxPrice);
+            }
+            if (filterDto.SortByDate)
+            {
+                productsQuery = productsQuery.OrderBy(p => p.CreatedAt);
+            }
+            else
+            {
+                productsQuery = productsQuery.OrderByDescending(p => p.CreatedAt);
+            }
+            var products = await productsQuery.Skip(itemsToSkip).Take(filterDto.PageSize).ToListAsync();
             return products;
         }
 
