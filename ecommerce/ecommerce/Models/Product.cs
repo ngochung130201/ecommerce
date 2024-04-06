@@ -40,7 +40,6 @@ namespace ecommerce.Models
         public Popular? Popular { get; set; } = null;
         [Column("popular_text")]
         public string? PopularText { get; set; } = null;
-        // Sale 1-100
         [Column("sale")]
         public decimal? Sale { get; set; } = null;
         [Column("price_sale", TypeName = "DECIMAL(20,7)")]

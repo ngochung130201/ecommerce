@@ -82,6 +82,15 @@ namespace ecommerce.Services
             var user = await _accountUserRepository.GetByEmailForUser(loginDto.Email);
             if (user != null)
             {
+                if(user.AccountStatus == AccountStatus.Blocked)
+                {
+                    return new ApiResponse<LoginResponse>
+                    {
+                        Data = null,
+                        Message = "User is blocked",
+                        Status = false
+                    };
+                }
                 passwordHash = user.PasswordHash;
                 passwordSalt = user.PasswordSalt;
                 if (!VerifyPasswordHash(loginDto.Password, passwordHash, passwordSalt))
@@ -123,6 +132,15 @@ namespace ecommerce.Services
                     {
                         Data = null,
                         Message = "User not found",
+                        Status = false
+                    };
+                }
+                if (admin.AccountStatus == AccountStatus.Blocked)
+                {
+                    return new ApiResponse<LoginResponse>
+                    {
+                        Data = null,
+                        Message = "Admin is blocked",
                         Status = false
                     };
                 }
@@ -189,7 +207,8 @@ namespace ecommerce.Services
                     Email = email,
                     PasswordHash = passwordHash,
                     PasswordSalt = passwordSalt,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    AccountStatus = AccountStatus.Active
                 };
                 var existingUser = await _accountUserRepository.GetByEmailForUser(email);
                 if (existingUser != null)
@@ -212,7 +231,8 @@ namespace ecommerce.Services
                     PasswordHash = passwordHash,
                     PasswordSalt = passwordSalt,
                     Role = adminRole ?? AdminRole.Admin,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    AccountStatus = AccountStatus.Active
                 };
                 _accountAdminRepository.Add(admin);
                 var existingAdmin = await _accountAdminRepository.GetByEmailForAdmin(email);
@@ -737,5 +757,67 @@ namespace ecommerce.Services
             };
         }
 
+        public async Task<ApiResponse<string>> UpdateAccountAsync(UpdateAccountRequest updateAccountRequest)
+        {
+            if (updateAccountRequest.IsAdmin == false)
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == updateAccountRequest.Email);
+                if (user == null)
+                {
+                    return new ApiResponse<string>
+                    {
+                        Data = null,
+                        Message = "User not found",
+                        Status = false
+                    };
+                }
+                user.Username = updateAccountRequest.Username ?? user.Username;
+                user.Email = updateAccountRequest.Email ?? user.Email;
+                user.AccountStatus = updateAccountRequest.Status ?? user.AccountStatus;
+                if (!string.IsNullOrEmpty(updateAccountRequest.NewPassword))
+                {
+                    CreatePasswordHash(updateAccountRequest.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+                    user.PasswordHash = passwordHash;
+                    user.PasswordSalt = passwordSalt;
+                }
+                user.UpdatedAt = DateTime.UtcNow;
+                _context.Users.Update(user);
+            }
+            else {
+                var admin = await _context.Admins.FirstOrDefaultAsync(a => a.Email == updateAccountRequest.Email);
+                if (admin == null)
+                {
+                    return new ApiResponse<string>
+                    {
+                        Data = null,
+                        Message = "Admin not found",
+                        Status = false
+                    };
+                }
+                admin.Username = updateAccountRequest.Username ?? admin.Username;
+                admin.Email = updateAccountRequest.Email ?? admin.Email;
+                admin.AccountStatus = updateAccountRequest.Status ?? admin.AccountStatus;
+                if (!string.IsNullOrEmpty(updateAccountRequest.NewPassword))
+                {
+                    CreatePasswordHash(updateAccountRequest.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+                    admin.PasswordHash = passwordHash;
+                    admin.PasswordSalt = passwordSalt;
+                }
+                if (updateAccountRequest.Role != null)
+                {
+                    admin.Role = updateAccountRequest.Role.Value;
+                }
+                admin.UpdatedAt = DateTime.UtcNow;
+                _context.Admins.Update(admin);
+            }
+            await  _unitOfWork.SaveChangesAsync();
+            return new ApiResponse<string>
+            {
+                Data = "Account updated successfully",
+                Message = "Account updated successfully",
+                Status = true
+            };
+
+        }
     }
 }

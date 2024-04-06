@@ -26,11 +26,11 @@ namespace ecommerce.Services
         public async Task<ApiResponse<bool>> CreateBlogAsync(BlogDto blogDto)
         {
             // update the image path
-            var imagePath = await _uploadFilesService.UploadFileAsync(blogDto.Image, Contains.BlogImageFolder);
-            if (!imagePath.Status)
-            {
-                return new ApiResponse<bool> { Data = false };
-            }
+            // var imagePath = await _uploadFilesService.UploadFileAsync(blogDto.Image, Contains.BlogImageFolder);
+            // if (!imagePath.Status)
+            // {
+            //     return new ApiResponse<bool> { Data = false };
+            // }
             var newBlog = new Blog
             {
                 Title = blogDto.Title,
@@ -38,7 +38,8 @@ namespace ecommerce.Services
                 UpdatedAt = DateTime.Now,
                 CreatedBy = blogDto.CreatedBy,
                 UpdatedBy = blogDto.UpdatedBy,
-                Image = imagePath.Data,
+                // Image = imagePath.Data,
+                Image = null,
                 Slug = StringHelper.GenerateSlug(blogDto.Title),
                 Details = new BlogDetail
                 {
@@ -66,11 +67,11 @@ namespace ecommerce.Services
         public async Task<ApiResponse<bool>> UpdateBlogAsync(int id, BlogDto blog)
         {
             // update the image path
-            var imagePath = await _uploadFilesService.UploadFileAsync(blog.Image, Contains.BlogImageFolder);
-            if (!imagePath.Status)
-            {
-                return new ApiResponse<bool> { Data = false };
-            }
+            // var imagePath = await _uploadFilesService.UploadFileAsync(blog.Image, Contains.BlogImageFolder);
+            // if (!imagePath.Status)
+            // {
+            //     return new ApiResponse<bool> { Data = false };
+            // }
             var existingBlog = await _context.Blogs.FirstOrDefaultAsync(x => x.BlogId == id);
             await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
             if (existingBlog != null)
@@ -78,7 +79,6 @@ namespace ecommerce.Services
                 existingBlog.Title = blog.Title;
                 existingBlog.UpdatedAt = DateTime.Now;
                 existingBlog.UpdatedBy = blog.UpdatedBy;
-                existingBlog.Image = imagePath.Data;
                 existingBlog.Slug = StringHelper.GenerateSlug(blog.Title);
 
                 // remove image when the image is updated
