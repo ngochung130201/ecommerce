@@ -30,6 +30,8 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<List<AdminDto>>> GetListRoleAsync(PagingForUser paging);
         Task<ApiResponse<List<UserDto>>> GetListUserAsync(PagingForUser paging);
         Task<ApiResponse<string>> UpdateAccountAsync(UpdateAccountRequest updateAccountRequest);
+        Task<ApiResponse<string>> DeleteAccountAsync(string email);
+        Task<ApiResponse<string>> DeleteAccountForAdminAsync(string email);
 
     }
 }

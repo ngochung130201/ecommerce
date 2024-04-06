@@ -819,5 +819,48 @@ namespace ecommerce.Services
             };
 
         }
+
+        public async Task<ApiResponse<string>> DeleteAccountAsync(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+                await _unitOfWork.SaveChangesAsync();
+                return new ApiResponse<string>
+                {
+                    Data = "User deleted successfully",
+                    Message = "User deleted successfully",
+                    Status = true
+                };
+            }
+            return new ApiResponse<string>
+            {
+                Data = null,
+                Message = "User not found",
+                Status = false
+            };
+        }
+        public async Task<ApiResponse<string>> DeleteAccountForAdminAsync(string email)
+        {
+            var admin = await _context.Admins.FirstOrDefaultAsync(u => u.Email == email);
+            if (admin != null)
+            {
+                _context.Admins.Remove(admin);
+                await _unitOfWork.SaveChangesAsync();
+                return new ApiResponse<string>
+                {
+                    Data = "Admin deleted successfully",
+                    Message = "Admin deleted successfully",
+                    Status = true
+                };
+            }
+            return new ApiResponse<string>
+            {
+                Data = null,
+                Message = "Admin not found",
+                Status = false
+            };
+        }
     }
 }

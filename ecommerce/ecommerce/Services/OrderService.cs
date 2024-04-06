@@ -52,6 +52,12 @@ namespace ecommerce.Services
                     Status = false
                 };
             }
+            var orderStatusNew = new OrderStatus[]
+            {
+                OrderStatus.Delivered,
+                OrderStatus.Shipped,
+                OrderStatus.Cancelled
+            };
             var cartItemsToProcess = getCartByIdAsync.CartItems.ToList();
             var products = cartItemsToProcess.Select(u => u.Product).ToList(); // have db
             var productInput = cartItemsToProcess.Select(u => u.Product).Where(u => order.OrderProduct.Any(k => k.ProductId == u.ProductId)).ToList();
@@ -60,7 +66,7 @@ namespace ecommerce.Services
             // khac ngay hom nay van tao order moi
             var isToday = getCartByIdAsync.CreatedAt.Date == DateTime.UtcNow.Date;
             // Create a new order if it doesn't exist
-            if (!isDupProduct || !isToday || orderIdByUser == null)
+            if (!isDupProduct || !isToday || orderIdByUser == null || orderStatusNew.Contains(orderIdByUser.OrderStatus))
             {
                 var newOrder = new Order
                 {
@@ -385,7 +391,7 @@ namespace ecommerce.Services
                         {
                             TotalRevenue = payment.Amount,
                             Date = DateTime.Now,
-                            
+
                         };
                         await _revenueReportService.AddRevenueReportAsync(revenue);
                     }
