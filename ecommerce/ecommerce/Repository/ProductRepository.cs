@@ -138,42 +138,39 @@ namespace ecommerce.Repository
 
         public async Task<List<Product>> GetProductsByFilterAsync(ProductFilterDto filterDto)
         {
-            int itemsToSkip = (filterDto.Page - 1) * filterDto.PageSize;
-            var productsQuery = _context.Products.Include(u => u.Category).AsQueryable();
-            if (filterDto.CategoryId != 0)
-            {
-                productsQuery = productsQuery.Where(p => p.CategoryId == filterDto.CategoryId);
-            }
-            if (filterDto.Popular != 0)
-            {
-                productsQuery = productsQuery.Where(p => p.Popular == filterDto.Popular);
-            }
-            if (filterDto.InventoryCount != 0)
-            {
-                productsQuery = productsQuery.Where(p => p.InventoryCount >= filterDto.InventoryCount);
-            }
+        int itemsToSkip = (filterDto.Page - 1) * filterDto.PageSize;
+
+            var productsQuery = _context.Products
+                .Include(p => p.Category)
+                .Where(p =>
+                    (filterDto.CategoryId == 0 || p.CategoryId == filterDto.CategoryId) &&
+                    (filterDto.Popular == 0 || p.Popular == filterDto.Popular) &&
+                    (filterDto.InventoryCount == 0 || p.InventoryCount >= filterDto.InventoryCount));
+
             if (!string.IsNullOrEmpty(filterDto.Name))
             {
                 productsQuery = productsQuery.Where(p => p.Name.Contains(filterDto.Name));
             }
+
             if (filterDto.MinPrice != 0)
             {
                 productsQuery = productsQuery.Where(p => p.Price >= filterDto.MinPrice);
             }
+
             if (filterDto.MaxPrice != 0)
             {
                 productsQuery = productsQuery.Where(p => p.Price <= filterDto.MaxPrice);
             }
-            if (filterDto.SortByDate)
-            {
-                productsQuery = productsQuery.OrderBy(p => p.CreatedAt);
-            }
-            else
-            {
-                productsQuery = productsQuery.OrderByDescending(p => p.CreatedAt);
-            }
-            var products = await productsQuery.Skip(itemsToSkip).Take(filterDto.PageSize).ToListAsync();
+
+            productsQuery = filterDto.SortByDate ? productsQuery.OrderBy(p => p.CreatedAt) : productsQuery.OrderByDescending(p => p.CreatedAt);
+
+            var products = await productsQuery
+                .Skip(itemsToSkip)
+                .Take(filterDto.PageSize)
+                .ToListAsync();
+
             return products;
+
         }
 
     }
