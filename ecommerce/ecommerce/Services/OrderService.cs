@@ -383,7 +383,9 @@ namespace ecommerce.Services
                         // add revenue report
                         var revenue = new RevenueReportAddDto
                         {
-                            TotalRevenue = payment.Amount
+                            TotalRevenue = payment.Amount,
+                            Date = DateTime.Now,
+                            
                         };
                         await _revenueReportService.AddRevenueReportAsync(revenue);
                     }

@@ -113,7 +113,7 @@ namespace ecommerce.Services
 
         public async Task<Payment> GetPaymentByOrderIdAsync(int orderId)
         {
-            var payment = await _context.Payments.Include(u => u.Order).ThenInclude(i => i.OrderItems).FirstOrDefaultAsync(x => x.OrderId == orderId);
+            var payment = await _context.Payments.FirstOrDefaultAsync(x => x.OrderId == orderId);
             if (payment == null)
             {
                 return null;
