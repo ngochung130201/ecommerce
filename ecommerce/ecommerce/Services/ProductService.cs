@@ -195,13 +195,14 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<List<ProductAllDto>>> GetProductsByFilterAsync(ProductFilterDto productFilterDto)
         {
-            var product = await _productRepository.GetProductsByFilterAsync(productFilterDto);
-            if (product == null)
+            var products = await _productRepository.GetProductsByFilterAsync(productFilterDto);
+
+            if (products == null)
             {
                 return new ApiResponse<List<ProductAllDto>> { Message = "Products not found", Status = false };
             }
-              var newProductDtos = new List<ProductAllDto>();
-            var productDtos = product.Select(p => new ProductAllDto
+
+            var newProductDtos = products.Select(p => new ProductAllDto
             {
                 ProductId = p.ProductId,
                 Name = p.Name,
@@ -212,29 +213,16 @@ namespace ecommerce.Services
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
                 Slug = p.Slug,
-                Image = p.Image,
-                Gallery = p.Gallery,
+                Image = string.IsNullOrEmpty(p.Image) ? null : _uploadFilesService.GetFilePath(p.Image, Contains.ProductImageFolder),
+                Gallery = string.IsNullOrEmpty(p.Gallery) ? null : string.Join(",", p.Gallery.Split(",").Select(g => _uploadFilesService.GetFilePath(g, Contains.ProductGalleryFolder))),
                 Popular = p.Popular,
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
                 PriceSale = p.PriceSale
             }).ToList();
-             foreach (var item in productDtos.ToList())
-            {
-                if (!string.IsNullOrEmpty(item.Image))
-                {
-                    item.Image = _uploadFilesService.GetFilePath(item.Image, Contains.ProductImageFolder);
-                }
-                if (!string.IsNullOrEmpty(item.Gallery))
-                {
-                    var gallery = item.Gallery.Split(",").ToList();
-                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, Contains.ProductGalleryFolder));
-                    item.Gallery = string.Join(",", galleryUrls);
-                }
-                newProductDtos.Add(item);
-            }
-            return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Status = true };
+
+            return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Message = "Products retrieved successfully", Status = true };
         }
 
 
