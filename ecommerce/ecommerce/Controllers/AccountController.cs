@@ -202,6 +202,28 @@ namespace ecommerce.Controllers
             }
             return BadRequest(response);
         }
+        // delete account
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAccountAsync(string email)
+        {
+            var response = await _accountService.DeleteAccountAsync(email);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        // delete account for admin
+        [HttpDelete("admin")]
+        public async Task<IActionResult> DeleteAccountAdminAsync(string email)
+        {
+            var response = await _accountService.DeleteAccountForAdminAsync(email);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
 
     }
 }
