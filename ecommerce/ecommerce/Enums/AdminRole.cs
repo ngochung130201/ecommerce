@@ -5,4 +5,11 @@
         Admin, // Default
         SuperAdmin,
     }
+    // Action status account
+    public enum AccountStatus
+    {
+        Active,
+        Blocked,
+    }
+
 }

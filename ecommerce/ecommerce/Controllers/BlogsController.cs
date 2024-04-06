@@ -39,7 +39,7 @@ namespace ecommerce.Controllers
 
         // POST: api/Blog
         [HttpPost]
-        public async Task<IActionResult> CreateBlog([FromForm] BlogDto blogDto)
+        public async Task<IActionResult> CreateBlog(BlogDto blogDto)
         {
             var result = await _blogService.CreateBlogAsync(blogDto);
             if (result.Status)
@@ -51,7 +51,7 @@ namespace ecommerce.Controllers
 
         // PUT: api/Blog/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBlog(int id, BlogDto blog)
+        public async Task<IActionResult> UpdateBlog(int id,  BlogDto blog)
         {
 
             var result = await _blogService.UpdateBlogAsync(id, blog);

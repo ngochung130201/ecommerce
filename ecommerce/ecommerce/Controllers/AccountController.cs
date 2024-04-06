@@ -187,7 +187,21 @@ namespace ecommerce.Controllers
             }
             return BadRequest(response);
         }
-
+        // update account 
+        [HttpPut]
+        public async Task<IActionResult> UpdateAccountAsync([FromBody] UpdateAccountRequest updateAccount)
+        {
+            if (updateAccount.NewPassword != updateAccount.ConfirmPassword)
+            {
+                return BadRequest("Password and Confirm Password do not match");
+            }
+            var response = await _accountService.UpdateAccountAsync(updateAccount);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
 
     }
 }

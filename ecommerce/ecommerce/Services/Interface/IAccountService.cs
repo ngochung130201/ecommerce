@@ -29,6 +29,7 @@ namespace ecommerce.Services.Interface
         // Get Full List of Account Admin
         Task<ApiResponse<List<AdminDto>>> GetListRoleAsync(PagingForUser paging);
         Task<ApiResponse<List<UserDto>>> GetListUserAsync(PagingForUser paging);
+        Task<ApiResponse<string>> UpdateAccountAsync(UpdateAccountRequest updateAccountRequest);
 
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ecommerce.Enums;
 
 namespace ecommerce.Models
 {
@@ -26,6 +27,8 @@ namespace ecommerce.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; } = null;
+        [Column("account_status")]
+        public AccountStatus AccountStatus { get; set; } = AccountStatus.Active;
 
         // Navigation properties
         public virtual ICollection<Order> Orders { get; set; }

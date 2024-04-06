@@ -33,6 +33,9 @@ namespace ecommerce.Models
         [Column("role_text", TypeName = "nvarchar(255)")]
         // role text
         public string? RoleText { get; set; } = null;
+
+        [Column("account_status")]
+        public AccountStatus AccountStatus { get; set; } = AccountStatus.Active;
         public Admin(AdminRole Role)
         {
             this.RoleText = nameof(Role);
