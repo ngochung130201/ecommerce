@@ -1,9 +1,11 @@
-﻿using ecommerce.DTO;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Helpers;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
 using ecommerce.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Services
 {
@@ -11,10 +13,12 @@ namespace ecommerce.Services
     {
         private readonly ICategoryRepository _categoryRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public CategoryService(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
+        private readonly EcommerceContext _context;
+        public CategoryService(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork, EcommerceContext context)
         {
             _categoryRepository = categoryRepository;
             _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<ApiResponse<int>> AddCategoryAsync(CategoryDto category)
@@ -98,6 +102,7 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<CategoryAllDto>>> GetAllCategoriesAsync(PagingForBlogCategory? paging = null)
         {
             var categories = await _categoryRepository.GetAllCategoriesAsync(paging);
+            var categoriesTotal = await _context.BlogCategories.CountAsync();
             if (categories == null)
             {
                 return new ApiResponse<IEnumerable<CategoryAllDto>>

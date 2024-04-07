@@ -190,13 +190,13 @@ namespace ecommerce.Services
                 }
                 newProductDtos.Add(product);
             }
-            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = newProductDtos, Status = true };
+            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = newProductDtos, Status = true, Total = products.Count() };
         }
 
         public async Task<ApiResponse<List<ProductAllDto>>> GetProductsByFilterAsync(ProductFilterDto productFilterDto)
         {
             var products = await _productRepository.GetProductsByFilterAsync(productFilterDto);
-
+            var productTotal = await _productRepository.GetAllProductsAsync();
             if (products == null)
             {
                 return new ApiResponse<List<ProductAllDto>> { Message = "Products not found", Status = false };
@@ -222,7 +222,7 @@ namespace ecommerce.Services
                 PriceSale = p.PriceSale
             }).ToList();
 
-            return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Message = "Products retrieved successfully", Status = true };
+            return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Message = "Products retrieved successfully", Status = true, Total = productTotal.Count() };
         }
 
 
@@ -315,6 +315,7 @@ namespace ecommerce.Services
             {
                 return new ApiResponse<IEnumerable<ProductAllDto>> { Message = "Category id is required", Status = false };
             }
+            var productTotal = await _productRepository.GetAllProductsAsync();
             var products = await _productRepository.GetProductsByCategoryAsync(categoryId);
             if (products == null)
             {
@@ -354,7 +355,7 @@ namespace ecommerce.Services
                     product.Gallery = string.Join(",", galleryUrls);
                 }
             }
-            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = productDtos, Status = true };
+            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = productDtos, Status = true, Total = productTotal.Count() };
         }
 
         public async Task<ApiResponse<IEnumerable<ProductAllDto>>> SearchProductsAsync(ProductSearchDto searchDTO)
@@ -364,6 +365,7 @@ namespace ecommerce.Services
             {
                 return new ApiResponse<IEnumerable<ProductAllDto>> { Message = "Search criteria is required", Status = false };
             }
+            var productTotal = await _productRepository.GetAllProductsAsync();
             var products = await _productRepository.SearchProductsAsync(searchDTO);
             if (products == null)
             {
@@ -404,7 +406,7 @@ namespace ecommerce.Services
                 }
                 newProductDtos.Add(product);
             }
-            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = newProductDtos, Status = true };
+            return new ApiResponse<IEnumerable<ProductAllDto>> { Data = newProductDtos, Status = true, Total = products.Count() };
         }
 
         public async Task<ApiResponse<int>> UpdateProductAsync(int id, ProductUpdateDto product, IFormFile? image = null, List<IFormFile>? gallery = null)
