@@ -672,9 +672,10 @@ namespace ecommerce.Services
         public async Task<ApiResponse<List<AdminDto>>> GetListRoleAsync(PagingForUser? paging = null)
         {
             // paging
+            var adminsNotPaging = await _context.Admins.ToListAsync();
             if (paging == null)
             {
-                var adminsNotPaging = await _context.Admins.ToListAsync();
+      
                 if (adminsNotPaging == null)
                 {
                     return new ApiResponse<List<AdminDto>>
@@ -700,9 +701,9 @@ namespace ecommerce.Services
                     Total = adminsNotPaging.Count
                 };
             }
-           var admins = await _context.Admins.Where(x =>
+           var admins =  adminsNotPaging.Where(x =>
                 string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
-            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
+            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToList();
             if(paging.Status != null)
             {
                 admins = admins.Where(x => x.AccountStatus == paging.Status).ToList();
@@ -728,7 +729,7 @@ namespace ecommerce.Services
                 }).ToList(),
                 Message = "Admins found",
                 Status = true,
-                Total = admins.Count
+                Total = adminsNotPaging.Count
             };
         }
 
@@ -742,13 +743,14 @@ namespace ecommerce.Services
             //         (filterDto.InventoryCount == 0 || p.InventoryCount >= filterDto.InventoryCount)
             //         ).Skip(itemsToSkip)
             //         .Take(filterDto.PageSize).OrderByDescending(u => u.CreatedAt).ToListAsync();
-            var users = await _context.Users.Where(x =>
+            var users = await _context.Users.ToListAsync();
+            var usersDto = users.Where(x =>
                 string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
-            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
+            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToList();
             //
             if (paging.Status != null)
             {
-                users = users.Where(x => x.AccountStatus == paging.Status).ToList();
+                usersDto = users.Where(x => x.AccountStatus == paging.Status).ToList();
             }
             if (users == null)
             {

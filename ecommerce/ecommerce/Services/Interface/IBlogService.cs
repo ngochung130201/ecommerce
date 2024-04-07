@@ -29,5 +29,6 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<BlogCategoryAllDto>> GetBlogCategoryByIdAsync(int id);
         Task<ApiResponse<bool>> DeleteMultipleBlogCategoriesAsync(List<int> ids);
         Task<ApiResponse<bool>> DeleteAllBlogCategoriesAsync();
+        Task<ApiResponse<BlogDetailAllDto>> GetBlogDetailByBlogIdAsync(int id);
     }
 }

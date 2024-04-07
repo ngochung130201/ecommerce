@@ -75,6 +75,7 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<HistoryDto>>> GetAllHistoriesAsync(PagingForHistory? pagingForHistory = null)
         {
             var histories = _context.Histories.Include(x => x.Payment).ThenInclude(k => k.Order).ThenInclude(k => k.User).AsQueryable();
+            var historiesCount = histories.Count();
             if (pagingForHistory != null)
             {
                 if (!string.IsNullOrEmpty(pagingForHistory.UserName))
@@ -125,7 +126,7 @@ namespace ecommerce.Services
                     })),
                     Message = "Histories found",
                     Status = true,
-                    Total = histories.Count()
+                    Total = historiesCount
                 };
             }
             if (histories == null)

@@ -157,19 +157,19 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<List<BlogAllDto>>> GetAllBlogsAsync(int pageNumber, int pageSize)
         {
-            var blogs = await _context.Blogs
-                .Include(blog => blog.Categories)
-                .Include(blog => blog.Details)
+            var blogs = await _context.Blogs.Include(blog => blog.Categories)
+                .Include(blog => blog.Details).ToListAsync();
+            var blogsDto = blogs
                 .OrderByDescending(blog => blog.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToList();
             // get image url
             // foreach (var blog in blogs)
             // {
             //     blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
             // }
-            var blogDtos = blogs.Select(blog => new BlogAllDto
+            var blogDtos = blogsDto.Select(blog => new BlogAllDto
             {
                 Id = blog.BlogId,
                 Title = blog.Title,
@@ -186,7 +186,7 @@ namespace ecommerce.Services
                     Description = blog.Details.Description
                 }
             }).ToList();
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogDtos.Count};
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogs.Count};
         }
 
         public async Task<ApiResponse<BlogAllDto>> GetBlogByIdAsync(int id)
@@ -221,6 +221,7 @@ namespace ecommerce.Services
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+            var blogTotal = await _context.Blogs.CountAsync();
             // get image url
             // foreach (var blog in blogs)
             // {
@@ -244,7 +245,7 @@ namespace ecommerce.Services
                 }
             }).ToList();
 
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogDtos.Count};
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogTotal};
         }
 
 
@@ -338,9 +339,10 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<List<BlogCategoryAllDto>>> GetAllBlogCategoriesAsync(PagingForBlogCategory? paging = null)
         {
-            if(paging == null){
+            var categoriesNotPaging = await _context.BlogCategories.ToListAsync();
+            if (paging == null){
                 // get all categories
-                var categoriesNotPaging = await _context.BlogCategories.ToListAsync();
+     
                 var categoryDtoNotPagings = categoriesNotPaging.Select(category => new BlogCategoryAllDto
                 {
                     Name = category.Name,
@@ -351,9 +353,9 @@ namespace ecommerce.Services
                     CreatedAt = category.CreatedAt,
                     UpdatedAt = category.UpdatedAt
                 }).ToList();
-                return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtoNotPagings , Status = true };
+                return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtoNotPagings , Status = true, Total = categoriesNotPaging.Count};
             }
-            var categories = _context.BlogCategories.AsQueryable();
+            var categories = categoriesNotPaging.AsQueryable();
             if (!string.IsNullOrEmpty(paging.Name))
             {
                 categories = categories.Where(category => category.Name.Contains(paging.Name));
@@ -379,7 +381,7 @@ namespace ecommerce.Services
                 CreatedAt = category.CreatedAt,
                 UpdatedAt = category.UpdatedAt
             }).ToList();
-            return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtos, Status = true, Total = categoryDtos.Count};
+            return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtos, Status = true, Total = categoriesNotPaging.Count};
         }
 
         public async Task<ApiResponse<BlogCategoryAllDto>> GetBlogCategoryByIdAsync(int id)
@@ -465,7 +467,23 @@ namespace ecommerce.Services
                 Content = blogDetail.Content,
                 Description = blogDetail.Description,
                 CreatedAt = blogDetail.CreatedAt,
-                UpdatedAt = blogDetail.UpdatedAt
+                UpdatedAt = blogDetail.UpdatedAt,
+                BlogId = blogDetail.BlogId
+            };
+            return new ApiResponse<BlogDetailAllDto> { Data = blogDetailDto, Status = true };
+
+        }
+        public async Task<ApiResponse<BlogDetailAllDto>> GetBlogDetailByBlogIdAsync(int id)
+        {
+            var blogDetail = await _context.BlogDetails.FirstOrDefaultAsync(blogDetail => blogDetail.BlogId == id);
+            var blogDetailDto = new BlogDetailAllDto
+            {
+                BlogDetailId = blogDetail.BlogDetailId,
+                Content = blogDetail.Content,
+                Description = blogDetail.Description,
+                CreatedAt = blogDetail.CreatedAt,
+                UpdatedAt = blogDetail.UpdatedAt,
+                BlogId = blogDetail.BlogId
             };
             return new ApiResponse<BlogDetailAllDto> { Data = blogDetailDto, Status = true };
 

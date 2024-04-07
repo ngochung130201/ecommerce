@@ -86,6 +86,7 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<WishlistDto>>> GetAllWishlistsAsync(PagingForWishlist? paging = null)
         {
             var wishlists = await _wishlistRepository.GetAllWishListsAsync(paging);
+            var wishlistsTotal = await _wishlistRepository.GetAllWishListsAsync();
             if (wishlists == null)
             {
                 return new ApiResponse<IEnumerable<WishlistDto>>
@@ -129,7 +130,7 @@ namespace ecommerce.Services
                 }),
                 Message = "Wishlist found",
                 Status = true,
-                Total = wishlists.Count()
+                Total = wishlistsTotal.Count()
             };
 
         }
