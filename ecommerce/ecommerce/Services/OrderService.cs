@@ -182,8 +182,14 @@ namespace ecommerce.Services
                 await _orderItemService.DeleteOrderItemByOrderIdAsync(id);
                 await _orderRepository.DeleteOrderAsync(id);
                 // remove cart and cart item
-                await _cartService.DeleteListCartItemAsync(order.User.Carts.CartItems.ToList());
-                await _cartService.DeleteCartAsync(order.UserId);
+                if (order.User.Carts != null)
+                {
+                    if(order.User.Carts.CartItems.Any())
+                    {
+                       await _cartService.DeleteListCartItemAsync(order.User.Carts.CartItems.ToList());
+                    }
+                    await _cartService.DeleteCartAsync(order.UserId);
+                }
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ApiResponse<int>

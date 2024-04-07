@@ -73,13 +73,17 @@ namespace ecommerce.Services
             //     return new ApiResponse<bool> { Data = false };
             // }
             var existingBlog = await _context.Blogs.FirstOrDefaultAsync(x => x.BlogId == id);
-            await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
+            // await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
             if (existingBlog != null)
             {
                 existingBlog.Title = blog.Title;
                 existingBlog.UpdatedAt = DateTime.Now;
                 existingBlog.UpdatedBy = blog.UpdatedBy;
                 existingBlog.Slug = StringHelper.GenerateSlug(blog.Title);
+                // update blog detail
+                existingBlog.Details.Content = blog.Details.Content;
+                existingBlog.Details.Description = blog.Details.Description;
+                existingBlog.Details.UpdatedAt = DateTime.Now;
 
                 // remove image when the image is updated
                 await _unitOfWork.SaveChangesAsync();
@@ -91,14 +95,19 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<bool>> DeleteBlogAsync(int id)
         {
-            var blogToDelete = await _context.Blogs.FindAsync(id);
+            var blogToDelete = await _context.Blogs.Where(x=>x.BlogId == id).Include(x=>x.Details).FirstOrDefaultAsync();
 
             if (blogToDelete != null)
             {
                 _context.Blogs.Remove(blogToDelete);
+                // remove blog detail when the blog is deleted
+                if (blogToDelete.Details != null)
+                {
+                    _context.BlogDetails.Remove(blogToDelete.Details);
+                }
                 await _unitOfWork.SaveChangesAsync();
                 // remove image when the blog is deleted
-                await _uploadFilesService.RemoveFileAsync(blogToDelete.Image, Contains.BlogImageFolder);
+                // await _uploadFilesService.RemoveFileAsync(blogToDelete.Image, Contains.BlogImageFolder);
             }
             return new ApiResponse<bool> { Data = true, Status = true };
         }
@@ -109,27 +118,34 @@ namespace ecommerce.Services
             _context.Blogs.RemoveRange(blogs);
             await _unitOfWork.SaveChangesAsync();
             // remove all images when all blogs are deleted
-            foreach (var blog in blogs)
-            {
-                await _uploadFilesService.RemoveFileAsync(blog.Image, Contains.BlogImageFolder);
-            }
+            // foreach (var blog in blogs)
+            // {
+            //     await _uploadFilesService.RemoveFileAsync(blog.Image, Contains.BlogImageFolder);
+            // }
 
             return new ApiResponse<bool> { Data = true, Status = true };
         }
 
         public async Task<ApiResponse<bool>> DeleteMultipleBlogsAsync(List<int> ids)
         {
-            var blogsToDelete = await _context.Blogs.Where(blog => ids.Contains(blog.BlogId)).ToListAsync();
+            var blogsToDelete = await _context.Blogs.Where(blog => ids.Contains(blog.BlogId)).Include(x=>x.Details).ToListAsync();
 
             if (blogsToDelete.Any())
             {
                 _context.Blogs.RemoveRange(blogsToDelete);
-                await _unitOfWork.SaveChangesAsync();
+      
                 // remove all images when multiple blogs are deleted
-                foreach (var blog in blogsToDelete)
+                // foreach (var blog in blogsToDelete)
+                // {
+                //     await _uploadFilesService.RemoveFileAsync(blog.Image, Contains.BlogImageFolder);
+                // }
+                if (blogsToDelete.Any(blog => blog.Details != null))
                 {
-                    await _uploadFilesService.RemoveFileAsync(blog.Image, Contains.BlogImageFolder);
+                    _context.BlogDetails.RemoveRange(blogsToDelete.Select(blog => blog.Details));
+                
                 }
+                await _unitOfWork.SaveChangesAsync();
+
                 return new ApiResponse<bool> { Data = true, Status = true };
             }
             return new ApiResponse<bool> { Data = false, Status = true };
@@ -145,17 +161,17 @@ namespace ecommerce.Services
                 .Take(pageSize)
                 .ToListAsync();
             // get image url
-            foreach (var blog in blogs)
-            {
-                blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
-            }
+            // foreach (var blog in blogs)
+            // {
+            //     blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
+            // }
             var blogDtos = blogs.Select(blog => new BlogAllDto
             {
                 Id = blog.BlogId,
                 Title = blog.Title,
                 CreatedBy = blog.CreatedBy,
                 UpdatedBy = blog.UpdatedBy,
-                Image = blog.Image,
+                Image = "",
                 CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                 Categories = blog.Categories.Select(category => category.Name).ToList(),
                 CreatedAt = blog.CreatedAt,
@@ -167,14 +183,14 @@ namespace ecommerce.Services
         public async Task<ApiResponse<BlogAllDto>> GetBlogByIdAsync(int id)
         {
             var blog = await _context.Blogs.Include(u => u.Categories).FirstOrDefaultAsync(x => x.BlogId == id);
-            blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
+            // blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
             var blogDto = new BlogAllDto
             {
                 Id = blog.BlogId,
                 Title = blog.Title,
                 CreatedBy = blog.CreatedBy,
                 UpdatedBy = blog.UpdatedBy,
-                Image = blog.Image,
+                Image = "",
                 CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                 Categories = blog.Categories.Select(category => category.Name).ToList(),
                 CreatedAt = blog.CreatedAt,
@@ -185,24 +201,24 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<List<BlogAllDto>>> SearchBlogsAsync(string searchTerm, int pageNumber, int pageSize)
         {
-            var blogs = await _context.Blogs
+            var blogs = await _context.Blogs.Include(blog => blog.Categories)
                 .Where(blog => blog.Title.Contains(searchTerm) || string.IsNullOrEmpty(searchTerm))
                 .OrderByDescending(blog => blog.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
             // get image url
-            foreach (var blog in blogs)
-            {
-                blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
-            }
+            // foreach (var blog in blogs)
+            // {
+            //     blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
+            // }
             var blogDtos = blogs.Select(blog => new BlogAllDto
             {
                 Id = blog.BlogId,
                 Title = blog.Title,
                 CreatedBy = blog.CreatedBy,
                 UpdatedBy = blog.UpdatedBy,
-                Image = blog.Image,
+                Image = "",
                 CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                 Categories = blog.Categories.Select(category => category.Name).ToList(),
                 CreatedAt = blog.CreatedAt,
@@ -398,14 +414,14 @@ namespace ecommerce.Services
             var blog = await _context.Blogs.Include(u => u.Categories).FirstOrDefaultAsync(blog => blog.Slug == slug);
             if (blog != null)
             {
-                blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
+                // blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
                 var blogDto = new BlogAllDto
                 {
                     Id = blog.BlogId,
                     Title = blog.Title,
                     CreatedBy = blog.CreatedBy,
                     UpdatedBy = blog.UpdatedBy,
-                    Image = blog.Image,
+                    Image ="",
                     CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                     Categories = blog.Categories.Select(category => category.Name).ToList(),
                     CreatedAt = blog.CreatedAt,
