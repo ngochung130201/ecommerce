@@ -24,5 +24,6 @@
         public List<string> Categories { get; set; } = new List<string>();
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+          public BlogDetailDto Details { get; set; } = new BlogDetailDto();
     }
 }

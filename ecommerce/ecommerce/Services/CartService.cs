@@ -59,7 +59,7 @@ namespace ecommerce.Services
                 else
                 {
                     cartItemExistByProductId.Quantity = cart.Quantity;
-                    cartItemExistByProductId.TotalPrice = product.Price * cartItemExistByProductId.Quantity;
+                    cartItemExistByProductId.TotalPrice = product.PriceSale * cartItemExistByProductId.Quantity;
 
                 }
             }
@@ -185,6 +185,7 @@ namespace ecommerce.Services
             {
                 CartId = c.CartId,
                 UserId = c.UserId,
+                
                 User = new UserDto
                 {
                     UserId = c.User.UserId,
@@ -220,7 +221,7 @@ namespace ecommerce.Services
 
                 }).ToList()
             });
-            return new ApiResponse<IEnumerable<CartAllDto>> { Data = cartsDto, Status = true };
+            return new ApiResponse<IEnumerable<CartAllDto>> { Data = cartsDto, Status = true , Total = cartsDto.Count()};
 
         }
 

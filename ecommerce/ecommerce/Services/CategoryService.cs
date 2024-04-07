@@ -120,7 +120,8 @@ namespace ecommerce.Services
                     
                 }),
                 Message = "Categories found",
-                Status = true
+                Status = true,
+                Total = categories.Count()
             };
         }
 

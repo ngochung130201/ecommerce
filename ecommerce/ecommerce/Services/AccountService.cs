@@ -631,7 +631,8 @@ namespace ecommerce.Services
                             AdminId = admin.AdminId,
                             Username = admin.Username,
                             Email = admin.Email,
-                            AdminRole = admin.Role
+                            AdminRole = admin.Role,
+                            Status = admin.AccountStatus
                         },
                         Message = "Role found",
                         Status = true
@@ -660,7 +661,8 @@ namespace ecommerce.Services
                     AdminId = a.AdminId,
                     Username = a.Username,
                     Email = a.Email,
-                    AdminRole = a.Role
+                    AdminRole = a.Role,
+                    Status = a.AccountStatus
                 }).ToList(),
                 Message = "Admins found",
                 Status = true
@@ -679,7 +681,8 @@ namespace ecommerce.Services
                     {
                         Data = null,
                         Message = "Admins not found",
-                        Status = false
+                        Status = false,
+                        
                     };
                 }
                 return new ApiResponse<List<AdminDto>>
@@ -689,15 +692,21 @@ namespace ecommerce.Services
                         AdminId = a.AdminId,
                         Username = a.Username,
                         Email = a.Email,
-                        AdminRole = a.Role
+                        AdminRole = a.Role,
+                        Status = a.AccountStatus
                     }).ToList(),
                     Message = "Admins found",
-                    Status = true
+                    Status = true,
+                    Total = adminsNotPaging.Count
                 };
             }
            var admins = await _context.Admins.Where(x =>
                 string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
             ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
+            if(paging.Status != null)
+            {
+                admins = admins.Where(x => x.AccountStatus == paging.Status).ToList();
+            }
             if (admins == null)
             {
                 return new ApiResponse<List<AdminDto>>
@@ -714,10 +723,12 @@ namespace ecommerce.Services
                     AdminId = a.AdminId,
                     Username = a.Username,
                     Email = a.Email,
-                    AdminRole = a.Role
+                    AdminRole = a.Role,
+                    Status = a.AccountStatus
                 }).ToList(),
                 Message = "Admins found",
-                Status = true
+                Status = true,
+                Total = admins.Count
             };
         }
 
@@ -735,6 +746,10 @@ namespace ecommerce.Services
                 string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
             ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
             //
+            if (paging.Status != null)
+            {
+                users = users.Where(x => x.AccountStatus == paging.Status).ToList();
+            }
             if (users == null)
             {
                 return new ApiResponse<List<UserDto>>
@@ -750,10 +765,12 @@ namespace ecommerce.Services
                 {
                     UserId = u.UserId,
                     Username = u.Username,
-                    Email = u.Email
+                    Email = u.Email,
+                    Status = u.AccountStatus
                 }).ToList(),
                 Message = "Users found",
-                Status = true
+                Status = true,
+                Total = users.Count
             };
         }
 
@@ -838,7 +855,8 @@ namespace ecommerce.Services
             {
                 Data = null,
                 Message = "User not found",
-                Status = false
+                Status = false,
+                
             };
         }
         public async Task<ApiResponse<string>> DeleteAccountForAdminAsync(string email)

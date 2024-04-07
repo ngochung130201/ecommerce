@@ -128,7 +128,8 @@ namespace ecommerce.Services
                     }
                 }),
                 Message = "Wishlist found",
-                Status = true
+                Status = true,
+                Total = wishlists.Count()
             };
 
         }

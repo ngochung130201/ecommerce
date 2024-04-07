@@ -151,7 +151,8 @@ namespace ecommerce.Services
                         }
                     }),
                     Message = "Product Reviews found",
-                    Status = true
+                    Status = true,
+                    Total = productReviews.Count()
                 };
             }
             var productReviewsPaging = _context.ProductReviews.Include(u => u.User).Include(u => u.Product).ThenInclude(i => i.Category).AsQueryable();
@@ -209,7 +210,8 @@ namespace ecommerce.Services
                     }
                 }),
                 Message = "Product Reviews found",
-                Status = true
+                Status = true,
+                Total = productReviewsPaging.Count()
             };
         }
 

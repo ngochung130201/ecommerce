@@ -175,9 +175,14 @@ namespace ecommerce.Services
                 CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                 Categories = blog.Categories.Select(category => category.Name).ToList(),
                 CreatedAt = blog.CreatedAt,
-                UpdatedAt = blog.UpdatedAt
+                UpdatedAt = blog.UpdatedAt,
+                Details = new BlogDetailDto
+                {
+                    Content = blog.Details.Content,
+                    Description = blog.Details.Description
+                }
             }).ToList();
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true };
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogDtos.Count};
         }
 
         public async Task<ApiResponse<BlogAllDto>> GetBlogByIdAsync(int id)
@@ -194,7 +199,12 @@ namespace ecommerce.Services
                 CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                 Categories = blog.Categories.Select(category => category.Name).ToList(),
                 CreatedAt = blog.CreatedAt,
-                UpdatedAt = blog.UpdatedAt
+                UpdatedAt = blog.UpdatedAt,
+                Details = new BlogDetailDto
+                {
+                    Content = blog.Details.Content,
+                    Description = blog.Details.Description
+                }
             };
             return new ApiResponse<BlogAllDto> { Data = blogDto, Status = true };
         }
@@ -222,10 +232,15 @@ namespace ecommerce.Services
                 CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                 Categories = blog.Categories.Select(category => category.Name).ToList(),
                 CreatedAt = blog.CreatedAt,
-                UpdatedAt = blog.UpdatedAt
+                UpdatedAt = blog.UpdatedAt,
+                Details = new BlogDetailDto
+                {
+                    Content = blog.Details.Content,
+                    Description = blog.Details.Description
+                }
             }).ToList();
 
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true };
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogDtos.Count};
         }
 
 
@@ -360,7 +375,7 @@ namespace ecommerce.Services
                 CreatedAt = category.CreatedAt,
                 UpdatedAt = category.UpdatedAt
             }).ToList();
-            return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtos, Status = true };
+            return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtos, Status = true, Total = categoryDtos.Count};
         }
 
         public async Task<ApiResponse<BlogCategoryAllDto>> GetBlogCategoryByIdAsync(int id)
@@ -425,7 +440,12 @@ namespace ecommerce.Services
                     CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                     Categories = blog.Categories.Select(category => category.Name).ToList(),
                     CreatedAt = blog.CreatedAt,
-                    UpdatedAt = blog.UpdatedAt
+                    UpdatedAt = blog.UpdatedAt,
+                    Details = new BlogDetailDto
+                    {
+                        Content = blog.Details.Content,
+                        Description = blog.Details.Description
+                    }
                 };
                 return new ApiResponse<BlogAllDto> { Data = blogDto, Status = true };
             }

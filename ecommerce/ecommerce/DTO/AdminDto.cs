@@ -1,4 +1,5 @@
 ﻿using ecommerce.Enums;
+using ecommerce.Models;
 
 namespace ecommerce.DTO
 {
@@ -11,5 +12,6 @@ namespace ecommerce.DTO
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
         public AdminRole AdminRole { get; set; }
+        public AccountStatus Status { get; set; }
     }
 }
