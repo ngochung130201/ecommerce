@@ -61,7 +61,7 @@ namespace ecommerce.Services
 
             await _context.Blogs.AddAsync(newBlog);
             await _unitOfWork.SaveChangesAsync();
-            return new ApiResponse<bool> { Data = true, Status = true };
+            return new ApiResponse<bool> { Data = true, Status = true, Message = "Blog added successfully" };
         }
 
         public async Task<ApiResponse<bool>> UpdateBlogAsync(int id, BlogDto blog)
@@ -72,7 +72,7 @@ namespace ecommerce.Services
             // {
             //     return new ApiResponse<bool> { Data = false };
             // }
-            var existingBlog = await _context.Blogs.FirstOrDefaultAsync(x => x.BlogId == id);
+            var existingBlog = await _context.Blogs.Include(x=>x.Details).FirstOrDefaultAsync(x => x.BlogId == id);
             // await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
             if (existingBlog != null)
             {
@@ -114,8 +114,12 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<bool>> DeleteAllBlogsAsync()
         {
-            var blogs = await _context.Blogs.ToListAsync();
+            var blogs = await _context.Blogs.Include(u=>u.Details).ToListAsync();
             _context.Blogs.RemoveRange(blogs);
+            if (blogs.Select(x=>x.Details).Any())
+            {
+                _context.BlogDetails.RemoveRange((blogs.Select(x => x.Details)));
+            }
             await _unitOfWork.SaveChangesAsync();
             // remove all images when all blogs are deleted
             // foreach (var blog in blogs)
@@ -146,7 +150,7 @@ namespace ecommerce.Services
                 }
                 await _unitOfWork.SaveChangesAsync();
 
-                return new ApiResponse<bool> { Data = true, Status = true };
+                return new ApiResponse<bool> { Data = true, Status = true, Message = "Blog removed successfully" };
             }
             return new ApiResponse<bool> { Data = false, Status = true };
         }
