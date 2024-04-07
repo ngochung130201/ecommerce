@@ -191,7 +191,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<BlogAllDto>> GetBlogByIdAsync(int id)
         {
-            var blog = await _context.Blogs.Include(u => u.Categories).FirstOrDefaultAsync(x => x.BlogId == id);
+            var blog = await _context.Blogs.Include(u => u.Categories).Include(x=>x.Details).FirstOrDefaultAsync(x => x.BlogId == id);
             // blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
             var blogDto = new BlogAllDto
             {
@@ -215,7 +215,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<List<BlogAllDto>>> SearchBlogsAsync(string searchTerm, int pageNumber, int pageSize)
         {
-            var blogs = await _context.Blogs.Include(blog => blog.Categories)
+            var blogs = await _context.Blogs.Include(blog => blog.Categories).Include(x=>x.Details)
                 .Where(blog => blog.Title.Contains(searchTerm) || string.IsNullOrEmpty(searchTerm))
                 .OrderByDescending(blog => blog.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
