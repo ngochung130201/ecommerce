@@ -84,7 +84,8 @@ namespace ecommerce.Services
                     UserName = x.Order.User.Email ?? x.Order.User.Username
                 }),
                 Message = "Payment found",
-                Status = true
+                Status = true,
+                Total = payments.Count()
             };
         }
 

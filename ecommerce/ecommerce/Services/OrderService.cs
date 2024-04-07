@@ -166,7 +166,7 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<int>> DeleteOrderAsync(int id)
         {
-            var order = await _orderRepository.GetOrderByIdAsync(id);
+            var order = await _context.Orders.Include(u => u.User).ThenInclude(x=>x.Carts).ThenInclude(k=>k.CartItems).Include(u => u.OrderItems).FirstOrDefaultAsync(u => u.OrderId == id);
             if (order == null)
             {
                 return new ApiResponse<int>
@@ -267,7 +267,8 @@ namespace ecommerce.Services
                     }).ToList()
                 }),
                 Message = "Orders retrieved",
-                Status = true
+                Status = true,
+                Total = orders.Count()
             };
         }
 

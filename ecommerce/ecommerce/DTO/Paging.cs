@@ -12,6 +12,7 @@ namespace ecommerce.DTO
     public class PagingForUser : Paging
     {
         public string? UserName { get; set; } = null;
+        public AccountStatus? Status = null;
     }
     public class PagingForCart : Paging
     {

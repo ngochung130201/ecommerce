@@ -124,7 +124,8 @@ namespace ecommerce.Services
                         }
                     })),
                     Message = "Histories found",
-                    Status = true
+                    Status = true,
+                    Total = histories.Count()
                 };
             }
             if (histories == null)
