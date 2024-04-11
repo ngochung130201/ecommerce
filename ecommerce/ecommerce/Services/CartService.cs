@@ -186,7 +186,7 @@ namespace ecommerce.Services
             {
                 CartId = c.CartId,
                 UserId = c.UserId,
-                
+
                 User = new UserDto
                 {
                     UserId = c.User.UserId,
@@ -222,7 +222,7 @@ namespace ecommerce.Services
 
                 }).ToList()
             });
-            return new ApiResponse<IEnumerable<CartAllDto>> { Data = cartsDto, Status = true , Total = cartsTotal };
+            return new ApiResponse<IEnumerable<CartAllDto>> { Data = cartsDto, Status = true, Total = cartsTotal };
 
         }
 
@@ -323,7 +323,7 @@ namespace ecommerce.Services
 
             };
 
-            return new ApiResponse<CartAllDto> { Data = cartDto, Status = true };
+            return new ApiResponse<CartAllDto> { Data = cartDto, Status = true, Total = cart.CartItems.Count() };
         }
 
         public async Task<ApiResponse<int>> UpdateCartAsync(int id, CartDto cart)

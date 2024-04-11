@@ -138,7 +138,7 @@ namespace ecommerce.Repository
 
         public async Task<List<Product>> GetProductsByFilterAsync(ProductFilterDto filterDto)
         {
-        int itemsToSkip = (filterDto.Page - 1) * filterDto.PageSize;
+            int itemsToSkip = (filterDto.Page - 1) * filterDto.PageSize;
 
             var productsQuery = _context.Products
                 .Include(p => p.Category)
@@ -149,7 +149,8 @@ namespace ecommerce.Repository
 
             if (!string.IsNullOrEmpty(filterDto.Name))
             {
-                productsQuery = productsQuery.Where(p => p.Name.Contains(filterDto.Name));
+                productsQuery = productsQuery.Where(p => p.Name.Contains(filterDto.Name) ||
+                p.Description.Contains(filterDto.Name) || p.Category.Name.Contains(filterDto.Name));
             }
 
             if (filterDto.MinPrice != 0)

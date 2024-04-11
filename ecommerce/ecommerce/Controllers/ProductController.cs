@@ -173,6 +173,17 @@ namespace ecommerce.Controllers
             return Ok(new { ImageUrl });
 
         }
+        // pagination with pageSize and pageNumber
+        [HttpGet("pagination")]
+        public async Task<IActionResult> GetProductsByPaginationAsync(int pageSize, int pageNumber)
+        {
+            var response = await _productService.GetProductsByPaginationAsync(pageSize, pageNumber);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
 
     }
 }

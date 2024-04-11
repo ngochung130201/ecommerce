@@ -1,9 +1,11 @@
-﻿using ecommerce.DTO;
+﻿using ecommerce.Context;
+using ecommerce.DTO;
 using ecommerce.Helpers;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
 using ecommerce.Services.Interface;
 using ecommerce.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Services
 {
@@ -11,12 +13,14 @@ namespace ecommerce.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly EcommerceContext _context;
         private readonly IUploadFilesService _uploadFilesService;
-        public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork, IUploadFilesService uploadFilesService)
+        public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork, IUploadFilesService uploadFilesService, EcommerceContext context)
         {
             _productRepository = productRepository;
             _unitOfWork = unitOfWork;
             _uploadFilesService = uploadFilesService;
+            _context = context;
         }
         public async Task<ApiResponse<int>> AddProductAsync(ProductDto product, IFormFile image, List<IFormFile> gallery)
         {
@@ -474,6 +478,52 @@ namespace ecommerce.Services
             {
                 return new ApiResponse<int> { Message = ex.Message, Status = false };
             }
+        }
+
+        public async Task<ApiResponse<List<ProductAllDto>>> GetProductsByPaginationAsync(int pageSize, int pageNumber)
+        {
+            var products = await _context.Products.Include(p => p.Category).OrderByDescending(p => p.CreatedAt).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            var productTotal = await _productRepository.GetAllProductsAsync();
+            if (products == null)
+            {
+                return new ApiResponse<List<ProductAllDto>> { Message = "Products not found", Status = false };
+            }
+            var productDtos = products.Select(p => new ProductAllDto
+            {
+                ProductId = p.ProductId,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                CategoryId = p.CategoryId,
+                InventoryCount = p.InventoryCount,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                Slug = p.Slug,
+                Image = p.Image,
+                Gallery = p.Gallery,
+                Popular = p.Popular,
+                PopularText = p.PopularText,
+                CategoryName = p.Category.Name,
+                Sale = p.Sale,
+                PriceSale = p.PriceSale
+            });
+            var newProductDtos = new List<ProductAllDto>();
+            // get file path
+            foreach (var product in productDtos)
+            {
+                if (!string.IsNullOrEmpty(product.Image))
+                {
+                    product.Image = _uploadFilesService.GetFilePath(product.Image, Contains.ProductImageFolder);
+                }
+                if (!string.IsNullOrEmpty(product.Gallery))
+                {
+                    var gallery = product.Gallery.Split(",").ToList();
+                    var galleryUrls = gallery.Select(g => _uploadFilesService.GetFilePath(g, Contains.ProductGalleryFolder));
+                    product.Gallery = string.Join(",", galleryUrls);
+                }
+                newProductDtos.Add(product);
+            }
+            return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Status = true, Total = productTotal.Count() };
         }
     }
 }
