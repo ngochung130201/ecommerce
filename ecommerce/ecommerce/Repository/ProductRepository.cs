@@ -35,7 +35,8 @@ namespace ecommerce.Repository
                 PopularText = product.PopularText,
                 Sale = product.Sale,
                 PriceSale = product.PriceSale,
-                Gender = product.Gender
+                Gender = product.Gender,
+                AgeRange = product.AgeRange,
             };
             _repositoryBase.Create(newProduct);
         }
@@ -135,6 +136,7 @@ namespace ecommerce.Repository
             productExist.Sale = product.Sale;
             productExist.PriceSale = product.PriceSale;
             productExist.Gender = product.Gender;
+            productExist.AgeRange = product.AgeRange;
             _repositoryBase.Update(productExist);
 
         }
@@ -149,6 +151,7 @@ namespace ecommerce.Repository
                     (filterDto.CategoryId == 0 || p.CategoryId == filterDto.CategoryId) &&
                     (filterDto.Popular == 0 || p.Popular == filterDto.Popular) &&
                     (filterDto.Gender == 0 || p.Gender == filterDto.Gender) &&
+                    (filterDto.AgeRange == 0 || p.AgeRange == filterDto.AgeRange) &&
                     (filterDto.InventoryCount == 0 || p.InventoryCount >= filterDto.InventoryCount));
 
             if (!string.IsNullOrEmpty(filterDto.Name))

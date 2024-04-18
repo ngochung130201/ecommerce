@@ -21,6 +21,7 @@ namespace ecommerce.DTO
 
         public decimal Price { get; set; } = 0;
         public bool SortByPrice { get; set; } = false;
+        public AgeRange? AgeRange { get; set; } = null;
 
     }
 }
