@@ -45,7 +45,7 @@ namespace ecommerce.Controllers
             return BadRequest(productReviews);
         }
         [HttpPost]
-        public async Task<IActionResult> AddProductReviewAsync(ProductReviewDto productReview)
+        public async Task<IActionResult> AddProductReviewAsync([FromForm]  ProductReviewDto productReview)
         {
             var result = await _productReviewService.AddProductReviewAsync(productReview);
             if (result.Status)
@@ -65,7 +65,7 @@ namespace ecommerce.Controllers
             return BadRequest(result);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProductReviewAsync(int id, ProductReviewUpdateDto productReview)
+        public async Task<IActionResult> UpdateProductReviewAsync(int id, [FromForm] ProductReviewUpdateDto productReview)
         {
             var result = await _productReviewService.UpdateProductReviewAsync(id, productReview);
             if (result.Status)
