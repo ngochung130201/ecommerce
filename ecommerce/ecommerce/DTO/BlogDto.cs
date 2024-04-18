@@ -7,7 +7,7 @@
 
         public string? CreatedBy { get; set; }
         public string? UpdatedBy { get; set; }
-        // public IFormFile? Image { get; set; } = null;
+        public IFormFile? Image { get; set; } = null;
         public List<int> CategoryIds { get; set; } = new List<int>();
         public BlogDetailDto Details { get; set; } = new BlogDetailDto();
     }

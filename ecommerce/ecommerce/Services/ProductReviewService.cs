@@ -25,6 +25,21 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<int>> AddProductReviewAsync(ProductReviewDto productReview)
         {
+            var image = string.Empty;
+            if(productReview.Image != null)
+            {
+                var imageResult = await _uploadFilesService.UploadFileAsync(productReview.Image, Contains.ProductReviewImageFolder);
+                if (!imageResult.Status)
+                {
+                    return new ApiResponse<int>
+                    {
+                        Data = 0,
+                        Message = imageResult.Message,
+                        Status = false
+                    };
+                }
+                image = imageResult.Data;
+            }
             var newProductReview = new ProductReview
             {
                 Rating = productReview.Rating,
@@ -32,6 +47,8 @@ namespace ecommerce.Services
                 CreatedAt = DateTime.UtcNow,
                 ProductId = productReview.ProductId,
                 UserId = productReview.UserId,
+                Image = image
+
             };
             await _productReviewRepository.AddProductReviewAsync(newProductReview);
             await _unitOfWork.SaveChangesAsync();
@@ -58,6 +75,11 @@ namespace ecommerce.Services
             try
             {
                 await _productReviewRepository.DeleteProductReviewAsync(id);
+                // remove image
+                if (!string.IsNullOrEmpty(productReview.Image))
+                {
+                    await _uploadFilesService.RemoveFileAsync(productReview.Image, Contains.ProductReviewImageFolder);
+                }
                 await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int>
                 {
@@ -81,7 +103,14 @@ namespace ecommerce.Services
         {
             try
             {
-                var productReviews = _productReviewRepository.DeleteProductReviewsAsync(ids);
+                var productReviews = await _context.ProductReviews.Where(x => ids.Contains(x.ReviewId)).ToListAsync();
+                foreach(var productReview in productReviews)
+                {
+                    if (!string.IsNullOrEmpty(productReview.Image))
+                    {
+                        await _uploadFilesService.RemoveFileAsync(productReview.Image, Contains.ProductReviewImageFolder);
+                    }
+                }
                 await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int>
                 {
@@ -128,6 +157,7 @@ namespace ecommerce.Services
                         UpdatedAt = x.UpdatedAt,
                         ReviewId = x.ReviewId,
                         UserId = x.UserId,
+                        Image = _uploadFilesService.GetFilePath(x.Image, Contains.ProductReviewImageFolder),
                         User = new UserDto
                         {
                             Email = x.User.Email,
@@ -161,14 +191,23 @@ namespace ecommerce.Services
             {
                 productReviewsPaging = productReviewsPaging.Where(u => u.User.Username.Contains(paging.UserName) || u.User.Email.Contains(paging.UserName));
             }
-            if (paging.MinRating > 0)
+            if (paging.MinRating > 0 && paging.MaxRating > 0)
+            {
+                productReviewsPaging = productReviewsPaging.Where(u => u.Rating >= paging.MinRating && u.Rating <= paging.MaxRating);
+            }
+            else if (paging.Rating > 0)
+            {
+                productReviewsPaging = productReviewsPaging.Where(u => u.Rating == paging.Rating);
+            }
+            else if (paging.MinRating > 0)
             {
                 productReviewsPaging = productReviewsPaging.Where(u => u.Rating >= paging.MinRating);
             }
-            if (paging.MaxRating > 0)
+            else if (paging.MaxRating > 0)
             {
                 productReviewsPaging = productReviewsPaging.Where(u => u.Rating <= paging.MaxRating);
             }
+          
             if (paging.SortByDate)
             {
                 productReviewsPaging = productReviewsPaging.OrderBy(u => u.CreatedAt);
@@ -189,6 +228,7 @@ namespace ecommerce.Services
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
                     UserId = x.UserId,
+                    Image = _uploadFilesService.GetFilePath(x.Image, Contains.ProductReviewImageFolder),
                     User = new UserDto
                     {
                         Email = x.User.Email,
@@ -239,6 +279,7 @@ namespace ecommerce.Services
                     UpdatedAt = productReview.UpdatedAt,
                     ReviewId = productReview.ReviewId,
                     UserId = productReview.UserId,
+                    Image = _uploadFilesService.GetFilePath(productReview.Image, Contains.ProductReviewImageFolder),
                     User = new UserDto
                     {
                         Email = productReview.User.Email,
@@ -326,6 +367,7 @@ namespace ecommerce.Services
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
                     UserId = x.UserId,
+                    Image = _uploadFilesService.GetFilePath(x.Image, Contains.ProductReviewImageFolder),
                     Product = new ProductAllDto
                     {
                         Name = x.Product.Name,
@@ -376,6 +418,7 @@ namespace ecommerce.Services
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
                     UserId = x.UserId,
+                    Image = _uploadFilesService.GetFilePath(x.Image, Contains.ProductReviewImageFolder),
                     Product = new ProductAllDto
                     {
                         Name = x.Product.Name,
@@ -418,11 +461,30 @@ namespace ecommerce.Services
             }
             try
             {
+                if (productReview.Image != null)
+                {
+                    var imageResult = await _uploadFilesService.UploadFileAsync(productReview.Image, Contains.ProductReviewImageFolder);
+                    if (!imageResult.Status)
+                    {
+                        return new ApiResponse<int>
+                        {
+                            Data = id,
+                            Message = imageResult.Message,
+                            Status = false
+                        };
+                    }
+                    if (!string.IsNullOrEmpty(productReviewToUpdate.Image))
+                    {
+                        await _uploadFilesService.RemoveFileAsync(productReviewToUpdate.Image, Contains.ProductReviewImageFolder);
+                    }
+                    productReviewToUpdate.Image = imageResult.Data;
+                }
                 var updatedProductReview = new ProductReview
                 {
                     Rating = productReview.Rating,
                     Comment = productReview.Comment,
-                    UpdatedAt = DateTime.UtcNow
+                    UpdatedAt = DateTime.UtcNow,
+                    Image = productReviewToUpdate.Image,
                 };
                 await _productReviewRepository.UpdateProductReviewAsync(id, updatedProductReview);
                 await _unitOfWork.SaveChangesAsync();

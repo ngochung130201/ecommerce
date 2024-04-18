@@ -24,6 +24,8 @@ namespace ecommerce.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [Column("updated_at")]
         public DateTime? UpdatedAt { get; set; } = null;
+        [Column("image")]
+        public string? Image { get; set; } = null;
 
         // Navigation properties
         public virtual User User { get; set; }

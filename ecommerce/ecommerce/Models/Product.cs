@@ -45,6 +45,9 @@ namespace ecommerce.Models
         [Column("price_sale", TypeName = "DECIMAL(20,7)")]
         public decimal PriceSale { get; set; }
 
+        [Column("gender")]
+        public Gender? Gender { get; set; } = null;
+
         // Navigation properties
         public virtual Category Category { get; set; }
         public virtual ICollection<ProductReview> ProductReviews { get; set; }

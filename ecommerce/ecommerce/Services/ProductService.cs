@@ -75,6 +75,7 @@ namespace ecommerce.Services
                     Sale = product.Sale,
                     PopularText = nameof(product.Popular),
                     PriceSale = product.PriceSale,
+                    Gender = product.Gender
                 };
                 if (galleryString.Count > 0)
                 {
@@ -142,7 +143,25 @@ namespace ecommerce.Services
         {
             try
             {
-                await _productRepository.DeleteProducts(ids);
+                var products = await _context.Products.Where(x => ids.Contains(x.ProductId)).ToListAsync();
+                if (products == null)
+                {
+                    return new ApiResponse<int> { Message = "Products not found", Status = false };
+                }
+                foreach (var product in products)
+                {
+                    // remove image and gallery if error
+                    if (product != null && !string.IsNullOrEmpty(product.Image))
+                    {
+                        await _uploadFilesService.RemoveFileAsync(product.Image, Contains.ProductImageFolder);
+                    }
+                    if (product.Gallery != null && !string.IsNullOrEmpty(product.Gallery))
+                    {
+                        var galleryStrings = product.Gallery.Split(",").ToList();
+                        await _uploadFilesService.RemoveFilesAsync(galleryStrings, Contains.ProductGalleryFolder);
+                    }
+                }
+                _context.Products.RemoveRange(products);
                 await _unitOfWork.SaveChangesAsync();
                 return new ApiResponse<int> { Message = "Products deleted successfully", Status = true };
             }
@@ -177,6 +196,8 @@ namespace ecommerce.Services
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
+                PriceSale = p.PriceSale,
+                Gender = p.Gender
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
@@ -223,7 +244,8 @@ namespace ecommerce.Services
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
-                PriceSale = p.PriceSale
+                PriceSale = p.PriceSale,
+                Gender = p.Gender
             }).ToList();
 
             return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Message = "Products retrieved successfully", Status = true, Total = productTotal.Count() };
@@ -258,7 +280,8 @@ namespace ecommerce.Services
                 PopularText = product.PopularText,
                 CategoryName = product.Category.Name,
                 Sale = product.Sale,
-                PriceSale = product.PriceSale
+                PriceSale = product.PriceSale,
+                Gender = product.Gender
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -296,7 +319,8 @@ namespace ecommerce.Services
                 PopularText = product.PopularText,
                 CategoryName = product.Category.Name,
                 Sale = product.Sale,
-                PriceSale = product.PriceSale
+                PriceSale = product.PriceSale,
+                Gender = product.Gender
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -342,7 +366,8 @@ namespace ecommerce.Services
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
-                PriceSale = p.PriceSale
+                PriceSale = p.PriceSale,
+                Gender = p.Gender
 
             });
             // get file path
@@ -392,7 +417,8 @@ namespace ecommerce.Services
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
-                PriceSale = p.PriceSale
+                PriceSale = p.PriceSale,
+                Gender = p.Gender
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
@@ -440,6 +466,7 @@ namespace ecommerce.Services
                     PopularText = nameof(product.Popular),
                     Sale = product.Sale,
                     PriceSale = product.PriceSale,
+                    Gender = product.Gender
                 };
                 if (image != null)
                 {
@@ -505,7 +532,8 @@ namespace ecommerce.Services
                 PopularText = p.PopularText,
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
-                PriceSale = p.PriceSale
+                PriceSale = p.PriceSale,
+                Gender = p.Gender
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path

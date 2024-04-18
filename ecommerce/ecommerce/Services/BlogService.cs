@@ -26,11 +26,17 @@ namespace ecommerce.Services
         public async Task<ApiResponse<bool>> CreateBlogAsync(BlogDto blogDto)
         {
             // update the image path
-            // var imagePath = await _uploadFilesService.UploadFileAsync(blogDto.Image, Contains.BlogImageFolder);
-            // if (!imagePath.Status)
-            // {
-            //     return new ApiResponse<bool> { Data = false };
-            // }
+            var image = string.Empty;
+            if(blogDto.Image is not null)
+            {
+                var imagePath = await _uploadFilesService.UploadFileAsync(blogDto.Image, Contains.BlogImageFolder);
+                if (!imagePath.Status)
+                {
+                    return new ApiResponse<bool> { Data = false };
+                }
+                image = imagePath.Data;
+            }
+
             var newBlog = new Blog
             {
                 Title = blogDto.Title,
@@ -38,8 +44,7 @@ namespace ecommerce.Services
                 UpdatedAt = DateTime.Now,
                 CreatedBy = blogDto.CreatedBy,
                 UpdatedBy = blogDto.UpdatedBy,
-                // Image = imagePath.Data,
-                Image = null,
+                Image = image,
                 Slug = StringHelper.GenerateSlug(blogDto.Title),
                 Details = new BlogDetail
                 {
@@ -67,13 +72,23 @@ namespace ecommerce.Services
         public async Task<ApiResponse<bool>> UpdateBlogAsync(int id, BlogDto blog)
         {
             // update the image path
-            // var imagePath = await _uploadFilesService.UploadFileAsync(blog.Image, Contains.BlogImageFolder);
-            // if (!imagePath.Status)
-            // {
-            //     return new ApiResponse<bool> { Data = false };
-            // }
+            var image = string.Empty;
+            if (blog.Image is not null)
+            {
+                var imagePath = await _uploadFilesService.UploadFileAsync(blog.Image, Contains.BlogImageFolder);
+                if (!imagePath.Status)
+                {
+                    return new ApiResponse<bool> { Data = false };
+                }
+                image = imagePath.Data;
+            }
+
             var existingBlog = await _context.Blogs.Include(x=>x.Details).FirstOrDefaultAsync(x => x.BlogId == id);
-            // await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
+            if(!string.IsNullOrEmpty(existingBlog.Image) && image != existingBlog.Image)
+            {
+                 await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
+            }
+           
             if (existingBlog != null)
             {
                 existingBlog.Title = blog.Title;
@@ -84,7 +99,7 @@ namespace ecommerce.Services
                 existingBlog.Details.Content = blog.Details.Content;
                 existingBlog.Details.Description = blog.Details.Description;
                 existingBlog.Details.UpdatedAt = DateTime.Now;
-
+                existingBlog.Image = image;
                 // remove image when the image is updated
                 await _unitOfWork.SaveChangesAsync();
 
@@ -107,7 +122,10 @@ namespace ecommerce.Services
                 }
                 await _unitOfWork.SaveChangesAsync();
                 // remove image when the blog is deleted
-                // await _uploadFilesService.RemoveFileAsync(blogToDelete.Image, Contains.BlogImageFolder);
+                if (!string.IsNullOrEmpty(blogToDelete.Image)){
+                       await _uploadFilesService.RemoveFileAsync(blogToDelete.Image, Contains.BlogImageFolder);
+                }
+              
             }
             return new ApiResponse<bool> { Data = true, Status = true };
         }
@@ -122,10 +140,13 @@ namespace ecommerce.Services
             }
             await _unitOfWork.SaveChangesAsync();
             // remove all images when all blogs are deleted
-            // foreach (var blog in blogs)
-            // {
-            //     await _uploadFilesService.RemoveFileAsync(blog.Image, Contains.BlogImageFolder);
-            // }
+            foreach (var blog in blogs)
+            {
+                if (!string.IsNullOrEmpty(blog.Image))
+                {
+                    await _uploadFilesService.RemoveFileAsync(blog.Image, Contains.BlogImageFolder);
+                }
+            }
 
             return new ApiResponse<bool> { Data = true, Status = true };
         }
@@ -139,10 +160,13 @@ namespace ecommerce.Services
                 _context.Blogs.RemoveRange(blogsToDelete);
       
                 // remove all images when multiple blogs are deleted
-                // foreach (var blog in blogsToDelete)
-                // {
-                //     await _uploadFilesService.RemoveFileAsync(blog.Image, Contains.BlogImageFolder);
-                // }
+                foreach (var blog in blogsToDelete)
+                {
+                    if (!string.IsNullOrEmpty(blog.Image))
+                    {
+                         await _uploadFilesService.RemoveFileAsync(blog.Image, Contains.BlogImageFolder);
+                    }
+                }
                 if (blogsToDelete.Any(blog => blog.Details != null))
                 {
                     _context.BlogDetails.RemoveRange(blogsToDelete.Select(blog => blog.Details));
@@ -165,10 +189,13 @@ namespace ecommerce.Services
                 .Take(pageSize)
                 .ToList();
             // get image url
-            // foreach (var blog in blogs)
-            // {
-            //     blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
-            // }
+            foreach (var blog in blogs)
+            {
+                if(!string.IsNullOrEmpty(blog.Image)){
+
+                blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
+                }
+            }
             var blogDtos = blogsDto.Select(blog => new BlogAllDto
             {
                 Id = blog.BlogId,
@@ -192,7 +219,10 @@ namespace ecommerce.Services
         public async Task<ApiResponse<BlogAllDto>> GetBlogByIdAsync(int id)
         {
             var blog = await _context.Blogs.Include(u => u.Categories).Include(x=>x.Details).FirstOrDefaultAsync(x => x.BlogId == id);
-            // blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
+            if(!string.IsNullOrEmpty(blog.Image)){
+                blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
+            }
+            
             var blogDto = new BlogAllDto
             {
                 Id = blog.BlogId,
@@ -223,10 +253,12 @@ namespace ecommerce.Services
                 .ToListAsync();
             var blogTotal = await _context.Blogs.CountAsync();
             // get image url
-            // foreach (var blog in blogs)
-            // {
-            //     blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
-            // }
+            foreach (var blog in blogs)
+            {
+                if(!string.IsNullOrEmpty(blog.Image)){
+                    blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
+                }
+            }
             var blogDtos = blogs.Select(blog => new BlogAllDto
             {
                 Id = blog.BlogId,

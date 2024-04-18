@@ -3,6 +3,7 @@ using ecommerce.DTO;
 using ecommerce.Middleware;
 using ecommerce.Models;
 using ecommerce.Repository.Interface;
+using ecommerce.Services.Interface;
 using Microsoft.EntityFrameworkCore;
 
 namespace ecommerce.Repository
@@ -33,7 +34,8 @@ namespace ecommerce.Repository
                 InventoryCount = product.InventoryCount,
                 PopularText = product.PopularText,
                 Sale = product.Sale,
-                PriceSale = product.PriceSale
+                PriceSale = product.PriceSale,
+                Gender = product.Gender
             };
             _repositoryBase.Create(newProduct);
         }
@@ -132,6 +134,7 @@ namespace ecommerce.Repository
             productExist.PopularText = product.PopularText;
             productExist.Sale = product.Sale;
             productExist.PriceSale = product.PriceSale;
+            productExist.Gender = product.Gender;
             _repositoryBase.Update(productExist);
 
         }
@@ -145,6 +148,7 @@ namespace ecommerce.Repository
                 .Where(p =>
                     (filterDto.CategoryId == 0 || p.CategoryId == filterDto.CategoryId) &&
                     (filterDto.Popular == 0 || p.Popular == filterDto.Popular) &&
+                    (filterDto.Gender == 0 || p.Gender == filterDto.Gender) &&
                     (filterDto.InventoryCount == 0 || p.InventoryCount >= filterDto.InventoryCount));
 
             if (!string.IsNullOrEmpty(filterDto.Name))
@@ -152,15 +156,21 @@ namespace ecommerce.Repository
                 productsQuery = productsQuery.Where(p => p.Name.Contains(filterDto.Name) ||
                 p.Description.Contains(filterDto.Name) || p.Category.Name.Contains(filterDto.Name));
             }
-
-            if (filterDto.MinPrice != 0)
-            {
-                productsQuery = productsQuery.Where(p => p.Price >= filterDto.MinPrice);
+            if(filterDto.SortByDate){
+                productsQuery = productsQuery.OrderBy(p => p.PriceSale);
             }
-
-            if (filterDto.MaxPrice != 0)
+            else {
+                productsQuery = productsQuery.OrderByDescending(p => p.PriceSale);
+            }
+            if (filterDto.Price > 0)
             {
-                productsQuery = productsQuery.Where(p => p.Price <= filterDto.MaxPrice);
+                productsQuery = productsQuery.Where(p => p.PriceSale >= filterDto.Price);
+            }
+            if(!string.IsNullOrEmpty(filterDto.MinAndMaxPrice)){
+                var prices = filterDto.MinAndMaxPrice.Split("-");
+                var minPrice = Convert.ToDecimal(prices[0]);
+                var maxPrice = Convert.ToDecimal(prices[1]);
+                productsQuery = productsQuery.Where(p => p.PriceSale >= minPrice && p.PriceSale <= maxPrice);
             }
 
             productsQuery = filterDto.SortByDate ? productsQuery.OrderBy(p => p.CreatedAt) : productsQuery.OrderByDescending(p => p.CreatedAt);

@@ -6,6 +6,7 @@
         public int ProductId { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
+        public IFormFile? Image { get; set; } = null;
     }
     public class ProductReviewAllDto
     {
@@ -18,10 +19,12 @@
         public DateTime? UpdatedAt { get; set; } = null;
         public ProductAllDto? Product { get; set; } = null;
         public UserDto? User { get; set; } = null;
+        public string Image { get; set; }
     }
     public class ProductReviewUpdateDto
     {
         public int Rating { get; set; }
         public string Comment { get; set; }
+         public IFormFile? Image { get; set; } = null;
     }
 }
