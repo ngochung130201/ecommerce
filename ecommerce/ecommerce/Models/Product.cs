@@ -48,6 +48,9 @@ namespace ecommerce.Models
         [Column("gender")]
         public Gender? Gender { get; set; } = null;
 
+        [Column("age_range")]
+        public AgeRange? AgeRange { get; set; } = null;
+
         // Navigation properties
         public virtual Category Category { get; set; }
         public virtual ICollection<ProductReview> ProductReviews { get; set; }

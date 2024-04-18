@@ -13,6 +13,7 @@ namespace ecommerce.DTO
         public Gender? Gender { get; set; } = null;
         public IFormFile? Image { get; set; } = null;
         public decimal PriceSale { get; set; }
+        public AgeRange? AgeRange { get; set; } = null;
         public decimal? Sale { get; set; } = null;
         public List<IFormFile> Gallery { get; set; } = new List<IFormFile>();
     }
@@ -25,6 +26,7 @@ namespace ecommerce.DTO
         public string InventoryCount { get; set; }
         public string? Popular { get; set; } = null;
         public string? Gender { get; set; } = null;
+        public string? AgeRange { get; set; } = null;
         public decimal PriceSale { get; set; }
         public IFormFile? Image { get; set; } = null;
         public decimal? Sale { get; set; } = null;
@@ -40,6 +42,7 @@ namespace ecommerce.DTO
         public string Gallery { get; set; }
         public Popular? Popular { get; set; } = null;
         public Gender? Gender { get; set; } = null;
+        public AgeRange? AgeRange { get; set; } = null;
         public string? PopularText { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
@@ -57,6 +60,7 @@ namespace ecommerce.DTO
         public decimal Price { get; set; }
         public Popular? Popular { get; set; } = null;
         public Gender? Gender { get; set; } = null;
+        public AgeRange? AgeRange { get; set; } = null;
         public int InventoryCount { get; set; }
         public IFormFile? Image { get; set; } = null;
         public decimal PriceSale { get; set; }
@@ -70,6 +74,7 @@ namespace ecommerce.DTO
         public string Price { get; set; }
         public int? Popular { get; set; } = null;
         public int? Gender { get; set; } = null;
+        public int? AgeRange { get; set; } = null;
         public string InventoryCount { get; set; }
         public IFormFile? Image { get; set; } = null;
         public decimal? Sale { get; set; } = null;

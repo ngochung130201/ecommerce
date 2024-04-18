@@ -75,7 +75,8 @@ namespace ecommerce.Services
                     Sale = product.Sale,
                     PopularText = nameof(product.Popular),
                     PriceSale = product.PriceSale,
-                    Gender = product.Gender
+                    Gender = product.Gender,
+                    AgeRange = product.AgeRange,
                 };
                 if (galleryString.Count > 0)
                 {
@@ -197,7 +198,8 @@ namespace ecommerce.Services
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
                 PriceSale = p.PriceSale,
-                Gender = p.Gender
+                Gender = p.Gender,
+                AgeRange = p.AgeRange
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
@@ -245,7 +247,8 @@ namespace ecommerce.Services
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
                 PriceSale = p.PriceSale,
-                Gender = p.Gender
+                Gender = p.Gender,
+                AgeRange = p.AgeRange
             }).ToList();
 
             return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Message = "Products retrieved successfully", Status = true, Total = productTotal.Count() };
@@ -281,7 +284,8 @@ namespace ecommerce.Services
                 CategoryName = product.Category.Name,
                 Sale = product.Sale,
                 PriceSale = product.PriceSale,
-                Gender = product.Gender
+                Gender = product.Gender,
+                AgeRange = product.AgeRange
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -320,7 +324,8 @@ namespace ecommerce.Services
                 CategoryName = product.Category.Name,
                 Sale = product.Sale,
                 PriceSale = product.PriceSale,
-                Gender = product.Gender
+                Gender = product.Gender,
+                AgeRange = product.AgeRange
             };
             // get file path
             if (!string.IsNullOrEmpty(product.Image))
@@ -367,7 +372,8 @@ namespace ecommerce.Services
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
                 PriceSale = p.PriceSale,
-                Gender = p.Gender
+                Gender = p.Gender,
+                AgeRange = p.AgeRange
 
             });
             // get file path
@@ -418,7 +424,8 @@ namespace ecommerce.Services
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
                 PriceSale = p.PriceSale,
-                Gender = p.Gender
+                Gender = p.Gender,
+                AgeRange = p.AgeRange
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
@@ -466,7 +473,8 @@ namespace ecommerce.Services
                     PopularText = nameof(product.Popular),
                     Sale = product.Sale,
                     PriceSale = product.PriceSale,
-                    Gender = product.Gender
+                    Gender = product.Gender,
+                    AgeRange = product.AgeRange
                 };
                 if (image != null)
                 {
@@ -533,7 +541,8 @@ namespace ecommerce.Services
                 CategoryName = p.Category.Name,
                 Sale = p.Sale,
                 PriceSale = p.PriceSale,
-                Gender = p.Gender
+                Gender = p.Gender,
+                AgeRange = p.AgeRange
             });
             var newProductDtos = new List<ProductAllDto>();
             // get file path
