@@ -7,5 +7,7 @@ namespace ecommerce.Helpers
         public const string ProductGalleryFolder = "product-gallery";
         // folder blog image
         public const string BlogImageFolder = "blog-images";
+        // folder product review image
+        public const string ProductReviewImageFolder = "product-review-images";
     }
 }

@@ -13,8 +13,12 @@ namespace ecommerce.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public string GetFilePath(string fileName, string nameFolder)
+        public string GetFilePath(string? fileName, string nameFolder)
         {
+            if (fileName == null)
+            {
+                return string.Empty;
+            }
             string ImageUrl = string.Empty;
             string HostUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
             var filePath = Path.Combine(_webHostEnvironment.WebRootPath, nameFolder, fileName);
@@ -29,13 +33,17 @@ namespace ecommerce.Services
             return ImageUrl;
         }
 
-        public string GetImageHostPath(string fileName, string nameFolder)
+        public string GetImageHostPath(string? fileName, string nameFolder)
         {
             return _webHostEnvironment.WebRootPath + $"\\{nameFolder}\\";
         }
 
-        public async Task<ApiResponse<string>> RemoveFileAsync(string fileName, string nameFolder)
+        public async Task<ApiResponse<string>> RemoveFileAsync(string? fileName, string nameFolder)
         {
+            if (fileName == null)
+            {
+                return new ApiResponse<string> { Message = "File name is empty", Status = false };
+            }
             var filePath = Path.Combine(_webHostEnvironment.WebRootPath, nameFolder, fileName);
             if (File.Exists(filePath))
             {
