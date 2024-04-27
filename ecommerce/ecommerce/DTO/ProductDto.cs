@@ -72,9 +72,9 @@ namespace ecommerce.DTO
         public string Name { get; set; }
         public string Description { get; set; }
         public string Price { get; set; }
-        public int? Popular { get; set; } = null;
-        public int? Gender { get; set; } = null;
-        public int? AgeRange { get; set; } = null;
+        public string? Popular { get; set; } = null;
+        public string? Gender { get; set; } = null;
+        public string? AgeRange { get; set; } = null;
         public string InventoryCount { get; set; }
         public IFormFile? Image { get; set; } = null;
         public decimal? Sale { get; set; } = null;
