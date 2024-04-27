@@ -48,8 +48,8 @@ namespace ecommerce.Services
                 Slug = StringHelper.GenerateSlug(blogDto.Title),
                 Details = new BlogDetail
                 {
-                    Content = blogDto.Details.Content,
-                    Description = blogDto.Details.Description,
+                    Content = blogDto.Content,
+                    Description = blogDto.Description,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                 }
@@ -96,8 +96,8 @@ namespace ecommerce.Services
                 existingBlog.UpdatedBy = blog.UpdatedBy;
                 existingBlog.Slug = StringHelper.GenerateSlug(blog.Title);
                 // update blog detail
-                existingBlog.Details.Content = blog.Details.Content;
-                existingBlog.Details.Description = blog.Details.Description;
+                existingBlog.Details.Content = blog.Content;
+                existingBlog.Details.Description = blog.Description;
                 existingBlog.Details.UpdatedAt = DateTime.Now;
                 existingBlog.Image = image;
                 // remove image when the image is updated

@@ -9,7 +9,8 @@
         public string? UpdatedBy { get; set; }
         public IFormFile? Image { get; set; } = null;
         public List<int> CategoryIds { get; set; } = new List<int>();
-        public BlogDetailDto Details { get; set; } = new BlogDetailDto();
+        public string? Content { get; set; } = null;
+        public string? Description { get; set; } = null;
     }
     public class BlogAllDto
     {
