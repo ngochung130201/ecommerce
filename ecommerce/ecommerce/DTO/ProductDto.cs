@@ -25,8 +25,8 @@ namespace ecommerce.DTO
         public string Price { get; set; }
         public string InventoryCount { get; set; }
         public string? Popular { get; set; } = null;
-        public string? Gender { get; set; } = null;
-        public string? AgeRange { get; set; } = null;
+        public Gender? Gender { get; set; } = null;
+        public AgeRange? AgeRange { get; set; } = null;
         public decimal PriceSale { get; set; }
         public IFormFile? Image { get; set; } = null;
         public decimal? Sale { get; set; } = null;

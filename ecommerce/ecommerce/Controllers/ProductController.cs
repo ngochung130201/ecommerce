@@ -83,6 +83,9 @@ namespace ecommerce.Controllers
                 Popular = (Popular)popular,
                 Sale = product.Sale,
                 PriceSale = product.PriceSale,
+                AgeRange = product.AgeRange,
+                Gender = product.Gender,
+
             };
 
             var response = await _productService.AddProductAsync(productModel, product.Image, product.Gallery);
