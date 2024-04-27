@@ -99,7 +99,7 @@ namespace ecommerce.Services
                 existingBlog.Details.Content = blog.Content;
                 existingBlog.Details.Description = blog.Description;
                 existingBlog.Details.UpdatedAt = DateTime.Now;
-                existingBlog.Image = image;
+                existingBlog.Image = string.IsNullOrEmpty(image) ? existingBlog.Image : image;
                 // remove image when the image is updated
                 await _unitOfWork.SaveChangesAsync();
 
