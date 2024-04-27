@@ -245,13 +245,14 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<List<BlogAllDto>>> SearchBlogsAsync(string searchTerm, int pageNumber, int pageSize)
         {
-            var blogs = await _context.Blogs.Include(blog => blog.Categories).Include(x=>x.Details)
+            var blogs =  _context.Blogs.Include(blog => blog.Categories).Include(x=>x.Details)
                 .Where(blog => blog.Title.Contains(searchTerm) || string.IsNullOrEmpty(searchTerm))
                 .OrderByDescending(blog => blog.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
-            var blogTotal = await _context.Blogs.CountAsync();
+                .AsQueryable();
+            var totalPage = (int)Math.Ceiling(blogs.Count() / (double)pageSize);
+            
             // get image url
             foreach (var blog in blogs)
             {
@@ -277,7 +278,7 @@ namespace ecommerce.Services
                 }
             }).ToList();
 
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogTotal};
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = totalPage};
         }
 
 
