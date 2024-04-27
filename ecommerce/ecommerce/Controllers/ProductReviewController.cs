@@ -45,7 +45,7 @@ namespace ecommerce.Controllers
             return BadRequest(productReviews);
         }
         [HttpPost]
-        public async Task<IActionResult> AddProductReviewAsync([FromForm]  ProductReviewDto productReview)
+        public async Task<IActionResult> AddProductReviewAsync([FromBody]  ProductReviewDto productReview)
         {
             var result = await _productReviewService.AddProductReviewAsync(productReview);
             if (result.Status)

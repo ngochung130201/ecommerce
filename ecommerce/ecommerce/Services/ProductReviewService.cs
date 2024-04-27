@@ -25,21 +25,6 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<int>> AddProductReviewAsync(ProductReviewDto productReview)
         {
-            var image = string.Empty;
-            if(productReview.Image != null)
-            {
-                var imageResult = await _uploadFilesService.UploadFileAsync(productReview.Image, Contains.ProductReviewImageFolder);
-                if (!imageResult.Status)
-                {
-                    return new ApiResponse<int>
-                    {
-                        Data = 0,
-                        Message = imageResult.Message,
-                        Status = false
-                    };
-                }
-                image = imageResult.Data;
-            }
             var newProductReview = new ProductReview
             {
                 Rating = productReview.Rating,
@@ -47,7 +32,6 @@ namespace ecommerce.Services
                 CreatedAt = DateTime.UtcNow,
                 ProductId = productReview.ProductId,
                 UserId = productReview.UserId,
-                Image = image
 
             };
             await _productReviewRepository.AddProductReviewAsync(newProductReview);
@@ -157,7 +141,6 @@ namespace ecommerce.Services
                         UpdatedAt = x.UpdatedAt,
                         ReviewId = x.ReviewId,
                         UserId = x.UserId,
-                        Image = _uploadFilesService.GetFilePath(x.Image, Contains.ProductReviewImageFolder),
                         User = new UserDto
                         {
                             Email = x.User.Email,
@@ -228,7 +211,6 @@ namespace ecommerce.Services
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
                     UserId = x.UserId,
-                    Image = _uploadFilesService.GetFilePath(x.Image, Contains.ProductReviewImageFolder),
                     User = new UserDto
                     {
                         Email = x.User.Email,
@@ -279,7 +261,6 @@ namespace ecommerce.Services
                     UpdatedAt = productReview.UpdatedAt,
                     ReviewId = productReview.ReviewId,
                     UserId = productReview.UserId,
-                    Image = _uploadFilesService.GetFilePath(productReview.Image, Contains.ProductReviewImageFolder),
                     User = new UserDto
                     {
                         Email = productReview.User.Email,
@@ -367,7 +348,6 @@ namespace ecommerce.Services
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
                     UserId = x.UserId,
-                    Image = _uploadFilesService.GetFilePath(x.Image, Contains.ProductReviewImageFolder),
                     Product = new ProductAllDto
                     {
                         Name = x.Product.Name,
@@ -418,7 +398,6 @@ namespace ecommerce.Services
                     UpdatedAt = x.UpdatedAt,
                     ReviewId = x.ReviewId,
                     UserId = x.UserId,
-                    Image = _uploadFilesService.GetFilePath(x.Image, Contains.ProductReviewImageFolder),
                     Product = new ProductAllDto
                     {
                         Name = x.Product.Name,
@@ -461,30 +440,11 @@ namespace ecommerce.Services
             }
             try
             {
-                if (productReview.Image != null)
-                {
-                    var imageResult = await _uploadFilesService.UploadFileAsync(productReview.Image, Contains.ProductReviewImageFolder);
-                    if (!imageResult.Status)
-                    {
-                        return new ApiResponse<int>
-                        {
-                            Data = id,
-                            Message = imageResult.Message,
-                            Status = false
-                        };
-                    }
-                    if (!string.IsNullOrEmpty(productReviewToUpdate.Image))
-                    {
-                        await _uploadFilesService.RemoveFileAsync(productReviewToUpdate.Image, Contains.ProductReviewImageFolder);
-                    }
-                    productReviewToUpdate.Image = imageResult.Data;
-                }
                 var updatedProductReview = new ProductReview
                 {
                     Rating = productReview.Rating,
                     Comment = productReview.Comment,
                     UpdatedAt = DateTime.UtcNow,
-                    Image = productReviewToUpdate.Image,
                 };
                 await _productReviewRepository.UpdateProductReviewAsync(id, updatedProductReview);
                 await _unitOfWork.SaveChangesAsync();
