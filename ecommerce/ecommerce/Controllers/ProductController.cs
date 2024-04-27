@@ -86,7 +86,7 @@ namespace ecommerce.Controllers
                 Sale = product.Sale,
                 PriceSale = product.PriceSale,
                 AgeRange = (AgeRange)ageRange,
-                Gender = (Gender)gen
+                Gender = (Gender)gender
 
             };
 
