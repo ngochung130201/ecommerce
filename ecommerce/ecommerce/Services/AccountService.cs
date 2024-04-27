@@ -703,10 +703,10 @@ namespace ecommerce.Services
             }
            var admins =  adminsNotPaging.Where(x =>
                 string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
-            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToList();
+            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).AsQueryable();
             if(paging.Status != null)
             {
-                admins = admins.Where(x => x.AccountStatus == paging.Status).ToList();
+                admins = admins.Where(x => x.AccountStatus == paging.Status).AsQueryable();
             }
             if (admins == null)
             {
@@ -717,6 +717,7 @@ namespace ecommerce.Services
                     Status = false
                 };
             }
+            var totalCount = (int)Math.Ceiling((double)admins.Count() / paging.PageSize);
             return new ApiResponse<List<AdminDto>>
             {
                 Data = admins.Select(a => new AdminDto
@@ -729,11 +730,11 @@ namespace ecommerce.Services
                 }).ToList(),
                 Message = "Admins found",
                 Status = true,
-                Total = adminsNotPaging.Count
+                Total = totalCount
             };
         }
 
-        public async Task<ApiResponse<List<UserDto>>> GetListUserAsync(PagingForUser paging)
+        public async Task<ApiResponse<List<UserDto>>> GetListUserAsync(PagingForUser? paging = null)
          {
             //          (string.IsNullOrEmpty(filterDto.Name) || p.Name.Contains(filterDto.Name)) &&
             //         (filterDto.MinPrice == 0 || p.Price >= filterDto.MinPrice) &&
@@ -744,13 +745,38 @@ namespace ecommerce.Services
             //         ).Skip(itemsToSkip)
             //         .Take(filterDto.PageSize).OrderByDescending(u => u.CreatedAt).ToListAsync();
             var users = await _context.Users.ToListAsync();
+            if (paging == null)
+            {
+                if (users == null)
+                {
+                    return new ApiResponse<List<UserDto>>
+                    {
+                        Data = null,
+                        Message = "Users not found",
+                        Status = false
+                    };
+                }
+                return new ApiResponse<List<UserDto>>
+                {
+                    Data = users.Select(u => new UserDto
+                    {
+                        UserId = u.UserId,
+                        Username = u.Username,
+                        Email = u.Email,
+                        Status = u.AccountStatus
+                    }).ToList(),
+                    Message = "Users found",
+                    Status = true,
+                    Total = users.Count
+                };
+            }
             var usersDto = users.Where(x =>
                 string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
-            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToList();
+            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).AsQueryable();
             //
             if (paging.Status != null)
             {
-                usersDto = users.Where(x => x.AccountStatus == paging.Status).ToList();
+                usersDto = users.Where(x => x.AccountStatus == paging.Status).AsQueryable();
             }
             if (users == null)
             {
@@ -761,6 +787,7 @@ namespace ecommerce.Services
                     Status = false
                 };
             }
+            var totalCount = (int)Math.Ceiling((double)usersDto.Count() / paging.PageSize);
             return new ApiResponse<List<UserDto>>
             {
                 Data = users.Select(u => new UserDto
@@ -772,7 +799,7 @@ namespace ecommerce.Services
                 }).ToList(),
                 Message = "Users found",
                 Status = true,
-                Total = users.Count
+                Total = totalCount
             };
         }
 
