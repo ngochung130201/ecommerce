@@ -112,6 +112,13 @@ namespace ecommerce.Services
                     Status = false
                 };
             }
+            var totalPage = 0;
+            if(paging == null){
+                totalPage = categoriesTotal;
+            }
+            else {
+                totalPage = (int)Math.Ceiling(categories.Count() / (double)paging.PageSize);
+            }
             return new ApiResponse<IEnumerable<CategoryAllDto>>
             {
                 Data = categories.Select(x => new CategoryAllDto
@@ -126,7 +133,7 @@ namespace ecommerce.Services
                 }),
                 Message = "Categories found",
                 Status = true,
-                Total = categories.Count()
+                Total = totalPage
             };
         }
 

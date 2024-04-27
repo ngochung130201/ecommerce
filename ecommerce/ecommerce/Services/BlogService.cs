@@ -404,6 +404,7 @@ namespace ecommerce.Services
             {
                 categories = categories.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
             }
+            var totalPage = (int)Math.Ceiling(categories.Count() / (double)paging.PageSize);
             var categoryDtos = categories.Select(category => new BlogCategoryAllDto
             {
                 Name = category.Name,
@@ -414,7 +415,7 @@ namespace ecommerce.Services
                 CreatedAt = category.CreatedAt,
                 UpdatedAt = category.UpdatedAt
             }).ToList();
-            return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtos, Status = true, Total = categoriesNotPaging.Count};
+            return new ApiResponse<List<BlogCategoryAllDto>> { Data = categoryDtos, Status = true, Total = totalPage};
         }
 
         public async Task<ApiResponse<BlogCategoryAllDto>> GetBlogCategoryByIdAsync(int id)

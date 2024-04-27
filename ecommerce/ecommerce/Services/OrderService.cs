@@ -213,7 +213,15 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<OrderDto>>> GetAllOrdersAsync(PagingForOrder? paging = null)
         {
             var orders = await _orderRepository.GetAllOrdersAsync(paging);
-            var ordersTotal = await _context.Orders.CountAsync();
+            var totalPage = 0;
+            if(paging != null)
+            {
+                totalPage =  (int)Math.Ceiling(orders.Count() / (double)paging.PageSize);;
+            }
+            else {
+                totalPage = await _context.Orders.CountAsync();
+            }
+           
             if (orders == null)
             {
                 return new ApiResponse<IEnumerable<OrderDto>>
@@ -269,7 +277,7 @@ namespace ecommerce.Services
                 }),
                 Message = "Orders retrieved",
                 Status = true,
-                Total = ordersTotal
+                Total = totalPage
             };
         }
 

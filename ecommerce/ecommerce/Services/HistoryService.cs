@@ -126,7 +126,7 @@ namespace ecommerce.Services
                     })),
                     Message = "Histories found",
                     Status = true,
-                    Total = historiesCount
+                    Total =  (int)Math.Ceiling(histories.Count() / (double)pagingForHistory.PageSize)
                 };
             }
             if (histories == null)
@@ -168,7 +168,8 @@ namespace ecommerce.Services
                     }
                 })),
                 Message = "Histories found",
-                Status = true
+                Status = true,
+                Total = historiesCount
             };
         }
 

@@ -68,7 +68,14 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<PaymentDto>>> GetAllPaymentsAsync(PagingForPayment? paging = null)
         {
             var payments = await _paymentRepository.GetAllPaymentsAsync(paging);
-            var paymentsCount = await _context.Payments.CountAsync();
+            var totalPage = 0;
+            if (paging != null)
+            {
+                totalPage = (int)Math.Ceiling((decimal)payments.Count() / paging.PageSize);
+            }
+            else {
+                totalPage = await _context.Payments.CountAsync();
+            }
             if (payments == null)
             {
                 return new ApiResponse<IEnumerable<PaymentDto>> { Data = null, Message = "No Payment found", Status = false };
@@ -86,7 +93,7 @@ namespace ecommerce.Services
                 }),
                 Message = "Payment found",
                 Status = true,
-                Total = paymentsCount
+                Total = totalPage
             };
         }
 
