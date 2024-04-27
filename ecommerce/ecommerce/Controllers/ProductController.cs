@@ -102,7 +102,7 @@ namespace ecommerce.Controllers
         {
             var price = decimal.TryParse(product.Price, out decimal prc) ? prc : 0;
             var inventoryCount = int.TryParse(product.InventoryCount, out int invCount) ? invCount : 0;
-            var popular = int.TryParse(product.Popular?.ToString(), out int pop) ? pop : 0;
+            var popular = int.TryParse(product.Popular, out int pop) ? pop : 0;
             var gender = int.TryParse(product.Gender, out int gen) ? gen : 0;
             var ageRange = int.TryParse(product.AgeRange, out int age) ? age : 0;
             if (price == 0 || inventoryCount == 0)
