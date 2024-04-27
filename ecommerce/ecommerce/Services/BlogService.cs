@@ -202,7 +202,7 @@ namespace ecommerce.Services
                 Title = blog.Title,
                 CreatedBy = blog.CreatedBy,
                 UpdatedBy = blog.UpdatedBy,
-                Image = "",
+                Image = blog.Image,
                 CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                 Categories = blog.Categories.Select(category => category.Name).ToList(),
                 CreatedAt = blog.CreatedAt,
