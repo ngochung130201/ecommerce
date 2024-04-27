@@ -67,6 +67,8 @@ namespace ecommerce.Controllers
             var price = decimal.TryParse(product.Price, out decimal prc) ? prc : 0;
             var inventoryCount = int.TryParse(product.InventoryCount, out int invCount) ? invCount : 0;
             var popular = int.TryParse(product.Popular, out int pop) ? pop : 0;
+            var gender = int.TryParse(product.Gender, out int gen) ? gen : 0;
+            var ageRange = int.TryParse(product.AgeRange, out int age) ? age : 0;
             if (categoryId == 0 || price == 0 || inventoryCount == 0)
             {
                 return BadRequest(new { Status = false, Message = "Invalid input" });
@@ -83,8 +85,8 @@ namespace ecommerce.Controllers
                 Popular = (Popular)popular,
                 Sale = product.Sale,
                 PriceSale = product.PriceSale,
-                AgeRange = product.AgeRange,
-                Gender = product.Gender,
+                AgeRange = (AgeRange)ageRange,
+                Gender = (Gender)gen
 
             };
 
