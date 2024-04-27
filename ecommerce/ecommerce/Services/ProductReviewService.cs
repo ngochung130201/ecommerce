@@ -133,9 +133,9 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync(PagingForProductReview? paging = null)
         {
-             var productTotal = await _context.ProductReviews.CountAsync();
             if (paging == null)
             {
+                var productTotal = await _context.ProductReviews.CountAsync();
                 var productReviews = await _context.ProductReviews.Include(u => u.User).Include(u => u.Product).ThenInclude(i => i.Category).ToListAsync();
                 if (productReviews == null)
                 {
@@ -252,7 +252,7 @@ namespace ecommerce.Services
                 }),
                 Message = "Product Reviews found",
                 Status = true,
-                Total = productTotal
+                Total =  (int)Math.Ceiling(productReviewsPaging.Count() / (double)paging.PageSize)
             };
         }
 
