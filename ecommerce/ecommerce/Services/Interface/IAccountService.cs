@@ -13,6 +13,7 @@ namespace ecommerce.Services.Interface
         string GenerateJwtToken(UserDto user);
         Task<bool> ResetPasswordAsync(string email, string token, string newPassword, AdminRole? adminRole = null, bool isAdmin = false);
         Task<ApiResponse<string>> ForgotPasswordAsync(string email, AdminRole? adminRole = null, bool isAdmin = false);
+        Task<ApiResponse<string>> ForgotPasswordOtpAsync(string email,string template, AdminRole? adminRole = null, bool isAdmin = false);
         Task<ApiResponse<string>> ResetPasswordEmailAsync(string email, string newPassword);
         // Manage Account Admin role
         Task<ApiResponse<string>> AddRoleAsync(string email, AdminRole role);
@@ -32,6 +33,7 @@ namespace ecommerce.Services.Interface
         Task<ApiResponse<string>> UpdateAccountAsync(UpdateAccountRequest updateAccountRequest);
         Task<ApiResponse<string>> DeleteAccountAsync(string email);
         Task<ApiResponse<string>> DeleteAccountForAdminAsync(string email);
+        
 
     }
 }

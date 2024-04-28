@@ -18,8 +18,6 @@ namespace ecommerce.DTO
         // SortOrder
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 10;
-
-        public decimal Price { get; set; } = 0;
         public SortByPrice? SortByPrice { get; set; } = Enums.SortByPrice.None; // ASC, DESC
         public AgeRange? AgeRange { get; set; } = null;
 

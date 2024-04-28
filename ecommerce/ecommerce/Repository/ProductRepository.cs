@@ -159,25 +159,26 @@ namespace ecommerce.Repository
                 productsQuery = productsQuery.Where(p => p.Name.Contains(filterDto.Name) ||
                 p.Description.Contains(filterDto.Name) || p.Category.Name.Contains(filterDto.Name));
             }
+         
+            if(!string.IsNullOrEmpty(filterDto.MinAndMaxPrice)){
+                var prices = filterDto.MinAndMaxPrice.Split("-");
+                var minPrice = Convert.ToDecimal(prices[0]);
+                if(prices.Length > 1){
+                    var maxPrice = Convert.ToDecimal(prices[1]);
+                    productsQuery = productsQuery.Where(p => p.PriceSale >= minPrice && p.PriceSale <= maxPrice);
+                }
+                else {
+                    productsQuery = productsQuery.Where(p => p.PriceSale >= minPrice);
+                }
+            }
+
+            productsQuery = filterDto.SortByDate ? productsQuery.OrderBy(p => p.CreatedAt) : productsQuery.OrderByDescending(p => p.CreatedAt);
             if(filterDto.SortByPrice == Enums.SortByPrice.Ascending){
                 productsQuery = productsQuery.OrderBy(p => p.PriceSale);
             }
             if(filterDto.SortByPrice == Enums.SortByPrice.Descending){
                 productsQuery = productsQuery.OrderByDescending(p => p.PriceSale);
             }
-            if (filterDto.Price > 0)
-            {
-                productsQuery = productsQuery.Where(p => p.PriceSale >= filterDto.Price);
-            }
-            if(!string.IsNullOrEmpty(filterDto.MinAndMaxPrice)){
-                var prices = filterDto.MinAndMaxPrice.Split("-");
-                var minPrice = Convert.ToDecimal(prices[0]);
-                var maxPrice = Convert.ToDecimal(prices[1]);
-                productsQuery = productsQuery.Where(p => p.PriceSale >= minPrice && p.PriceSale <= maxPrice);
-            }
-
-            productsQuery = filterDto.SortByDate ? productsQuery.OrderBy(p => p.CreatedAt) : productsQuery.OrderByDescending(p => p.CreatedAt);
-
             var products = await productsQuery
                 .Skip(itemsToSkip)
                 .Take(filterDto.PageSize)

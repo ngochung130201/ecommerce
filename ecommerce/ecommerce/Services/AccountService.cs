@@ -918,5 +918,59 @@ namespace ecommerce.Services
                 Status = false
             };
         }
+
+        public async Task<ApiResponse<string>> ForgotPasswordOtpAsync(string email,string template, AdminRole? adminRole = null, bool isAdmin = false)
+        {
+             var adminModel = new Admin();
+             var userModel = new User();
+
+            if (isAdmin)
+            {
+                adminModel = await _accountAdminRepository.GetByEmailForAdmin(email);
+            }
+            else
+            {
+                userModel = await _accountUserRepository.GetByEmailForUser(email);
+            }
+
+            if (adminModel == null || userModel == null)
+            {
+                return new ApiResponse<string>
+                {
+                    Data = null,
+                    Message = isAdmin ? "Admin not found" : "User not found",
+                    Status = false
+                };
+            }
+
+            var emailDto = new EmailDtoOtp
+            {
+                Body = template,
+                Name = isAdmin ? adminModel.Username : userModel.Username,
+                Subject = "Quên mật khẩu",
+                To = email,
+            };
+            // test
+            try
+            {
+
+                await _emailService.SendEmailOtpAsync(emailDto);
+                return new ApiResponse<string>
+                {
+                    Data = "OTP sent successfully",
+                    Message = "Password reset email sent",
+                    Status = true // Assuming status should be true when email is successfully sent
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResponse<string>
+                {
+                    Data = null,
+                    Message = "Failed to send email",
+                    Status = false
+                };
+            }
+        }
     }
 }

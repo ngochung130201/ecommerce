@@ -5,5 +5,6 @@ namespace ecommerce.Services.Interface
     public interface IEmailService
     {
         Task SendEmailAsync(EmailDto emailDto);
+        Task SendEmailOtpAsync(EmailDtoOtp emailDto);
     }
 }
