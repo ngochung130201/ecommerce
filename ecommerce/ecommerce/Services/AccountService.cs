@@ -919,26 +919,21 @@ namespace ecommerce.Services
             };
         }
 
-        public async Task<ApiResponse<string>> ForgotPasswordOtpAsync(string email,string template, AdminRole? adminRole = null, bool isAdmin = false)
+        public async Task<ApiResponse<string>> ForgotPasswordOtpAsync(string email,string template)
         {
-             var adminModel = new Admin();
-             var userModel = new User();
-
-            if (isAdmin)
+            var adminModel = await _accountAdminRepository.GetByEmailForAdmin(email);
+            var userModel = await _accountUserRepository.GetByEmailForUser(email);
+            bool isAdmin = false;
+            if (adminModel != null)
             {
-                adminModel = await _accountAdminRepository.GetByEmailForAdmin(email);
+                isAdmin = true;
             }
-            else
-            {
-                userModel = await _accountUserRepository.GetByEmailForUser(email);
-            }
-
-            if (adminModel == null || userModel == null)
+            if (adminModel == null && userModel == null)
             {
                 return new ApiResponse<string>
                 {
                     Data = null,
-                    Message = isAdmin ? "Admin not found" : "User not found",
+                    Message = "User not found",
                     Status = false
                 };
             }

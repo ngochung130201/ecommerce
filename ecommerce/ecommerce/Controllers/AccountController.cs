@@ -228,7 +228,7 @@ namespace ecommerce.Controllers
         [HttpPost("forgot-password-otp")]
         public async Task<IActionResult> ForgotPasswordOtpAsync(ForgotPasswordOtp forgotPasswordOtp)
         {
-            var response = await _accountService.ForgotPasswordOtpAsync(forgotPasswordOtp.Email,forgotPasswordOtp.Template, forgotPasswordOtp.AdminRole, forgotPasswordOtp.IsAdmin);
+            var response = await _accountService.ForgotPasswordOtpAsync(forgotPasswordOtp.Email,forgotPasswordOtp.Template);
             if (response.Status)
             {
                 return Ok(response);

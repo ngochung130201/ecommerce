@@ -163,7 +163,7 @@ namespace ecommerce.Repository
             if(!string.IsNullOrEmpty(filterDto.MinAndMaxPrice)){
                 var prices = filterDto.MinAndMaxPrice.Split("-");
                 var minPrice = Convert.ToDecimal(prices[0]);
-                if(prices.Length > 1){
+                if(prices.Length > 1 && !string.IsNullOrEmpty(prices[1])){
                     var maxPrice = Convert.ToDecimal(prices[1]);
                     productsQuery = productsQuery.Where(p => p.PriceSale >= minPrice && p.PriceSale <= maxPrice);
                 }
