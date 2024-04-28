@@ -226,7 +226,7 @@ namespace ecommerce.Services
                 Title = blog.Title,
                 CreatedBy = blog.CreatedBy,
                 UpdatedBy = blog.UpdatedBy,
-                Image =   _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);,
+                Image =   _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder),
                 CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                 Categories = blog.Categories.Select(category => category.Name).ToList(),
                 CreatedAt = blog.CreatedAt,
