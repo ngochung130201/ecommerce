@@ -54,13 +54,13 @@ namespace ecommerce.Repository
         }
 
 
-        public async Task<IEnumerable<ProductReview>> GetAllProductReviewsAsync(PagingForProductReview? paging = null)
+        public async Task<(IEnumerable<ProductReview>,int)> GetAllProductReviewsAsync(PagingForProductReview? paging = null)
         {
             var productReviews = _context.ProductReviews.Include(u=>u.User).Include(k=>k.Product).AsQueryable();
             if (paging == null)
             {
-                return await productReviews.ToListAsync();
-            }
+                var productReviewsDb = await productReviews.ToListAsync();
+                return (productReviewsDb, productReviewsDb.Count);}
             if (!string.IsNullOrEmpty(paging.UserName))
             {
                 productReviews = productReviews.Where(p => p.User.Email.Contains(paging.UserName) || p.User.Username.Contains(paging.UserName));
@@ -88,7 +88,9 @@ namespace ecommerce.Repository
             }else{
                 productReviews = productReviews.OrderByDescending(p => p.CreatedAt);
             }
-            return await productReviews.ToListAsync();
+            var total = productReviews.Count();
+            return (productReviews.Skip((paging.Page - 1) * paging.PageSize)
+                .Take(paging.PageSize), total);
         }
 
         public async Task<ProductReview> GetProductReviewByIdAsync(int id)

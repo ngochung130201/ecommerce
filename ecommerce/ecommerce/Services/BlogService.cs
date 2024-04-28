@@ -184,13 +184,8 @@ namespace ecommerce.Services
             var blogs = await _context.Blogs.Include(blog => blog.Categories)
                 .Include(blog => blog.Details).ToListAsync();
             var total = blogs.Count();
-            var blogsDto = blogs
-                .OrderByDescending(blog => blog.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
 
-            var blogDtos = blogsDto.Select(blog => new BlogAllDto
+            var blogDtos = blogs.Select(blog => new BlogAllDto
             {
                 Id = blog.BlogId,
                 Title = blog.Title,
@@ -206,8 +201,9 @@ namespace ecommerce.Services
                     Content = blog.Details.Content,
                     Description = blog.Details.Description
                 }
-            }).ToList();
-            var result =  new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogs.Count};
+            }).Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize).ToList();
+            var result =  new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total =total};
             result.Page = pageNumber;
             result.PageSize = pageSize;
             var totalPage = (int)Math.Ceiling(total / (double)pageSize);
@@ -245,10 +241,8 @@ namespace ecommerce.Services
             var blogs =  _context.Blogs.Include(blog => blog.Categories).Include(x=>x.Details)
                 .Where(blog => blog.Title.Contains(searchTerm) || string.IsNullOrEmpty(searchTerm))
                 .OrderByDescending(blog => blog.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
                 .AsQueryable();
-            var total = await _context.Blogs.CountAsync();
+            var total = blogs.Count();
 
             var blogDtos = blogs.Select(blog => new BlogAllDto
             {
@@ -266,9 +260,10 @@ namespace ecommerce.Services
                     Content = blog.Details.Content,
                     Description = blog.Details.Description
                 }
-            }).ToList();
+            }).Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize).ToList();
 
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogDtos.Count, Page = pageNumber,
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = total, Page = pageNumber,
              PageSize = pageSize, TotalPage = (int)Math.Ceiling(total / (double)pageSize)};
         }
 

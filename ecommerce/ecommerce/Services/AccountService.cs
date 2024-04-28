@@ -673,7 +673,7 @@ namespace ecommerce.Services
         {
             // paging
             var adminsNotPaging = await _context.Admins.ToListAsync();
-            var total = adminsNotPaging.Count();
+
             if (paging == null)
             {
       
@@ -704,7 +704,8 @@ namespace ecommerce.Services
             }
            var admins =  adminsNotPaging.Where(x =>
                 string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
-            ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).AsQueryable();
+            ).AsQueryable();
+            var total = adminsNotPaging.Count();
             if(paging.Status != null)
             {
                 admins = admins.Where(x => x.AccountStatus == paging.Status).AsQueryable();
@@ -720,7 +721,7 @@ namespace ecommerce.Services
             }
             var result = new ApiResponse<List<AdminDto>>
             {
-                Data = admins.Select(a => new AdminDto
+                Data = admins.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).Select(a => new AdminDto
                 {
                     AdminId = a.AdminId,
                     Username = a.Username,
@@ -730,7 +731,7 @@ namespace ecommerce.Services
                 }).ToList(),
                 Message = "Admins found",
                 Status = true,
-                Total = admins.Count(),
+                Total = total,
 
             };
             if (paging != null)

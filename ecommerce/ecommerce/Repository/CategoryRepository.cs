@@ -61,7 +61,7 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task<IEnumerable<Category>> GetAllCategoriesAsync(PagingForBlogCategory? paging = null)
+        public async Task<(IEnumerable<Category>,int)> GetAllCategoriesAsync(PagingForBlogCategory? paging = null)
         {
             var categories = _context.Categories.AsQueryable();
             if (paging != null)
@@ -77,14 +77,15 @@ namespace ecommerce.Repository
                     categories = categories.OrderBy(c => c.CreatedAt);
                 }
                 // pagination
-                categories = categories.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
-                return  categories.ToList();
+                var total = categories.Count();
+                return  (categories.Skip((paging.Page - 1) * paging.PageSize)
+                    .Take(paging.PageSize), total);
             }
             if (categories == null)
             {
                 throw new CustomException("No Category found", 404);
             }
-            return categories;
+            return (categories, categories.Count());
         }
 
         public async Task<Category> GetCategoryByIdAsync(int id)

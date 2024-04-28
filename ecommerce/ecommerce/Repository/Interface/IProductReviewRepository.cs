@@ -5,7 +5,7 @@ namespace ecommerce.Repository.Interface
 {
     public interface IProductReviewRepository
     {
-        Task<IEnumerable<ProductReview>> GetAllProductReviewsAsync(PagingForProductReview? paging = null);
+        Task<(IEnumerable<ProductReview>,int)>  GetAllProductReviewsAsync(PagingForProductReview? paging = null);
         Task<ProductReview> GetProductReviewByIdAsync(int id);
         Task AddProductReviewAsync(ProductReview productReview);
         Task DeleteProductReviewAsync(int id);

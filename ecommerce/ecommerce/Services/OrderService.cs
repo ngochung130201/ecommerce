@@ -214,7 +214,7 @@ namespace ecommerce.Services
         {
             var orders = await _orderRepository.GetAllOrdersAsync(paging);
             var total = await _context.Orders.CountAsync();
-            if (orders == null)
+            if (orders.Item1 == null)
             {
                 return new ApiResponse<IEnumerable<OrderDto>>
                 {
@@ -225,7 +225,7 @@ namespace ecommerce.Services
             }
             var result =new ApiResponse<IEnumerable<OrderDto>>
             {
-                Data = orders.Select(order => new OrderDto
+                Data = orders.Item1.Select(order => new OrderDto
                 {
                     OrderStatus = order.OrderStatus,
                     UserId = order.UserId,
@@ -269,7 +269,7 @@ namespace ecommerce.Services
                 }),
                 Message = "Orders retrieved",
                 Status = true,
-                Total = orders.Count(),
+                Total = orders.Item2,
             };
             if (paging != null)
             {

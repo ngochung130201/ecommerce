@@ -38,12 +38,13 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task<IEnumerable<Wishlist>> GetAllWishListsAsync(PagingForWishlist? paging = null)
+        public async Task<(IEnumerable<Wishlist>,int)> GetAllWishListsAsync(PagingForWishlist? paging = null)
         {
             var wishLists = _context.Wishlists.Include(k => k.User).Include(u => u.Product).ThenInclude(k => k.Category).AsQueryable();
             if (paging == null)
             {
-                return wishLists;
+                var wishListsDb = await wishLists.ToListAsync();
+                return (wishListsDb, wishListsDb.Count);
             }
             if (!string.IsNullOrEmpty(paging.UserName))
             {
@@ -61,15 +62,13 @@ namespace ecommerce.Repository
             {
                 wishLists = wishLists.OrderByDescending(x => x.CreatedAt);
             }
-            if (paging.PageSize > 0)
-            {
-                wishLists = wishLists.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
-            }
             if (wishLists == null)
             {
                 throw new CustomException("No WishList found", 404);
             }
-            return wishLists;
+            var count = wishLists.Count();
+            return (wishLists.Skip((paging.Page - 1) * paging.PageSize)
+                .Take(paging.PageSize), count);
         }
 
         public async Task<Wishlist> GetWishListByIdAsync(int id)
