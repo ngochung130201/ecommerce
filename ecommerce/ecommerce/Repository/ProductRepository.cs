@@ -159,10 +159,10 @@ namespace ecommerce.Repository
                 productsQuery = productsQuery.Where(p => p.Name.Contains(filterDto.Name) ||
                 p.Description.Contains(filterDto.Name) || p.Category.Name.Contains(filterDto.Name));
             }
-            if(filterDto.SortByPrice != null && filterDto.SortByPrice == true){
+            if(filterDto.SortByPrice == Enums.SortByPrice.Ascending){
                 productsQuery = productsQuery.OrderBy(p => p.PriceSale);
             }
-            if(filterDto.SortByPrice != null && filterDto.SortByPrice == false){
+            if(filterDto.SortByPrice == Enums.SortByPrice.Descending){
                 productsQuery = productsQuery.OrderByDescending(p => p.PriceSale);
             }
             if (filterDto.Price > 0)
