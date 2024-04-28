@@ -96,6 +96,10 @@ namespace ecommerce.Services
                     Status = false
                 };
             }
+            var totalPage = (int)Math.Ceiling(wishlistsDb.Count() / (double)paging.PageSize);
+            if(totalPage < 1){
+                totalPage = 1;
+            }
             return new ApiResponse<IEnumerable<WishlistDto>>
             {
                 Data = wishlists.Select(x => new WishlistDto
@@ -133,7 +137,7 @@ namespace ecommerce.Services
                 Total =wishlists.Count(),
                 Page = paging.Page,
                 PageSize = paging.PageSize,
-                TotalPage = (int)Math.Ceiling(wishlistsDb.Count() / (double)paging.PageSize)
+                TotalPage =totalPage
 
             };
 

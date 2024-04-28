@@ -250,10 +250,14 @@ namespace ecommerce.Services
                 Gender = p.Gender,
                 AgeRange = p.AgeRange
             }).ToList();
+            var totalPage = (int)Math.Ceiling(productTotal.Count() / (double)productFilterDto.PageSize);
+            if(totalPage < 1){
+                totalPage = 1;
+            }
 
             return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Message = "Products retrieved successfully", 
             Status = true, Total = products.Count(), Page = productFilterDto.Page,
-             PageSize = productFilterDto.PageSize, TotalPage = (int)Math.Ceiling((double)productTotal.Count() / productFilterDto.PageSize)};
+             PageSize = productFilterDto.PageSize, TotalPage = totalPage};
         }
 
 

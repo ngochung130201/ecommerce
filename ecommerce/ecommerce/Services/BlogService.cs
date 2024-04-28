@@ -214,8 +214,14 @@ namespace ecommerce.Services
                     Description = blog.Details.Description
                 }
             }).ToList();
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogs.Count,
-             Page = pageNumber, PageSize = pageSize, TotalPage = (int)Math.Ceiling(total/ (double)pageSize)};
+            var result =  new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogs.Count};
+            result.Page = pageNumber;
+            result.PageSize = pageSize;
+            var totalPage = (int)Math.Ceiling(total / (double)pageSize);
+            if(totalPage < 1){
+                result.TotalPage = 1;
+            }
+            return result;
         }
 
         public async Task<ApiResponse<BlogAllDto>> GetBlogByIdAsync(int id)

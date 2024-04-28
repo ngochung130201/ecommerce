@@ -95,6 +95,10 @@ namespace ecommerce.Services
                     histories = histories.Where(c => c.Status == pagingForHistory.HistoryStatus);
                 }
                 histories = histories.Skip((pagingForHistory.Page - 1) * pagingForHistory.PageSize).Take(pagingForHistory.PageSize);
+                var totalPage = (int)Math.Ceiling(total / (double)pagingForHistory.PageSize);
+                if(totalPage <1){
+                    totalPage = 1;
+                }
                 return new ApiResponse<IEnumerable<HistoryDto>>
                 {
                     Data = new List<HistoryDto>(histories.Select(x => new HistoryDto
@@ -127,7 +131,7 @@ namespace ecommerce.Services
                     Message = "Histories found",
                     Status = true,
                     Total =  histories.Count(),
-                    TotalPage = (int)Math.Ceiling(total / (double)pagingForHistory.PageSize),
+                    TotalPage = totalPage,
                     Page = pagingForHistory.Page,
                     PageSize = pagingForHistory.PageSize
                 };
