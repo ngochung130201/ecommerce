@@ -103,7 +103,7 @@ namespace ecommerce.Services
         {
             var categories = await _categoryRepository.GetAllCategoriesAsync(paging);
             var total = await _context.Categories.CountAsync();
-            if (categories == null)
+            if (categories.Item1 == null)
             {
                 return new ApiResponse<IEnumerable<CategoryAllDto>>
                 {
@@ -114,7 +114,7 @@ namespace ecommerce.Services
             }
             var result = new ApiResponse<IEnumerable<CategoryAllDto>>
             {
-                Data = categories.Select(x => new CategoryAllDto
+                Data = categories.Item1.Select(x => new CategoryAllDto
                 {
                     CategoryId = x.CategoryId,
                     Name = x.Name,
@@ -126,7 +126,7 @@ namespace ecommerce.Services
                 }),
                 Message = "Categories found",
                 Status = true,
-                Total = categories.Count(),
+                Total = categories.Item2,
             };
             if (paging != null)
             {

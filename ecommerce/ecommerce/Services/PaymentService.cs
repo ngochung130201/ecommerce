@@ -70,13 +70,13 @@ namespace ecommerce.Services
         {
             var payments = await _paymentRepository.GetAllPaymentsAsync(paging);
             var total = await _context.Payments.CountAsync();
-            if (payments == null)
+            if (payments.Item1 == null)
             {
                 return new ApiResponse<IEnumerable<PaymentDto>> { Data = null, Message = "No Payment found", Status = false };
             }
             var result = new ApiResponse<IEnumerable<PaymentDto>>
             {
-                Data = payments.Select(x => new PaymentDto
+                Data = payments.Item1.Select(x => new PaymentDto
                 {
                     PaymentMethod = x.PaymentMethod,
                     PaymentStatus = x.PaymentStatus,
@@ -87,7 +87,7 @@ namespace ecommerce.Services
                 }),
                 Message = "Payment found",
                 Status = true,
-                Total = payments.Count(),
+                Total = payments.Item2
             };
             if (paging != null)
             {

@@ -5,7 +5,7 @@ namespace ecommerce.Repository.Interface
 {
     public interface IOrderRepository
     {
-        Task<IEnumerable<Order>> GetAllOrdersAsync(PagingForOrder? paging = null);
+        Task<(IEnumerable<Order>,int)> GetAllOrdersAsync(PagingForOrder? paging = null);
         Task<Order> GetOrderByIdAsync(int id);
         Task<int> AddOrderAsync(Order order);
         Task DeleteOrderAsync(int id);

@@ -49,12 +49,13 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task<IEnumerable<Payment>> GetAllPaymentsAsync(PagingForPayment? paging = null)
+        public async Task<(IEnumerable<Payment>,int)> GetAllPaymentsAsync(PagingForPayment? paging = null)
         {
             var payments = _context.Payments.Include(u=>u.Order).ThenInclude(u=>u.User).AsQueryable();
             if (paging == null)
             {
-                return await payments.ToListAsync();
+                var paymentsDb = await payments.ToListAsync();
+                return (paymentsDb, paymentsDb.Count);
             }
             if (!string.IsNullOrEmpty(paging.UserName))
             {
@@ -84,7 +85,9 @@ namespace ecommerce.Repository
             {
                 payments = payments.Where(u => u.PaymentMethod == paging.PaymentMethod);
             }
-            return await payments.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).ToListAsync();
+            var total = payments.Count();
+            return (payments.Skip((paging.Page - 1) * paging.PageSize)
+                .Take(paging.PageSize), total);
         }
 
         public async Task<Payment> GetPaymentByIdAsync(int id)

@@ -5,7 +5,7 @@ namespace ecommerce.Repository.Interface
 {
     public interface ICategoryRepository
     {
-        Task<IEnumerable<Category>> GetAllCategoriesAsync(PagingForBlogCategory? paging = null);
+        Task<(IEnumerable<Category>,int)>  GetAllCategoriesAsync(PagingForBlogCategory? paging = null);
         Task<Category> GetCategoryByIdAsync(int id);
         Task<Category> GetCategoryBySlugAsync(string slug);
         void AddCategory(Category category);

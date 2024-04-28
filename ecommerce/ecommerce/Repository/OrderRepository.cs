@@ -48,12 +48,13 @@ namespace ecommerce.Repository
             }
         }
 
-        public async Task<IEnumerable<Order>> GetAllOrdersAsync(PagingForOrder? paging = null)
+        public async Task<(IEnumerable<Order>,int)> GetAllOrdersAsync(PagingForOrder? paging = null)
         {
             // if paging is null, return all orders
             if (paging == null)
             {
-                return await _context.Orders.Include(u => u.OrderItems).ThenInclude(i => i.Product).ThenInclude(u => u.Category).Include(x => x.User).ToListAsync();
+                var ordersDb = await _context.Orders.Include(u => u.OrderItems).ThenInclude(i => i.Product).ThenInclude(u => u.Category).Include(k => k.User).ToListAsync();
+                return (ordersDb, ordersDb.Count);
             }
             // if paging is not null, return orders based on paging
             var orders = _context.Orders.Include(u => u.OrderItems).ThenInclude(i => i.Product).ThenInclude(u => u.Category).Include(k => k.User).AsQueryable();
@@ -81,12 +82,13 @@ namespace ecommerce.Repository
             {
                 orders = orders.Where(u => u.OrderStatus == paging.OrderStatus);
             }
-            orders = orders.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
+            var total = orders.Count();
             if (orders == null)
             {
                 throw new CustomException("No Order found", 404);
             }
-            return orders;
+            return (orders.Skip((paging.Page - 1) * paging.PageSize)
+                .Take(paging.PageSize), total);
         }
 
         public Task<Order> GetCartByUserIdAsync(int userId)
