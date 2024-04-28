@@ -190,7 +190,7 @@ namespace ecommerce.Services
                 .Take(pageSize)
                 .ToList();
             // get image url
-            foreach (var blog in blogs)
+            foreach (var blog in blogsDto)
             {
                 if(!string.IsNullOrEmpty(blog.Image)){
 
