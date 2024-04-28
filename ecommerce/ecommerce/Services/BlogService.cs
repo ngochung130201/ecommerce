@@ -183,6 +183,7 @@ namespace ecommerce.Services
         {
             var blogs = await _context.Blogs.Include(blog => blog.Categories)
                 .Include(blog => blog.Details).ToListAsync();
+            var total = blogs.Count();
             var blogsDto = blogs
                 .OrderByDescending(blog => blog.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
@@ -213,7 +214,8 @@ namespace ecommerce.Services
                     Description = blog.Details.Description
                 }
             }).ToList();
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogs.Count, Page = pageNumber, PageSize = pageSize, TotalPage = (int)Math.Ceiling(blogs.Count / (double)pageSize)};
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogs.Count,
+             Page = pageNumber, PageSize = pageSize, TotalPage = (int)Math.Ceiling(total/ (double)pageSize)};
         }
 
         public async Task<ApiResponse<BlogAllDto>> GetBlogByIdAsync(int id)

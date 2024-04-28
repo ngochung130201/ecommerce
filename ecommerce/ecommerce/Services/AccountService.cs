@@ -673,6 +673,7 @@ namespace ecommerce.Services
         {
             // paging
             var adminsNotPaging = await _context.Admins.ToListAsync();
+            var total = adminsNotPaging.Count();
             if (paging == null)
             {
       
@@ -717,7 +718,6 @@ namespace ecommerce.Services
                     Status = false
                 };
             }
-            var total = admins.Count();
             var result = new ApiResponse<List<AdminDto>>
             {
                 Data = admins.Select(a => new AdminDto
@@ -731,9 +731,6 @@ namespace ecommerce.Services
                 Message = "Admins found",
                 Status = true,
                 Total = admins.Count(),
-                Page = paging.Page,
-                PageSize = paging.PageSize,
-                TotalPage = total
 
             };
             if (paging != null)
@@ -756,9 +753,11 @@ namespace ecommerce.Services
             //         (filterDto.InventoryCount == 0 || p.InventoryCount >= filterDto.InventoryCount)
             //         ).Skip(itemsToSkip)
             //         .Take(filterDto.PageSize).OrderByDescending(u => u.CreatedAt).ToListAsync();
+            var users = await _context.Users.ToListAsync();
+            var total = users.Count();
             if (paging == null)
             {
-                var users = await _context.Users.ToListAsync();
+                
                 if (users == null)
                 {
                     return new ApiResponse<List<UserDto>>
@@ -790,7 +789,6 @@ namespace ecommerce.Services
             {
                 usersDto = _context.Users.Where(x => x.AccountStatus == paging.Status).AsQueryable();
             }
-            var total = usersDto.Count();
             var result = new ApiResponse<List<UserDto>>
             {
                 Data = usersDto.Select(u => new UserDto
@@ -802,7 +800,7 @@ namespace ecommerce.Services
                 }).ToList(),
                 Message = "Users found",
                 Status = true,
-                Total = total,
+                Total = usersDto.Count(),
             };
             if (paging != null)
             {

@@ -223,6 +223,7 @@ namespace ecommerce.Services
         public async Task<ApiResponse<List<ProductAllDto>>> GetProductsByFilterAsync(ProductFilterDto productFilterDto)
         {
             var products = await _productRepository.GetProductsByFilterAsync(productFilterDto);
+            var productTotal = await _productRepository.GetAllProductsAsync();
             if (products == null)
             {
                 return new ApiResponse<List<ProductAllDto>> { Message = "Products not found", Status = false };
@@ -251,7 +252,8 @@ namespace ecommerce.Services
             }).ToList();
 
             return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Message = "Products retrieved successfully", 
-            Status = true, Total = products.Count(), Page = productFilterDto.Page, PageSize = productFilterDto.PageSize, TotalPage = products.Count() / productFilterDto.PageSize};
+            Status = true, Total = products.Count(), Page = productFilterDto.Page,
+             PageSize = productFilterDto.PageSize, TotalPage = (int)Math.Ceiling((double)productTotal.Count() / productFilterDto.PageSize)};
         }
 
 

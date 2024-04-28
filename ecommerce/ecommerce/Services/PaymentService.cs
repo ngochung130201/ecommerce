@@ -69,11 +69,11 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<PaymentDto>>> GetAllPaymentsAsync(PagingForPayment? paging = null)
         {
             var payments = await _paymentRepository.GetAllPaymentsAsync(paging);
+            var total = await _context.Payments.CountAsync();
             if (payments == null)
             {
                 return new ApiResponse<IEnumerable<PaymentDto>> { Data = null, Message = "No Payment found", Status = false };
             }
-            var total = payments.Count();
             var result = new ApiResponse<IEnumerable<PaymentDto>>
             {
                 Data = payments.Select(x => new PaymentDto
@@ -87,7 +87,7 @@ namespace ecommerce.Services
                 }),
                 Message = "Payment found",
                 Status = true,
-                Total = total,
+                Total = payments.Count(),
             };
             if (paging != null)
             {

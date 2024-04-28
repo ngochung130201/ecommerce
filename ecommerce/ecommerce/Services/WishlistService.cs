@@ -86,6 +86,7 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<WishlistDto>>> GetAllWishlistsAsync(PagingForWishlist? paging = null)
         {
             var wishlists = await _wishlistRepository.GetAllWishListsAsync(paging);
+            var wishlistsDb = await _wishlistRepository.GetAllWishListsAsync();
             if (wishlists == null)
             {
                 return new ApiResponse<IEnumerable<WishlistDto>>
@@ -132,7 +133,7 @@ namespace ecommerce.Services
                 Total =wishlists.Count(),
                 Page = paging.Page,
                 PageSize = paging.PageSize,
-                TotalPage = (int)Math.Ceiling(wishlists.Count() / (double)paging.PageSize)
+                TotalPage = (int)Math.Ceiling(wishlistsDb.Count() / (double)paging.PageSize)
 
             };
 
