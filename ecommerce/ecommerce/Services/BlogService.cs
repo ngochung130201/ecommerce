@@ -248,7 +248,7 @@ namespace ecommerce.Services
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .AsQueryable();
-            var total = blogs.Count();
+            var total = await _context.Blogs.CountAsync();
 
             var blogDtos = blogs.Select(blog => new BlogAllDto
             {
@@ -268,7 +268,8 @@ namespace ecommerce.Services
                 }
             }).ToList();
 
-            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogDtos.Count, Page = pageNumber, PageSize = pageSize, TotalPage = total};
+            return new ApiResponse<List<BlogAllDto>> { Data = blogDtos, Status = true, Total = blogDtos.Count, Page = pageNumber,
+             PageSize = pageSize, TotalPage = (int)Math.Ceiling(total / (double)pageSize)};
         }
 
 
