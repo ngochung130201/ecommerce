@@ -20,7 +20,7 @@ namespace ecommerce.DTO
         public int PageSize { get; set; } = 10;
 
         public decimal Price { get; set; } = 0;
-        public bool? SortByPrice { get; set; } = null; // sap xep theo gia tu thap den cao hoac nguoc lai
+        public SortByPrice? SortByPrice { get; set; } = Enums.SortByPrice.None; // ASC, DESC
         public AgeRange? AgeRange { get; set; } = null;
 
     }
