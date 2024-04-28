@@ -86,16 +86,7 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<WishlistDto>>> GetAllWishlistsAsync(PagingForWishlist? paging = null)
         {
             var wishlists = await _wishlistRepository.GetAllWishListsAsync(paging);
-            var totalPage = 0;
-            if (paging != null)
-            {
-                totalPage = (int)Math.Ceiling((decimal)wishlists.Count() / paging.PageSize);
-            }
-            else
-            {
-                var  wishlists1 =  await _wishlistRepository.GetAllWishListsAsync();
-                totalPage = wishlists1.Count();
-            }
+            var wishlistsDb = await _wishlistRepository.GetAllWishListsAsync();
             if (wishlists == null)
             {
                 return new ApiResponse<IEnumerable<WishlistDto>>
@@ -139,7 +130,11 @@ namespace ecommerce.Services
                 }),
                 Message = "Wishlist found",
                 Status = true,
-                Total =totalPage
+                Total =wishlists.Count(),
+                Page = paging.Page,
+                PageSize = paging.PageSize,
+                TotalPage = (int)Math.Ceiling(wishlistsDb.Count() / (double)paging.PageSize)
+
             };
 
         }

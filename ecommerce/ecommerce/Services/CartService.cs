@@ -177,7 +177,8 @@ namespace ecommerce.Services
             // else get all carts with userId with role user
 
             var carts = await _cartRepository.GetAllCartsAsync(paging);
-            var cartsTotal = await _context.Carts.CountAsync();
+            var total = carts.Count();
+
             if (carts == null)
             {
                 return new ApiResponse<IEnumerable<CartAllDto>> { Message = "No carts found", Status = false };
@@ -222,8 +223,17 @@ namespace ecommerce.Services
 
                 }).ToList()
             });
-            return new ApiResponse<IEnumerable<CartAllDto>> { Data = cartsDto, Status = true, Total = cartsTotal };
+            var result = new ApiResponse<IEnumerable<CartAllDto>> { Data = cartsDto, Status = true, Total = cartsDto.Count(), Message = "Carts found"
+            };
+            if (paging != null)
+            {
+                var (page, pageSize, TotalPage) = Helpers.Paging.GetPaging(paging.Page, paging.PageSize, total);
+                result.Page = page;
+                result.PageSize = pageSize;
+                result.TotalPage = TotalPage;
+            }
 
+            return result;
         }
 
         public async Task<ApiResponse<CartAllDto>> GetCartByIdAsync(int id)

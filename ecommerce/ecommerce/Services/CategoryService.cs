@@ -102,7 +102,7 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<CategoryAllDto>>> GetAllCategoriesAsync(PagingForBlogCategory? paging = null)
         {
             var categories = await _categoryRepository.GetAllCategoriesAsync(paging);
-            var categoriesTotal = await _context.BlogCategories.CountAsync();
+            var total = await _context.Categories.CountAsync();
             if (categories == null)
             {
                 return new ApiResponse<IEnumerable<CategoryAllDto>>
@@ -112,14 +112,7 @@ namespace ecommerce.Services
                     Status = false
                 };
             }
-            var totalPage = 0;
-            if(paging == null){
-                totalPage = categoriesTotal;
-            }
-            else {
-                totalPage = (int)Math.Ceiling(categories.Count() / (double)paging.PageSize);
-            }
-            return new ApiResponse<IEnumerable<CategoryAllDto>>
+            var result = new ApiResponse<IEnumerable<CategoryAllDto>>
             {
                 Data = categories.Select(x => new CategoryAllDto
                 {
@@ -133,8 +126,16 @@ namespace ecommerce.Services
                 }),
                 Message = "Categories found",
                 Status = true,
-                Total = totalPage
+                Total = categories.Count(),
             };
+            if (paging != null)
+            {
+                var (page, pageSize, TotalPage) = Helpers.Paging.GetPaging(paging.Page, paging.PageSize,total);
+                result.Page = page;
+                result.PageSize = pageSize;
+                result.TotalPage = TotalPage;
+            }
+            return result;
         }
 
         public async Task<ApiResponse<CategoryAllDto>> GetCategoryByIdAsync(int id)

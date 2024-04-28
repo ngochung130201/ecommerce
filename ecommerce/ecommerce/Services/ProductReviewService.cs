@@ -117,9 +117,10 @@ namespace ecommerce.Services
 
         public async Task<ApiResponse<IEnumerable<ProductReviewAllDto>>> GetAllProductReviewsAsync(PagingForProductReview? paging = null)
         {
+            var productTotal = await _context.ProductReviews.CountAsync();
             if (paging == null)
             {
-                var productTotal = await _context.ProductReviews.CountAsync();
+ 
                 var productReviews = await _context.ProductReviews.Include(u => u.User).Include(u => u.Product).ThenInclude(i => i.Category).ToListAsync();
                 if (productReviews == null)
                 {
@@ -200,7 +201,7 @@ namespace ecommerce.Services
                 productReviewsPaging = productReviewsPaging.OrderByDescending(u => u.CreatedAt);
             }
             productReviewsPaging = productReviewsPaging.Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize);
-            return new ApiResponse<IEnumerable<ProductReviewAllDto>>
+            var result =new ApiResponse<IEnumerable<ProductReviewAllDto>>
             {
                 Data = productReviewsPaging.Select(x => new ProductReviewAllDto
                 {
@@ -234,8 +235,16 @@ namespace ecommerce.Services
                 }),
                 Message = "Product Reviews found",
                 Status = true,
-                Total =  (int)Math.Ceiling(productReviewsPaging.Count() / (double)paging.PageSize)
+                Total =  productReviewsPaging.Count()
             };
+            if (paging != null)
+            {
+                var (page, pageSize, TotalPage) = Helpers.Paging.GetPaging(paging.Page, paging.PageSize, productTotal);
+                result.Page = page;
+                result.PageSize = pageSize;
+                result.TotalPage = TotalPage;
+            }
+            return result;
         }
 
         public async Task<ApiResponse<ProductReviewAllDto>> GetProductReviewByIdAsync(int id)

@@ -1,5 +1,6 @@
 ﻿using ecommerce.Context;
 using ecommerce.DTO;
+using ecommerce.Helpers;
 using ecommerce.Models;
 using ecommerce.Repository;
 using ecommerce.Services.Interface;
@@ -68,19 +69,12 @@ namespace ecommerce.Services
         public async Task<ApiResponse<IEnumerable<PaymentDto>>> GetAllPaymentsAsync(PagingForPayment? paging = null)
         {
             var payments = await _paymentRepository.GetAllPaymentsAsync(paging);
-            var totalPage = 0;
-            if (paging != null)
-            {
-                totalPage = (int)Math.Ceiling((decimal)payments.Count() / paging.PageSize);
-            }
-            else {
-                totalPage = await _context.Payments.CountAsync();
-            }
+            var total = await _context.Payments.CountAsync();
             if (payments == null)
             {
                 return new ApiResponse<IEnumerable<PaymentDto>> { Data = null, Message = "No Payment found", Status = false };
             }
-            return new ApiResponse<IEnumerable<PaymentDto>>
+            var result = new ApiResponse<IEnumerable<PaymentDto>>
             {
                 Data = payments.Select(x => new PaymentDto
                 {
@@ -93,8 +87,16 @@ namespace ecommerce.Services
                 }),
                 Message = "Payment found",
                 Status = true,
-                Total = totalPage
+                Total = payments.Count(),
             };
+            if (paging != null)
+            {
+                var (page, pageSize, TotalPage) = Helpers.Paging.GetPaging(paging.Page, paging.PageSize,total);
+                result.Page = page;
+                result.PageSize = pageSize;
+                result.TotalPage = TotalPage;
+            }
+            return result;
         }
 
         public async Task<ApiResponse<PaymentDto>> GetPaymentByIdAsync(int id)
