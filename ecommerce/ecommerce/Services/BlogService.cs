@@ -249,21 +249,14 @@ namespace ecommerce.Services
                 .Take(pageSize)
                 .AsQueryable();
             var total = blogs.Count();
-            
-            // get image url
-            foreach (var blog in blogs)
-            {
-                if(!string.IsNullOrEmpty(blog.Image)){
-                    blog.Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder);
-                }
-            }
+
             var blogDtos = blogs.Select(blog => new BlogAllDto
             {
                 Id = blog.BlogId,
                 Title = blog.Title,
                 CreatedBy = blog.CreatedBy,
                 UpdatedBy = blog.UpdatedBy,
-                Image = blog.Image,
+                Image = _uploadFilesService.GetFilePath(blog.Image, Contains.BlogImageFolder),
                 CategoryIds = blog.Categories.Select(category => category.CategoryId).ToList(),
                 Categories = blog.Categories.Select(category => category.Name).ToList(),
                 CreatedAt = blog.CreatedAt,
