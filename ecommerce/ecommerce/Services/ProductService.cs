@@ -223,7 +223,6 @@ namespace ecommerce.Services
         public async Task<ApiResponse<List<ProductAllDto>>> GetProductsByFilterAsync(ProductFilterDto productFilterDto)
         {
             var products = await _productRepository.GetProductsByFilterAsync(productFilterDto);
-            var totalPage =  (int)Math.Ceiling(products.Count() / (double)productFilterDto.PageSize);
             if (products == null)
             {
                 return new ApiResponse<List<ProductAllDto>> { Message = "Products not found", Status = false };
@@ -251,7 +250,8 @@ namespace ecommerce.Services
                 AgeRange = p.AgeRange
             }).ToList();
 
-            return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Message = "Products retrieved successfully", Status = true, Total = totalPage };
+            return new ApiResponse<List<ProductAllDto>> { Data = newProductDtos, Message = "Products retrieved successfully", 
+            Status = true, Total = products.Count(), Page = productFilterDto.Page, PageSize = productFilterDto.PageSize, TotalPage = products.Count() / productFilterDto.PageSize};
         }
 
 
@@ -400,7 +400,6 @@ namespace ecommerce.Services
             {
                 return new ApiResponse<IEnumerable<ProductAllDto>> { Message = "Search criteria is required", Status = false };
             }
-            var productTotal = await _productRepository.GetAllProductsAsync();
             var products = await _productRepository.SearchProductsAsync(searchDTO);
             if (products == null)
             {

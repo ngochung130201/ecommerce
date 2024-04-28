@@ -717,8 +717,8 @@ namespace ecommerce.Services
                     Status = false
                 };
             }
-            var totalCount = (int)Math.Ceiling((double)admins.Count() / paging.PageSize);
-            return new ApiResponse<List<AdminDto>>
+            var total = admins.Count();
+            var result = new ApiResponse<List<AdminDto>>
             {
                 Data = admins.Select(a => new AdminDto
                 {
@@ -730,8 +730,20 @@ namespace ecommerce.Services
                 }).ToList(),
                 Message = "Admins found",
                 Status = true,
-                Total = totalCount
+                Total = admins.Count(),
+                Page = paging.Page,
+                PageSize = paging.PageSize,
+                TotalPage = total
+
             };
+            if (paging != null)
+            {
+                var (page, pageSize, TotalPage) = Helpers.Paging.GetPaging(paging.Page, paging.PageSize,total);
+                result.Page = page;
+                result.PageSize = pageSize;
+                result.TotalPage = TotalPage;
+            }
+            return result;
         }
 
         public async Task<ApiResponse<List<UserDto>>> GetListUserAsync(PagingForUser? paging = null)
@@ -744,9 +756,9 @@ namespace ecommerce.Services
             //         (filterDto.InventoryCount == 0 || p.InventoryCount >= filterDto.InventoryCount)
             //         ).Skip(itemsToSkip)
             //         .Take(filterDto.PageSize).OrderByDescending(u => u.CreatedAt).ToListAsync();
-            var users = await _context.Users.ToListAsync();
             if (paging == null)
             {
+                var users = await _context.Users.ToListAsync();
                 if (users == null)
                 {
                     return new ApiResponse<List<UserDto>>
@@ -767,30 +779,21 @@ namespace ecommerce.Services
                     }).ToList(),
                     Message = "Users found",
                     Status = true,
-                    Total = users.Count
+                    Total = users.Count,
                 };
             }
-            var usersDto = users.Where(x =>
+            var usersDto = _context.Users.Where(x =>
                 string.IsNullOrEmpty(paging.UserName) || x.Username.Contains(paging.UserName) || x.Email.Contains(paging.UserName)
             ).Skip((paging.Page - 1) * paging.PageSize).Take(paging.PageSize).AsQueryable();
             //
             if (paging.Status != null)
             {
-                usersDto = users.Where(x => x.AccountStatus == paging.Status).AsQueryable();
+                usersDto = _context.Users.Where(x => x.AccountStatus == paging.Status).AsQueryable();
             }
-            if (users == null)
+            var total = usersDto.Count();
+            var result = new ApiResponse<List<UserDto>>
             {
-                return new ApiResponse<List<UserDto>>
-                {
-                    Data = null,
-                    Message = "Users not found",
-                    Status = false
-                };
-            }
-            var totalCount = (int)Math.Ceiling((double)usersDto.Count() / paging.PageSize);
-            return new ApiResponse<List<UserDto>>
-            {
-                Data = users.Select(u => new UserDto
+                Data = usersDto.Select(u => new UserDto
                 {
                     UserId = u.UserId,
                     Username = u.Username,
@@ -799,8 +802,16 @@ namespace ecommerce.Services
                 }).ToList(),
                 Message = "Users found",
                 Status = true,
-                Total = totalCount
+                Total = total,
             };
+            if (paging != null)
+            {
+                var (page, pageSize, TotalPage) = Helpers.Paging.GetPaging(paging.Page, paging.PageSize,total);
+                result.Page = page;
+                result.PageSize = pageSize;
+                result.TotalPage = TotalPage;
+            }
+            return result;
         }
 
         public async Task<ApiResponse<string>> UpdateAccountAsync(UpdateAccountRequest updateAccountRequest)
