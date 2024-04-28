@@ -224,6 +224,17 @@ namespace ecommerce.Controllers
             }
             return BadRequest(response);
         }
+        // forgot password with otp
+        [HttpPost("forgot-password-otp")]
+        public async Task<IActionResult> ForgotPasswordOtpAsync(ForgotPasswordOtp forgotPasswordOtp)
+        {
+            var response = await _accountService.ForgotPasswordOtpAsync(forgotPasswordOtp.Email,forgotPasswordOtp.Template, forgotPasswordOtp.AdminRole, forgotPasswordOtp.IsAdmin);
+            if (response.Status)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
 
     }
 }
