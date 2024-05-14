@@ -943,7 +943,7 @@ namespace ecommerce.Services
             {
                 Body = template,
                 Name = isAdmin ? adminModel.Username : userModel.Username,
-                Subject = "Quên mật khẩu",
+                Subject = "Emailservice",
                 To = email,
             };
             // test

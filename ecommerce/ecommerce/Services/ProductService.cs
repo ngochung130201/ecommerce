@@ -469,6 +469,7 @@ namespace ecommerce.Services
                 var productUpdate = new Product
                 {
                     Name = product.Name,
+                    CategoryId = product.CategoryId,
                     Description = product.Description,
                     Price = product.Price,
                     InventoryCount = product.InventoryCount,

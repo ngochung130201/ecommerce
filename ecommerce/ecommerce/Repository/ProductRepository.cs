@@ -119,6 +119,7 @@ namespace ecommerce.Repository
         {
             productExist.Name = product.Name;
             productExist.Description = product.Description;
+            productExist.CategoryId = product.CategoryId;
             productExist.Price = product.Price;
             productExist.UpdatedAt = DateTime.UtcNow;
             productExist.Slug = product.Slug;
