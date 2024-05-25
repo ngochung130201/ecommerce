@@ -411,7 +411,7 @@ namespace ecommerce.Services
                     payment.PaymentMethodText = payment.PaymentMethod.ToString();
                     payment.UpdatedAt = DateTime.UtcNow;
                     // update product InventoryCount
-                    if(order.OrderStatus == OrderStatus.Delivered || order.OrderStatus == OrderStatus.Processing || order.OrderStatus == OrderStatus.Shipped)
+                    if(order.OrderStatus == OrderStatus.Delivered)
                     {
                         var orderItem = orderExist.OrderItems;
                         var getProductsId = orderItem.Select(x => x.ProductId);
