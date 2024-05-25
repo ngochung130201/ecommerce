@@ -83,7 +83,9 @@ namespace ecommerce.Services
                     CreatedAt = x.CreatedAt,
                     Amount = x.Amount,
                     OrderId = x.OrderId,
-                    UserName = x.Order.User.Email ?? x.Order.User.Username
+                    UserName = x.Order.User.Email ?? x.Order.User.Username,
+                    PaymentId = x.PaymentId,
+                    UpdatedAt = x.UpdatedAt,
                 }),
                 Message = "Payment found",
                 Status = true,
@@ -115,7 +117,9 @@ namespace ecommerce.Services
                     CreatedAt = payment.CreatedAt,
                     Amount = payment.Amount,
                     OrderId = payment.OrderId,
-                    UserName = payment.Order.User.Username ?? payment.Order.User.Email
+                    UserName = payment.Order.User.Username ?? payment.Order.User.Email,
+                    UpdatedAt = payment.UpdatedAt,
+                    PaymentId = payment.PaymentId,
                 },
                 Message = "Payment found",
                 Status = true

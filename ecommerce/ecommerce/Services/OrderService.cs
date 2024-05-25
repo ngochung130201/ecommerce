@@ -59,12 +59,13 @@ namespace ecommerce.Services
                 OrderStatus.Cancelled
             };
             var cartItemsToProcess = getCartByIdAsync.CartItems.ToList();
+
             var products = cartItemsToProcess.Select(u => u.Product).ToList(); // have db
             var productInput = cartItemsToProcess.Select(u => u.Product).Where(u => order.OrderProduct.Any(k => k.ProductId == u.ProductId)).ToList();
             var productIds = cartItemsToProcess.Select(u => u.ProductId).ToList();
             var isDupProduct = productIds.Any(u => order.OrderProduct.Any(k => k.ProductId == u));
             // khac ngay hom nay van tao order moi
-            var isToday = getCartByIdAsync.CreatedAt.Date == DateTime.UtcNow.Date;
+            var isToday = getCartByIdAsync.CreatedAt == DateTime.UtcNow;
             // Create a new order if it doesn't exist
             if (!isDupProduct || !isToday || orderIdByUser == null || orderStatusNew.Contains(orderIdByUser.OrderStatus))
             {
@@ -83,12 +84,21 @@ namespace ecommerce.Services
                 // add table history
             }
             orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
+            if (!cartItemsToProcess.Any())
+            {
+                cartItemsToProcess = orderIdByUser.User.Carts.CartItems.ToList();
+            }
             foreach (var cartItem in cartItemsToProcess)
             {
                 var productExist = order.OrderProduct.FirstOrDefault(k => k.ProductId == cartItem.ProductId);
-                if (productExist == null)
+                int quantity = 0;
+                if (!order.OrderProduct.Any(x=>x.Quantity == 0))
                 {
-                    continue;
+                    quantity = productExist.Quantity;
+                }
+                else
+                {
+                    quantity = cartItem.Quantity;
                 }
                 await _orderItemService.AddOrderItemAsync(new OrderItemDto
                 {
@@ -100,7 +110,7 @@ namespace ecommerce.Services
                 await _unitOfWork.SaveChangesAsync();
                 var orderItem = orderIdByUser.OrderItems.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
                 var product = products.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
-                orderItem.Quantity += productExist.Quantity;
+                orderItem.Quantity += quantity;
                 orderItem.PriceAtTimeOfOrder = product.PriceSale;
                 await _orderItemService.UpdateOrderItemAsync(orderItem.OrderItemId, new OrderItemDto
                 {
@@ -350,7 +360,8 @@ namespace ecommerce.Services
             };
             try
             {
-                var orderExist = await _orderRepository.GetOrderByIdAsync(order.OrderId);
+                var orderExist = await _context.Orders.Include(u => u.User).Include(u => u.OrderItems).ThenInclude(u => u.Product).ThenInclude(u => u.Category).FirstOrDefaultAsync(u => u.OrderId == order.OrderId);
+
                 if (orderExist == null)
                 {
                     return new ApiResponse<int>
@@ -399,7 +410,20 @@ namespace ecommerce.Services
                     payment.PaymentMethod = order.PaymentMethod;
                     payment.PaymentMethodText = payment.PaymentMethod.ToString();
                     payment.UpdatedAt = DateTime.UtcNow;
+                    // update product InventoryCount
+                    if(order.OrderStatus == OrderStatus.Delivered || order.OrderStatus == OrderStatus.Processing || order.OrderStatus == OrderStatus.Shipped)
+                    {
+                        var orderItem = orderExist.OrderItems;
+                        var getProductsId = orderItem.Select(x => x.ProductId);
+                        var products = await _context.Products.Where(x => getProductsId.Contains(x.ProductId)).ToListAsync();
 
+                        foreach (var item in products)
+                        {
+                            item.InventoryCount = item.InventoryCount - orderItem.Where(x => x.ProductId == item.ProductId).Sum(u => u.Quantity);
+
+                        }
+
+                    }
                     if (order.OrderStatus == OrderStatus.Delivered)
                     {
                         // add revenue report
