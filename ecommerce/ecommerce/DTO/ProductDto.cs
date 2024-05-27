@@ -56,6 +56,7 @@ namespace ecommerce.DTO
     public class ProductUpdateDto
     {
         public string Name { get; set; }
+        public int CategoryId { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
         public Popular? Popular { get; set; } = null;
@@ -70,6 +71,7 @@ namespace ecommerce.DTO
     public class ProductUpdateRequestDto
     {
         public string Name { get; set; }
+        public int CategoryId { get; set; }
         public string Description { get; set; }
         public string Price { get; set; }
         public string? Popular { get; set; } = null;

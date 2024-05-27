@@ -112,6 +112,7 @@ namespace ecommerce.Controllers
             var productModel = new ProductUpdateDto
             {
                 Name = product.Name,
+                CategoryId = product.CategoryId,
                 Description = product.Description,
                 Price = price,
                 InventoryCount = inventoryCount,
