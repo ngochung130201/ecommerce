@@ -41,7 +41,7 @@ namespace ecommerce.Services
         }
         public async Task<ApiResponse<int>> ProcessOrderAsync(OrderRequestDto order)
         {
-            var orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
+         
             var getCartByIdAsync = await _context.Carts.Where(u => u.UserId == order.UserId).Include(u => u.CartItems).ThenInclude(u => u.Product).FirstOrDefaultAsync();
             if (getCartByIdAsync == null)
             {
@@ -67,7 +67,8 @@ namespace ecommerce.Services
             // khac ngay hom nay van tao order moi
             var isToday = getCartByIdAsync.CreatedAt == DateTime.UtcNow;
             // Create a new order if it doesn't exist
-            if (!isDupProduct || !isToday || orderIdByUser == null || orderStatusNew.Contains(orderIdByUser.OrderStatus))
+            var orderIdByUser = new Order();
+            if (!isDupProduct || !isToday )
             {
                 var newOrder = new Order
                 {
@@ -79,92 +80,75 @@ namespace ecommerce.Services
                     Note = order.Note,
                     PhoneNumber = order.PhoneNumber,
                 };
-                await _orderRepository.AddOrderAsync(newOrder);
+                _context.Orders.Add(newOrder);
                 await _unitOfWork.SaveChangesAsync();
+                 orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
+                foreach (var cartItem in cartItemsToProcess)
+                {
+
+                    //var orderItem = orderIdByUser.OrderItems.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
+                    var product = products.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
+                    //orderItem.Quantity += quantity;
+
+                    await _cartService.DeleteCartItemAsync(cartId: getCartByIdAsync.CartId, cartItemId: cartItem.CartItemId);
+
+                    await _orderItemService.AddOrderItemAsync(new OrderItemDto
+                    {
+                        OrderId = orderIdByUser.OrderId,
+                        ProductId = cartItem.ProductId,
+                        Quantity = cartItem.Quantity,
+                        PriceAtTimeOfOrder = cartItem.TotalPrice,
+                    });
+
+                }
+            
+        
+
                 // add table history
-            }
-            orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
-            if (!cartItemsToProcess.Any())
-            {
-                cartItemsToProcess = orderIdByUser.User.Carts.CartItems.ToList();
-            }
-            foreach (var cartItem in cartItemsToProcess)
-            {
-                var productExist = order.OrderProduct.FirstOrDefault(k => k.ProductId == cartItem.ProductId);
-                int quantity = 0;
-                if (!order.OrderProduct.Any(x=>x.Quantity == 0))
+                orderIdByUser = await _orderRepository.GetOrderByUserIdAsync(order.UserId);
+                if (!cartItemsToProcess.Any())
                 {
-                    quantity = productExist.Quantity;
+                    cartItemsToProcess = orderIdByUser.User.Carts.CartItems.ToList();
                 }
-                else
-                {
-                    quantity = cartItem.Quantity;
-                }
-                await _orderItemService.AddOrderItemAsync(new OrderItemDto
+
+                orderIdByUser.TotalPrice = orderIdByUser.OrderItems.Sum(u => u.PriceAtTimeOfOrder);
+
+                // Delete processed cart items and possibly the cart
+
+                var getCartItemDb = await _context.Carts.Where(u => u.UserId == order.UserId).Include(u => u.CartItems).FirstOrDefaultAsync();
+
+                await _cartService.DeleteCartAsync(orderIdByUser.User.Carts.CartId);
+                // Add payment
+                await AddPaymentAsync(payment: new PaymentDto
                 {
                     OrderId = orderIdByUser.OrderId,
-                    ProductId = cartItem.ProductId,
-                    Quantity = productExist.Quantity,
-                    PriceAtTimeOfOrder = cartItem.TotalPrice,
+                    PaymentMethod = order.PaymentMethod,
+                    Amount = orderIdByUser.TotalPrice,
+                    PaymentStatus = PaymentStatus.Initiated,
+                    CreatedAt = DateTime.UtcNow,
+
+                }, orderId: orderIdByUser.OrderId, orderStatus: order.OrderStatus);
+                await _unitOfWork.SaveChangesAsync();
+                var history = new HistoryDto
+                {
+                    UserId = order.UserId,
+                    Message = "Order created_" + orderIdByUser.OrderId,
+                    Status = HistoryStatus.OrderPending,
+                    StatusMessage = nameof(HistoryStatus.OrderPending)
+                };
+                // get payment 
+                var paymentId = await _paymentService.GetPaymentByOrderIdAsync(orderIdByUser.OrderId);
+                await _historyService.AddHistoryAsync(new History
+                {
+                    CreateAt = DateTime.UtcNow.Date,
+                    Message = history.Message,
+                    Status = history.Status,
+                    StatusMessage = history.StatusMessage,
+                    PaymentId = paymentId.PaymentId
                 });
                 await _unitOfWork.SaveChangesAsync();
-                var orderItem = orderIdByUser.OrderItems.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
-                var product = products.FirstOrDefault(u => u.ProductId == cartItem.ProductId);
-                orderItem.Quantity += quantity;
-                orderItem.PriceAtTimeOfOrder = product.PriceSale;
-                await _orderItemService.UpdateOrderItemAsync(orderItem.OrderItemId, new OrderItemDto
-                {
-                    PriceAtTimeOfOrder = orderItem.PriceAtTimeOfOrder,
-                });
-                // if quantity input == quantity in cart, delete cart item
-                if (productExist.Quantity == cartItem.Quantity)
-                {
-                    await _cartService.DeleteCartItemAsync(cartId: getCartByIdAsync.CartId, cartItemId: cartItem.CartItemId);
-                }
-                else
-                {
-                    // update cart item
-                    await _cartService.UpdateCartItemQuantityAsync(cartId: getCartByIdAsync.CartId, cartItemId: cartItem.CartItemId, quantity: cartItem.Quantity - productExist.Quantity);
-                }
             }
-            orderIdByUser.TotalPrice = orderIdByUser.OrderItems.Sum(u => u.PriceAtTimeOfOrder);
-
-            // Delete processed cart items and possibly the cart
-
-            var getCartItemDb = await _context.Carts.Where(u => u.UserId == order.UserId).Include(u => u.CartItems).FirstOrDefaultAsync();
-            if (productInput.Count == products.Count)
-            {
-                await _cartService.DeleteCartAsync(orderIdByUser.User.Carts.CartId);
-            }
-            // Add payment
-            await AddPaymentAsync(payment: new PaymentDto
-            {
-                OrderId = orderIdByUser.OrderId,
-                PaymentMethod = order.PaymentMethod,
-                Amount = orderIdByUser.TotalPrice,
-                PaymentStatus = PaymentStatus.Initiated,
-                CreatedAt = DateTime.UtcNow,
-
-            }, orderId: orderIdByUser.OrderId, orderStatus: order.OrderStatus);
-            await _unitOfWork.SaveChangesAsync();
-            var history = new HistoryDto
-            {
-                UserId = order.UserId,
-                Message = "Order created_" + orderIdByUser.OrderId,
-                Status = HistoryStatus.OrderPending,
-                StatusMessage = nameof(HistoryStatus.OrderPending)
-            };
-            // get payment 
-            var paymentId = await _paymentService.GetPaymentByOrderIdAsync(orderIdByUser.OrderId);
-            await _historyService.AddHistoryAsync(new History
-            {
-                CreateAt = DateTime.UtcNow.Date,
-                Message = history.Message,
-                Status = history.Status,
-                StatusMessage = history.StatusMessage,
-                PaymentId = paymentId.PaymentId
-            });
-            await _unitOfWork.SaveChangesAsync();
+    
             return new ApiResponse<int>
             {
                 Data = orderIdByUser.OrderId,

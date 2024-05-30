@@ -72,8 +72,9 @@ namespace ecommerce.Services
         public async Task<ApiResponse<bool>> UpdateBlogAsync(int id, BlogDto blog)
         {
             // update the image path
-            var image = string.Empty;
-            if (blog.Image is not null)
+            var existingBlog = await _context.Blogs.Include(x => x.Details).Include(x => x.Categories).FirstOrDefaultAsync(x => x.BlogId == id);
+            var image = existingBlog.Image;
+            if (blog.Image is not null && blog.Image.Length > 0)
             {
                 var imagePath = await _uploadFilesService.UploadFileAsync(blog.Image, Contains.BlogImageFolder);
                 if (!imagePath.Status)
@@ -83,12 +84,12 @@ namespace ecommerce.Services
                 image = imagePath.Data;
             }
 
-            var existingBlog = await _context.Blogs.Include(x=>x.Details).FirstOrDefaultAsync(x => x.BlogId == id);
-            if(!string.IsNullOrEmpty(existingBlog.Image) && image != existingBlog.Image)
+
+            if (!string.IsNullOrEmpty(existingBlog.Image) && image != existingBlog.Image)
             {
-                 await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
+                await _uploadFilesService.RemoveFileAsync(existingBlog.Image, Contains.BlogImageFolder);
             }
-           
+
             if (existingBlog != null)
             {
                 existingBlog.Title = blog.Title;
@@ -100,6 +101,17 @@ namespace ecommerce.Services
                 existingBlog.Details.Description = blog.Description;
                 existingBlog.Details.UpdatedAt = DateTime.Now;
                 existingBlog.Image = string.IsNullOrEmpty(image) ? existingBlog.Image : image;
+                existingBlog.Categories.Clear();
+
+                // Thêm các quan hệ mới
+                var newCategories = await _context.BlogCategories
+                                                  .Where(c => blog.CategoryIds.Contains(c.CategoryId))
+                                                  .ToListAsync();
+                foreach (var category in newCategories)
+                {
+                    existingBlog.Categories.Add(category);
+                }
+
                 // remove image when the image is updated
                 await _unitOfWork.SaveChangesAsync();
 
